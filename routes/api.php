@@ -7,7 +7,6 @@ use App\Infrastructure\Http\Controllers\Api\InstallmentController;
 use App\Infrastructure\Http\Controllers\Api\CurrencyController;
 use App\Infrastructure\Http\Controllers\Api\SupplierController;
 use App\Infrastructure\Http\Controllers\Api\CashRegisterController;
-use App\Infrastructure\Http\Controllers\Api\SifenController;
 use App\Infrastructure\Http\Controllers\Api\ReportController;
 use App\Infrastructure\Http\Controllers\Api\AuthController;
 
@@ -59,8 +58,6 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'audit', 'throttle:api-general'
         // Rentabilidad
         Route::get('/{id}/profitability',  [SaleController::class, 'profitability']);
 
-        // Re-emisión SIFEN
-        Route::post('/{id}/emit-invoice',  [SaleController::class, 'emitInvoice']);
     });
 
     // ── CUOTAS ──────────────────────────────────────────────────────────
@@ -107,16 +104,6 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'audit', 'throttle:api-general'
         Route::post('/transfer',           [CashRegisterController::class, 'transfer']);
         Route::post('/{id}/reconcile',     [CashRegisterController::class, 'reconcile']);
         Route::get('/{id}/reconciliations',[CashRegisterController::class, 'reconciliations']);
-    });
-
-    // ── SIFEN ────────────────────────────────────────────────────────────
-    Route::prefix('sifen')->group(function () {
-        Route::get('/status',              [SifenController::class, 'status']);
-        Route::post('/emit/{saleId}',      [SifenController::class, 'emit']);
-        Route::get('/consult/{cdc}',       [SifenController::class, 'consult']);
-        Route::post('/cancel/{cdc}',       [SifenController::class, 'cancel']);
-        Route::get('/pending',             [SifenController::class, 'pending']);
-        Route::post('/retry-pending',      [SifenController::class, 'retryPending']);
     });
 
     // ── REPORTES ────────────────────────────────────────────────────────

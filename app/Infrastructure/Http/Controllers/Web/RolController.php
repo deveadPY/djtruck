@@ -26,7 +26,6 @@ class RolController extends Controller
         'configuracion' => ['ver', 'editar'],
         'usuarios'      => ['ver', 'crear', 'editar', 'eliminar'],
         'roles'         => ['ver', 'crear', 'editar', 'eliminar'],
-        'sifen'         => ['ver', 'crear', 'editar'],
     ];
 
     public function index()

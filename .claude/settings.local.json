@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk -F. '{print $NF}')",
+      "Bash(mkdir -p public/uploads storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views storage/logs storage/certs)",
+      "Bash(touch public/uploads/.gitkeep storage/framework/cache/.gitkeep storage/framework/sessions/.gitkeep storage/framework/testing/.gitkeep storage/framework/views/.gitkeep storage/logs/.gitkeep)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(git remote *)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(xargs grep *)",
+      "Bash(grep -r \"sifen\\\\|SIFEN\" /c/xampp/htdocs/djtrucks/storage/app/public/sifen -type f)",
+      "Bash(composer remove *)"
+    ]
+  }
+}

@@ -13,12 +13,10 @@ class EmpresaConfigModel extends Model
     protected $fillable = [
         'nombre_empresa', 'ruc', 'telefono', 'email', 'direccion',
         'ciudad', 'pais', 'sitio_web', 'moneda_base', 'logo_path',
-        'prefijo_venta', 'prefijo_factura', 'timbrado', 'vigencia_timbrado',
+        'prefijo_venta', 'prefijo_factura',
     ];
 
-    protected $casts = [
-        'vigencia_timbrado' => 'date',
-    ];
+    protected $casts = [];
 
     public function logoUrl(): ?string
     {

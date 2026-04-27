@@ -19,9 +19,6 @@ class SaleModel extends Model
         'moneda_venta', 'precio_venta_moneda', 'precio_venta_usd', 'tasa_cambio_venta',
         'descuento_moneda', 'descuento_usd', 'tasa_interes_mensual',
         'valor_libro_snapshot', 'margen_bruto_usd', 'margen_pct',
-        'tiene_factura_electronica', 'sifen_error', 'estado_sifen',
-        'sifen_kude_path', 'sifen_xml_path', 'sifen_numero_lote', 'tipo_comprobante_sifen',
-        'cdc_sifen', 'numero_timbrado', 'fecha_emision_fe',
         'observaciones', 'fecha_venta', 'created_by', 'updated_by',
     ];
 
@@ -35,10 +32,8 @@ class SaleModel extends Model
         'valor_libro_snapshot'      => 'decimal:4',
         'margen_bruto_usd'          => 'decimal:4',
         'margen_pct'                => 'decimal:4',
-        'tiene_factura_electronica' => 'boolean',
-        'fecha_venta'               => 'date',
-        'fecha_emision_fe'          => 'datetime',
-        'deleted_at'                => 'datetime',
+        'fecha_venta'  => 'date',
+        'deleted_at'   => 'datetime',
     ];
 
     public function vehiculo(): BelongsTo

@@ -12,21 +12,17 @@ use App\Domain\Shared\ValueObjects\Money;
 use App\Domain\Shared\Exceptions\SaleAmountMismatchException;
 use App\Domain\Shared\Exceptions\InsufficientStockException;
 use App\Infrastructure\Currency\CurrencyConverter;
-use App\Infrastructure\SIFEN\ElectronicInvoicingService;
 use App\Infrastructure\Persistence\Eloquent\Models\VehicleModel;
 use App\Infrastructure\Persistence\Eloquent\Models\SaleModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 final class SaleController extends BaseApiController
 {
     public function __construct(
-        private readonly CurrencyConverter      $currency,
-        private readonly InstallmentGenerator   $installments,
-        private readonly ElectronicInvoicingService $sifen,
+        private readonly CurrencyConverter    $currency,
+        private readonly InstallmentGenerator $installments,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -81,7 +77,6 @@ final class SaleController extends BaseApiController
             'pagos.*.plan.numero_cuotas'           => 'required_if:pagos.*.tipo,PLAN_CUOTAS|integer|min:1|max:60',
             'pagos.*.plan.tasa_interes_mensual'    => 'required_if:pagos.*.tipo,PLAN_CUOTAS|numeric|min:0',
             'pagos.*.plan.fecha_primera_cuota'     => 'required_if:pagos.*.tipo,PLAN_CUOTAS|date',
-            'emitir_factura_electronica'            => 'boolean',
             'observaciones'                        => 'nullable|string|max:1000',
         ]);
 
@@ -120,7 +115,6 @@ final class SaleController extends BaseApiController
                 'precio_venta_moneda' => $request->precio_venta,
                 'precio_venta_usd'    => $precioUsd,
                 'valor_libro_snapshot'=> $vehiculo->valor_libro_usd,
-                'tiene_factura_electronica' => false,
                 'observaciones'       => $request->observaciones,
                 'fecha_venta'         => now()->toDateString(),
                 'created_by'          => auth()->id(),
@@ -160,7 +154,7 @@ final class SaleController extends BaseApiController
             return compact('venta', 'vehiculoCanjeado', 'planCuotas');
         });
 
-        // ── Post-transacción: eventos y SIFEN ─────────────────────────────
+        // ── Post-transacción: eventos ─────────────────────────────────────
         event(new \App\Domain\Sales\Events\SaleCompleted(
             $resultado['venta']->id,
             $vehiculo->id,
@@ -168,21 +162,10 @@ final class SaleController extends BaseApiController
             $precioUsd,
         ));
 
-        $sifenResult = null;
-        if ($request->boolean('emitir_factura_electronica')) {
-            try {
-                $sifenResult = $this->sifen->emitirFactura($resultado['venta']);
-            } catch (Throwable $e) {
-                Log::error('SIFEN falló post-venta', ['venta_id' => $resultado['venta']->id, 'error' => $e->getMessage()]);
-                $sifenResult = ['status' => 'PENDIENTE', 'error' => $e->getMessage()];
-            }
-        }
-
         return $this->successResponse([
-            'venta' => $resultado['venta']->fresh(['detallesPago', 'cuotas']),
+            'venta'            => $resultado['venta']->fresh(['detallesPago', 'cuotas']),
             'vehiculo_canjeado' => $resultado['vehiculoCanjeado'],
-            'plan_cuotas'       => $resultado['planCuotas'],
-            'factura_electronica' => $sifenResult,
+            'plan_cuotas'      => $resultado['planCuotas'],
         ], 'Venta con canje procesada exitosamente.', 201);
     }
 
@@ -203,13 +186,6 @@ final class SaleController extends BaseApiController
                 'fecha'     => $g->fecha_gasto,
             ]),
         ]);
-    }
-
-    public function emitInvoice(int $id): JsonResponse
-    {
-        $venta  = SaleModel::findOrFail($id);
-        $result = $this->sifen->emitirFactura($venta);
-        return $this->successResponse($result, 'Factura emitida.');
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

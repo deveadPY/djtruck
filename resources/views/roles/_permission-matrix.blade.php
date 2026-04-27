@@ -14,7 +14,6 @@ $moduleLabels = [
     'configuracion' => 'Ajustes de Empresa',
     'usuarios'      => 'Acceso de Staff',
     'roles'         => 'Políticas de Seguridad',
-    'sifen'         => 'Sincronización SIFEN',
 ];
 $actionLabels = [
     'ver'         => 'Lectura',

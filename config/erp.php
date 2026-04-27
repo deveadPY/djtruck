@@ -52,7 +52,7 @@ return [
         'installments' => true,
         'suppliers'    => true,
         'cash'         => true,
-        'sifen'        => true,
+        'sifen'        => false,
         'reports'      => true,
     ],
 ];
