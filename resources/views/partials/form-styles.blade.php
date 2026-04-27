@@ -1,0 +1,1 @@
+{{-- This partial is empty and intentionally kept for backward compatibility --}}
