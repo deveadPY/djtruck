@@ -104,7 +104,7 @@
                                 data-precio-contado="{{ $v->precio_contado_usd ?? 0 }}"
                                 data-precio-cuotas="{{ $v->precio_cuotas_usd ?? 0 }}"
                                 data-marca="{{ $v->marca }}"
-                                data-modelo="{{ $v->modelo }}" data-chasis="{{ $v->numero_chasis }}" data-año="{{ $v->año }}"
+                                data-modelo="{{ $v->modelo }}" data-chasis="{{ $v->numero_chasis }}" data-anio="{{ $v->anio }}"
                                 data-estado="{{ $v->estado }}" data-color="{{ $v->color }}" data-km="{{ $v->kilometraje }}"
                                 onclick="addItemToVenta('camion', this)">
 
@@ -113,7 +113,7 @@
                                         <div class="font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors">
                                             {{ $v->marca }} {{ $v->modelo }}
                                         </div>
-                                        <div class="text-[0.65rem] text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider">{{ $v->año }} · {{ $v->color ?? 'N/D' }}</div>
+                                        <div class="text-[0.65rem] text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider">{{ $v->anio }} · {{ $v->color ?? 'N/D' }}</div>
                                     </div>
                                     <span class="px-2 py-0.5 border rounded-full text-[0.55rem] font-bold tracking-wider {{ $badgeColor }} uppercase">{{ $v->estado }}</span>
                                 </div>
@@ -884,7 +884,7 @@
                 document.getElementById('btnStep1Next').disabled = false;
                 selectedVehiculo = {
                     id: el.dataset.id, marca: el.dataset.marca, modelo: el.dataset.modelo,
-                    chasis: el.dataset.chasis, año: el.dataset.año, costo: parseFloat(el.dataset.costo),
+                    chasis: el.dataset.chasis, año: el.dataset.anio, costo: parseFloat(el.dataset.costo),
                     precioSugerido: parseFloat(el.dataset.precioSugerido) || 0,
                     precioContado: parseFloat(el.dataset.precioContado) || 0,
                     precioCuotas: parseFloat(el.dataset.precioCuotas) || 0,

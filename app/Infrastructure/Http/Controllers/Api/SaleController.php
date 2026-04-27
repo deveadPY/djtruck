@@ -70,7 +70,7 @@ final class SaleController extends BaseApiController
             'pagos.*.vehiculo_canje.numero_chasis' => 'required_if:pagos.*.tipo,VEHICULO_CANJE|string',
             'pagos.*.vehiculo_canje.marca'         => 'required_if:pagos.*.tipo,VEHICULO_CANJE|string',
             'pagos.*.vehiculo_canje.modelo'        => 'required_if:pagos.*.tipo,VEHICULO_CANJE|string',
-            'pagos.*.vehiculo_canje.año'           => 'required_if:pagos.*.tipo,VEHICULO_CANJE|integer',
+            'pagos.*.vehiculo_canje.anio'           => 'required_if:pagos.*.tipo,VEHICULO_CANJE|integer',
             'pagos.*.vehiculo_canje.valor_toma'    => 'required_if:pagos.*.tipo,VEHICULO_CANJE|numeric',
             // Plan de cuotas
             'pagos.*.plan.tipo'                    => 'required_if:pagos.*.tipo,PLAN_CUOTAS|in:FRANCESA,ALEMANA',
@@ -250,7 +250,7 @@ final class SaleController extends BaseApiController
             'numero_motor'        => $vc['numero_motor'] ?? null,
             'marca'               => $vc['marca'],
             'modelo'              => $vc['modelo'],
-            'año'                 => $vc['año'],
+            'anio'                 => $vc["anio"],
             'color'               => $vc['color'] ?? null,
             'kilometraje'         => $vc['kilometraje'] ?? 0,
             'tipo_vehiculo'       => $vc['tipo_vehiculo'] ?? 'CAMION_RIGIDO',
@@ -272,7 +272,7 @@ final class SaleController extends BaseApiController
             'monto_usd'         => $tomaUsd,
             'vehiculo_canje_id' => $nuevo->id,
             'fecha_pago'        => now()->toDateString(),
-            'observaciones'     => "{$vc['marca']} {$vc['modelo']} {$vc['año']}",
+            'observaciones'     => "{$vc['marca']} {$vc['modelo']} {$vc["anio"]}",
             'created_at'        => now(),
             'created_by'        => auth()->id(),
         ]);

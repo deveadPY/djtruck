@@ -88,7 +88,7 @@
                             </td>
                             <td>
                                 <div class="flex flex-col">
-                                    <span class="font-black text-xs">{{ $v->año }}</span>
+                                    <span class="font-black text-xs">{{ $v->anio }}</span>
                                     <span class="text-[0.65rem] text-muted-foreground font-mono">{{ number_format($v->kilometraje, 0, ',', '.') }} km</span>
                                 </div>
                             </td>
@@ -182,7 +182,7 @@
                 <div class="flex items-start gap-3 mb-4">
                     <div class="w-12 h-12 rounded-2xl bg-surface/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0">
                         <span class="text-[0.5rem] text-muted-foreground font-black uppercase tracking-tighter">Año</span>
-                        <span class="text-xs font-black text-accent">{{ $v->año }}</span>
+                        <span class="text-xs font-black text-accent">{{ $v->anio }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="font-black text-[0.9rem] leading-tight text-white group-active:text-primary transition-colors truncate">{{ $v->marca }} {{ $v->modelo }}</div>

@@ -49,7 +49,7 @@ class DocumentoWebController extends Controller
                 'ruta'              => $uploadDir . '/' . $nombre,
                 'nombre_original'   => $nombreOriginal,
                 'mime_type'         => $mimeType,
-                'tamaño_bytes'      => $tamano,
+                'tamano_bytes'      => $tamano,
                 'descripcion'       => $desc,
                 'tipo'              => $tipo ?: null,
                 'created_by'        => Auth::id(),

@@ -153,7 +153,7 @@
         <div class="venta-header">
             {{ $ventaData['venta']->numero_venta }} —
             {{ $ventaData['vehiculo']->marca }} {{ $ventaData['vehiculo']->modelo }}
-            ({{ $ventaData['vehiculo']->año }}) | Chasis: {{ $ventaData['vehiculo']->numero_chasis }}
+            ({{ $ventaData['vehiculo']->anio }}) | Chasis: {{ $ventaData['vehiculo']->numero_chasis }}
         </div>
 
         <table class="cuotas">

@@ -19,7 +19,7 @@ class StoreVehicleRequest extends FormRequest
             'numero_chasis'       => 'required|string|max:17|unique:vehiculos,numero_chasis',
             'marca'               => 'required|string|max:80',
             'modelo'              => 'required|string|max:80',
-            'año'                 => 'required|integer|min:1980|max:' . (date('Y') + 1),
+            'anio'                 => 'required|integer|min:1980|max:' . (date('Y') + 1),
             'color'               => 'nullable|string|max:50',
             'tipo_vehiculo'       => 'required|in:CAMION_RIGIDO,CAMION_TRACTO,SEMI_REMOLQUE,FURGON,VOLQUETE,CISTERNA,OTRO',
             'kilometraje'         => 'nullable|integer|min:0',

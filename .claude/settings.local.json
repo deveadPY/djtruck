@@ -13,7 +13,13 @@
       "Bash(xargs -I {} basename {})",
       "Bash(xargs grep *)",
       "Bash(grep -r \"sifen\\\\|SIFEN\" /c/xampp/htdocs/djtrucks/storage/app/public/sifen -type f)",
-      "Bash(composer remove *)"
+      "Bash(composer remove *)",
+      "Bash(git rm *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe --version)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysqld.exe\" --defaults-file=\"C:\\\\xampp\\\\mysql\\\\bin\\\\my.ini\" --standalone 2>&1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/djtrucks/public/\")",
+      "PowerShell($f = \"C:\\\\Users\\\\NEUPAR\\\\Downloads\\\\djtrcks.sql\"; [Math]::Round\\(\\(Get-Item $f\\).Length / 1MB, 2\\))",
+      "Bash(grep -v \"views_backup\\\\|#\\\\|//\")"
     ]
   }
 }

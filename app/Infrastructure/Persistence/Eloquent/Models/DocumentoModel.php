@@ -15,12 +15,12 @@ class DocumentoModel extends Model
     protected $table    = 'documentos';
     protected $fillable = [
         'documentable_type', 'documentable_id',
-        'ruta', 'nombre_original', 'mime_type', 'tamaño_bytes',
+        'ruta', 'nombre_original', 'mime_type', 'tamano_bytes',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
     protected $casts = [
-        'tamaño_bytes' => 'integer',
+        'tamano_bytes' => 'integer',
         'deleted_at'   => 'datetime',
     ];
 
@@ -34,9 +34,9 @@ class DocumentoModel extends Model
         return asset($this->ruta);
     }
 
-    public function getTamañoFormateadoAttribute(): string
+    public function getTamanoFormateadoAttribute(): string
     {
-        $bytes = $this->tamaño_bytes;
+        $bytes = $this->tamano_bytes;
         if ($bytes >= 1048576) return round($bytes / 1048576, 1) . ' MB';
         if ($bytes >= 1024) return round($bytes / 1024, 1) . ' KB';
         return $bytes . ' B';
