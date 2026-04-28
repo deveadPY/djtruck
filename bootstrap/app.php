@@ -75,4 +75,5 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 422);
         });
     })
-    ->create();
+    ->create()
+    ->tap(fn ($app) => $app->usePublicPath(dirname(__DIR__).'/public_html'));

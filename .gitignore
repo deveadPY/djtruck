@@ -1,6 +1,6 @@
 /node_modules
-/public/hot
-/public/storage
+/public_html/hot
+/public_html/storage
 /storage/*.key
 /storage/logs/*.log
 /storage/debugbar
@@ -30,8 +30,8 @@ Thumbs.db
 /storage/certs/*.crt
 
 # Uploads
-/public/uploads/*
-!/public/uploads/.gitkeep
+/public_html/uploads/*
+!/public_html/uploads/.gitkeep
 
 # Framework cache
 /bootstrap/cache/*.php
