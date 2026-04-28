@@ -19,6 +19,7 @@ use App\Domain\Sales\Events\Listeners\SendSaleCompletedEmail;
 use App\Domain\Sales\Events\Listeners\SendOverdueInstallmentNotification;
 use App\Infrastructure\Persistence\Eloquent\Models\VehicleModel;
 use App\Infrastructure\Persistence\Eloquent\Models\RepuestoModel;
+use App\Infrastructure\Services\ClienteCreditService;
 use Illuminate\Support\Facades\Event;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Singleton de Caja — gestión de Caja Chica y Caja Capital
         $this->app->singleton(CajaService::class);
+
+        // Cálculo de crédito/deuda activa de clientes
+        $this->app->singleton(ClienteCreditService::class);
     }
 
     public function boot(): void
