@@ -173,11 +173,20 @@ class VentaWebController extends Controller
 
         $data['vendedor_id'] = Auth::id();
         $data['created_by']  = Auth::id();
-        $data['numero_venta'] = 'V-' . date('Ym') . '-' . str_pad(DB::table('ventas')->count() + 1, 4, '0', STR_PAD_LEFT);
 
         DB::beginTransaction();
         try {
-            $ventaId = DB::table('ventas')->insertGetId($data + ['created_at' => now(), 'updated_at' => now()]);
+            // Insertar sin número primero para obtener el ID autoincremental
+            $ventaId = DB::table('ventas')->insertGetId($data + [
+                'numero_venta' => '',
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ]);
+
+            // Número basado en el PK: garantiza unicidad sin locks adicionales
+            $numeroVenta = 'V-' . date('Ym') . '-' . str_pad($ventaId, 4, '0', STR_PAD_LEFT);
+            DB::table('ventas')->where('id', $ventaId)->update(['numero_venta' => $numeroVenta]);
+            $data['numero_venta'] = $numeroVenta;
 
             // ── Save Sale Items ─────────────────────────────────────────────
             foreach ($items as $item) {

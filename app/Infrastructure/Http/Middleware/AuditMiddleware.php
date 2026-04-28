@@ -21,16 +21,3 @@ class AuditMiddleware
     }
 }
 
-class ApiAuthMiddleware
-{
-    public function handle(Request $request, Closure $next): Response
-    {
-        if (!$request->user()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No autenticado. Incluya el token Bearer en el header Authorization.',
-            ], 401);
-        }
-        return $next($request);
-    }
-}
