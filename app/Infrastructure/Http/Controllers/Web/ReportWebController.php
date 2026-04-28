@@ -216,7 +216,7 @@ class ReportWebController extends Controller
         $rows = DB::table('vehiculos')
             ->whereNotIn('estado', ['VENDIDO', 'BAJA'])
             ->whereNull('deleted_at')
-            ->select(['numero_chasis', 'marca', 'modelo', 'año', 'estado', 'costo_origen_usd', 'total_gastos_usd', DB::raw('costo_origen_usd + total_gastos_usd as valor_libro_usd'), 'precio_venta_sugerido_usd'])
+            ->select(['numero_chasis', 'marca', 'modelo', 'anio', 'estado', 'costo_origen_usd', 'total_gastos_usd', DB::raw('costo_origen_usd + total_gastos_usd as valor_libro_usd'), 'precio_venta_sugerido_usd'])
             ->orderBy('estado')
             ->get()
             ->map(fn($r) => (array) $r)

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->string('ruta', 500);
             $table->string('nombre_original', 255);
             $table->string('mime_type', 100)->nullable();
-            $table->unsignedBigInteger('tamaño_bytes')->nullable();
+            $table->unsignedBigInteger('tamano_bytes')->nullable();
             $table->string('descripcion', 255)->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();

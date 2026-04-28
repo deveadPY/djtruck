@@ -155,17 +155,6 @@
                                 class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4">
                         </div>
 
-                        <div class="lg:col-span-2 space-y-2">
-                            <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Número de Timbrado SIFEN</label>
-                            <input type="text" name="timbrado" value="{{ old('timbrado', $empresa?->timbrado) }}" maxlength="20" placeholder="12345678"
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
-                        </div>
-
-                        <div class="lg:col-span-2 space-y-2">
-                            <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Vigencia del Timbrado</label>
-                            <input type="date" name="vigencia_timbrado" value="{{ old('vigencia_timbrado', $empresa?->vigencia_timbrado?->format('Y-m-d')) }}"
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
-                        </div>
                     </div>
                 </div>
 

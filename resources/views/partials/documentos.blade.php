@@ -126,9 +126,9 @@ $documentableId — ID del registro
                             </td>
                             <td class="text-xs" style="color:var(--text-muted)">{{ $doc->descripcion ?? '—' }}</td>
                             <td class="text-xs" style="color:var(--text-muted)">
-                                @if($doc->tamaño_bytes)
+                                @if($doc->tamano_bytes)
                                     @php
-                                        $size = $doc->tamaño_bytes;
+                                        $size = $doc->tamano_bytes;
                                         $sizeStr = $size >= 1048576 ? number_format($size / 1048576, 1) . ' MB' : ($size >= 1024 ? number_format($size / 1024, 0) . ' KB' : $size . ' B');
                                     @endphp
                                     {{ $sizeStr }}

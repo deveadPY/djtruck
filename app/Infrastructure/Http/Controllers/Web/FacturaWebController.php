@@ -147,7 +147,7 @@ class FacturaWebController extends Controller
                         'ruta'              => $uploadDir . '/' . $nombre,
                         'nombre_original'   => $originalName,
                         'mime_type'         => $mimeType,
-                        'tamaño_bytes'      => $fileSize,
+                        'tamano_bytes'      => $fileSize,
                         'descripcion'       => $documentosDesc,
                         'created_by'        => Auth::id(),
                         'created_at'        => now(),

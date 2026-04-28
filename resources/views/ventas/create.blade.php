@@ -104,7 +104,7 @@
                                 data-precio-contado="{{ $v->precio_contado_usd ?? 0 }}"
                                 data-precio-cuotas="{{ $v->precio_cuotas_usd ?? 0 }}"
                                 data-marca="{{ $v->marca }}"
-                                data-modelo="{{ $v->modelo }}" data-chasis="{{ $v->numero_chasis }}" data-año="{{ $v->año }}"
+                                data-modelo="{{ $v->modelo }}" data-chasis="{{ $v->numero_chasis }}" data-anio="{{ $v->anio }}"
                                 data-estado="{{ $v->estado }}" data-color="{{ $v->color }}" data-km="{{ $v->kilometraje }}"
                                 onclick="addItemToVenta('camion', this)">
 
@@ -113,7 +113,7 @@
                                         <div class="font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors">
                                             {{ $v->marca }} {{ $v->modelo }}
                                         </div>
-                                        <div class="text-[0.65rem] text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider">{{ $v->año }} · {{ $v->color ?? 'N/D' }}</div>
+                                        <div class="text-[0.65rem] text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider">{{ $v->anio }} · {{ $v->color ?? 'N/D' }}</div>
                                     </div>
                                     <span class="px-2 py-0.5 border rounded-full text-[0.55rem] font-bold tracking-wider {{ $badgeColor }} uppercase">{{ $v->estado }}</span>
                                 </div>
@@ -884,7 +884,7 @@
                 document.getElementById('btnStep1Next').disabled = false;
                 selectedVehiculo = {
                     id: el.dataset.id, marca: el.dataset.marca, modelo: el.dataset.modelo,
-                    chasis: el.dataset.chasis, año: el.dataset.año, costo: parseFloat(el.dataset.costo),
+                    chasis: el.dataset.chasis, año: el.dataset.anio, costo: parseFloat(el.dataset.costo),
                     precioSugerido: parseFloat(el.dataset.precioSugerido) || 0,
                     precioContado: parseFloat(el.dataset.precioContado) || 0,
                     precioCuotas: parseFloat(el.dataset.precioCuotas) || 0,
@@ -908,17 +908,23 @@
             }
 
             function _autoFillPrecioFromModalidad() {
-                if (!selectedVehiculo) return;
                 const modalidad = document.getElementById('modalidad_pago').value;
-                let precio = modalidad === 'CONTADO' ? selectedVehiculo.precioContado : selectedVehiculo.precioCuotas;
-                if (precio <= 0) precio = selectedVehiculo.precioSugerido; // fallback
 
-                // Update the camion item price in the cart
-                const camionItem = itemsVenta.find(i => i.type === 'camion');
-                if (camionItem && precio > 0) {
-                    camionItem.precio_unitario_usd = precio;
-                    renderCart(); // Re-render cart with new price (this also updates Step 3 inputs)
-                } else if (precio > 0) {
+                // Update price of every camion in the cart according to modalidad
+                let updated = false;
+                itemsVenta.forEach(item => {
+                    if (item.type !== 'camion') return;
+                    let precio = modalidad === 'CONTADO' ? item.precioContado : item.precioCuotas;
+                    if (!precio || precio <= 0) precio = item.precioSugerido;
+                    if (precio > 0) { item.precio_unitario_usd = precio; updated = true; }
+                });
+                if (updated) { renderCart(); return; }
+
+                // No camion in cart yet — fall back to last-selected vehicle snapshot
+                if (!selectedVehiculo) return;
+                let precio = modalidad === 'CONTADO' ? selectedVehiculo.precioContado : selectedVehiculo.precioCuotas;
+                if (precio <= 0) precio = selectedVehiculo.precioSugerido;
+                if (precio > 0) {
                     const selectMoneda = document.querySelector('select[name="moneda_venta"]');
                     if (selectMoneda) selectMoneda.value = 'USD';
                     const inputMoneda = document.querySelector('input[name="precio_venta_moneda"]');
@@ -1343,12 +1349,15 @@
 
             function addItemToVenta(type, el) {
                 const id = el.dataset.id;
-                
+
                 if (type === 'camion') {
-                    // Only one vehicle allowed per sale in this simplified model for now
-                    // Remove previous vehicle if exists
-                    itemsVenta = itemsVenta.filter(i => i.type !== 'camion');
-                    
+                    // Prevent adding the same vehicle twice
+                    if (itemsVenta.find(i => i.type === 'camion' && i.id === id)) {
+                        el.classList.add('ring-2', 'ring-amber-400');
+                        setTimeout(() => el.classList.remove('ring-2', 'ring-amber-400'), 700);
+                        return;
+                    }
+
                     itemsVenta.push({
                         type: 'camion',
                         id: id,
@@ -1356,14 +1365,17 @@
                         cantidad: 1,
                         precio_unitario_usd: parseFloat(el.dataset.precioContado) || parseFloat(el.dataset.precioSugerido) || 0,
                         costo_usd: parseFloat(el.dataset.costo) || 0,
+                        precioContado: parseFloat(el.dataset.precioContado) || 0,
+                        precioCuotas: parseFloat(el.dataset.precioCuotas) || 0,
+                        precioSugerido: parseFloat(el.dataset.precioSugerido) || 0,
                     });
-                    
-                    // Highlight visually
-                    document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
+
+                    // Mark this card as selected (multiple allowed)
                     el.classList.add('selected');
+                    // Keep vehiculo_id pointing to the most recently added vehicle (backward compat)
                     document.getElementById('vehiculo_id_input').value = id;
-                    
-                    // Update vehicle snapshot for rent calculation (include pricing for modalidad switch)
+
+                    // Track last-selected vehicle for price labels and modalidad switch
                     selectedVehiculo = {
                         id: id, marca: el.dataset.marca, modelo: el.dataset.modelo,
                         chasis: el.dataset.chasis, costo: parseFloat(el.dataset.costo),
@@ -1411,9 +1423,15 @@
             function removeItemFromCart(index) {
                 const item = itemsVenta[index];
                 if (item.type === 'camion') {
-                    document.getElementById('vehiculo_id_input').value = '';
-                    document.querySelectorAll('.vehicle-card.selected').forEach(c => c.classList.remove('selected'));
-                    selectedVehiculo = null;
+                    // Deselect only this vehicle's card
+                    document.querySelectorAll(`.vehicle-card[data-id="${item.id}"]`).forEach(c => c.classList.remove('selected'));
+                    itemsVenta.splice(index, 1);
+                    // Point vehiculo_id at the next camion in cart, or clear it
+                    const nextCamion = itemsVenta.find(i => i.type === 'camion');
+                    document.getElementById('vehiculo_id_input').value = nextCamion ? nextCamion.id : '';
+                    if (!nextCamion) selectedVehiculo = null;
+                    renderCart();
+                    return;
                 }
                 itemsVenta.splice(index, 1);
                 renderCart();
@@ -1503,6 +1521,18 @@
                 }
                 
                 calcRent();
+                _syncVehicleCardStates();
+            }
+
+            function _syncVehicleCardStates() {
+                const inCartIds = new Set(itemsVenta.filter(i => i.type === 'camion').map(i => i.id));
+                document.querySelectorAll('#item-grid-camiones .vehicle-card').forEach(card => {
+                    if (inCartIds.has(card.dataset.id)) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
             }
 
             function calcularPrecioMonedaDesdeUsd() {

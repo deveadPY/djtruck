@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk -F. '{print $NF}')",
+      "Bash(mkdir -p public/uploads storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views storage/logs storage/certs)",
+      "Bash(touch public/uploads/.gitkeep storage/framework/cache/.gitkeep storage/framework/sessions/.gitkeep storage/framework/testing/.gitkeep storage/framework/views/.gitkeep storage/logs/.gitkeep)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(git remote *)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(xargs grep *)",
+      "Bash(grep -r \"sifen\\\\|SIFEN\" /c/xampp/htdocs/djtrucks/storage/app/public/sifen -type f)",
+      "Bash(composer remove *)",
+      "Bash(git rm *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe --version)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysqld.exe\" --defaults-file=\"C:\\\\xampp\\\\mysql\\\\bin\\\\my.ini\" --standalone 2>&1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/djtrucks/public/\")",
+      "PowerShell($f = \"C:\\\\Users\\\\NEUPAR\\\\Downloads\\\\djtrcks.sql\"; [Math]::Round\\(\\(Get-Item $f\\).Length / 1MB, 2\\))",
+      "Bash(grep -v \"views_backup\\\\|#\\\\|//\")"
+    ]
+  }
+}

@@ -84,11 +84,11 @@ return new class extends Migration {
             $table->string('numero_serie', 50)->nullable();
             $table->string('marca', 80);
             $table->string('modelo', 80);
-            $table->smallInteger('año');
+            $table->smallInteger('anio');
             $table->string('color', 50)->nullable();
             $table->enum('tipo_vehiculo', ['CAMION_RIGIDO','CAMION_TRACTO','SEMI_REMOLQUE','FURGON','VOLQUETE','CISTERNA','OTRO'])->default('CAMION_RIGIDO');
             $table->decimal('capacidad_toneladas', 8, 2)->nullable();
-            $table->smallInteger('año_fabricacion')->nullable();
+            $table->smallInteger('anio_fabricacion')->nullable();
             $table->char('pais_origen', 2)->nullable();
             $table->unsignedInteger('kilometraje')->default(0);
             $table->enum('estado', ['EN_TRANSITO','EN_ADUANA','EN_PREPARACION','DISPONIBLE','RESERVADO','VENDIDO','TOMA','BAJA'])->default('EN_TRANSITO');

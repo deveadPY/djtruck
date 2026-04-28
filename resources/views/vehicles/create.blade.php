@@ -80,7 +80,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Año *</label>
-                        <input type="number" name="año" value="{{ old('año', date('Y')) }}" min="1980" max="2030" required
+                        <input type="number" name="anio" value="{{ old('anio', date('Y')) }}" min="1980" max="2030" required
                             class="form-input">
                     </div>
                     <div class="form-group">

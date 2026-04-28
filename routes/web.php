@@ -20,7 +20,6 @@ use App\Infrastructure\Http\Controllers\Web\UserController;
 use App\Infrastructure\Http\Controllers\Web\NotificacionesWebController;
 use App\Infrastructure\Http\Controllers\Web\EmailConfiguracionController;
 use App\Infrastructure\Http\Controllers\Web\ReportWebController;
-use App\Infrastructure\Http\Controllers\Web\SifenWebController;
 use App\Infrastructure\Http\Controllers\Web\CompraWebController;
 
 Route::get('/', fn() => redirect('/dashboard'));
@@ -297,16 +296,4 @@ Route::middleware('auth')->group(function () {
         Route::get('/reportes/export/{tipo}', [ReportWebController::class, 'export'])->name('reportes.export');
     });
 
-    // ══════════════════════════════════════════════════════════════════════
-    // SIFEN — ADMINISTRACIÓN WEB
-    // ══════════════════════════════════════════════════════════════════════
-    Route::middleware('permission:configuracion.ver')->group(function () {
-        Route::get('/sifen', [SifenWebController::class, 'index'])->name('sifen.index');
-    });
-    Route::middleware('permission:configuracion.editar')->group(function () {
-        Route::post('/sifen/{id}/emitir', [SifenWebController::class, 'emitir'])->name('sifen.emitir');
-        Route::post('/sifen/reintentar', [SifenWebController::class, 'reintentarPendientes'])->name('sifen.reintentar');
-        Route::get('/sifen/{id}/kude', [SifenWebController::class, 'downloadKude'])->name('sifen.kude');
-        Route::get('/sifen/{id}/xml', [SifenWebController::class, 'downloadXml'])->name('sifen.xml');
-    });
 });

@@ -18,7 +18,7 @@ class VehicleModel extends Model
 
     protected $fillable = [
         'numero_chasis', 'numero_motor', 'numero_serie', 'marca', 'modelo',
-        'año', 'color', 'tipo_vehiculo', 'capacidad_toneladas', 'año_fabricacion',
+        'anio', 'color', 'tipo_vehiculo', 'capacidad_toneladas', 'anio_fabricacion',
         'pais_origen', 'kilometraje', 'estado', 'ubicacion',
         'moneda_costo', 'costo_origen_usd', 'costo_origen_moneda', 'tasa_cambio_compra',
         'total_gastos_usd', 'precio_venta_sugerido_usd', 'margen_objetivo_pct',

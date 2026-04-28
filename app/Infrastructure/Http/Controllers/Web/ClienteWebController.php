@@ -64,7 +64,7 @@ class ClienteWebController extends Controller
                     'ruta' => $uploadDir . '/' . $nombre,
                     'nombre_original' => $nombreOriginal,
                     'mime_type' => $mimeType,
-                    'tamaño_bytes' => $tamano,
+                    'tamano_bytes' => $tamano,
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                     'updated_at' => now(),

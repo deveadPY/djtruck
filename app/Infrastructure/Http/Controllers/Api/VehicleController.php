@@ -36,7 +36,7 @@ final class VehicleController extends BaseApiController
             'numero_chasis'    => 'required|string|max:17|unique:vehiculos,numero_chasis',
             'marca'            => 'required|string|max:80',
             'modelo'           => 'required|string|max:80',
-            'año'              => 'required|integer|min:1950|max:' . (date('Y') + 2),
+            'anio'              => 'required|integer|min:1950|max:' . (date('Y') + 2),
             'moneda_costo'     => 'required|in:USD,PYG,BRL',
             'costo_origen_moneda' => 'required|numeric|min:0',
             'proveedor_id'     => 'nullable|exists:proveedores,id',

@@ -32,7 +32,7 @@ class SendSaleCompletedEmail
                 'numero_venta'    => $venta->numero_venta   ?? "#{$event->saleId}",
                 'vehiculo_marca'  => $vehiculo->marca       ?? '',
                 'vehiculo_modelo' => $vehiculo->modelo      ?? '',
-                'vehiculo_anio'   => $vehiculo->año         ?? '',
+                'vehiculo_anio'   => $vehiculo->anio         ?? '',
                 'total_usd'       => number_format((float) $event->totalUsd, 2, ',', '.'),
                 'fecha_venta'     => $venta && $venta->fecha_venta
                     ? Carbon::parse($venta->fecha_venta)->format('d/m/Y')

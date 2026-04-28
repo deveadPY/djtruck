@@ -1,11 +1,10 @@
 {
     "name": "erp/camiones-repuestos",
-    "description": "ERP para Venta de Camiones y Repuestos con soporte SIFEN Paraguay",
+    "description": "ERP para Venta de Camiones y Repuestos — Paraguay",
     "keywords": [
         "erp",
         "camiones",
         "repuestos",
-        "sifen",
         "paraguay",
         "ddd"
     ],
@@ -20,7 +19,6 @@
         "predis/predis": "^2.2",
         "league/fractal": "^0.20",
         "simplesoftwareio/simple-qrcode": "^4.2",
-        "robrichards/xmlseclibs": "^3.1",
         "spatie/laravel-activitylog": "^4.7",
         "spatie/laravel-permission": "^6.0",
         "maatwebsite/excel": "^3.1",

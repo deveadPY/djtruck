@@ -67,7 +67,7 @@
                                     </div>
                                     <div>
                                         <div class="text-xs font-black text-white uppercase tracking-tight">{{ $venta->vehiculo->marca }} {{ $venta->vehiculo->modelo }}</div>
-                                        <div class="text-[0.6rem] font-black text-muted-foreground uppercase opacity-60">Año {{ $venta->vehiculo->año }}</div>
+                                        <div class="text-[0.6rem] font-black text-muted-foreground uppercase opacity-60">Año {{ $venta->vehiculo->anio }}</div>
                                     </div>
                                 </div>
                                 <div class="p-3 rounded-xl bg-surface2 border border-white/5">

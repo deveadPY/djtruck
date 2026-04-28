@@ -31,7 +31,7 @@
     <div class="erp-card">
         <div class="erp-card-header">
             <div class="flex items-center gap-3">
-                <h2>{{ $vehiculo->marca }} {{ $vehiculo->modelo }} — {{ $vehiculo->año }}</h2>
+                <h2>{{ $vehiculo->marca }} {{ $vehiculo->modelo }} — {{ $vehiculo->anio }}</h2>
                 @php $cls = match ($vehiculo->estado) { 'DISPONIBLE' => 'badge-disponible', 'EN_PREPARACION' => 'badge-preparacion', 'TOMA' => 'badge-toma', default => 'badge-vendido'}; @endphp
                 <span class="badge-status {{ $cls }}">{{ $vehiculo->estado }}</span>
             </div>

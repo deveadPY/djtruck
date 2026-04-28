@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\View;
 use App\Infrastructure\Settings\EmpresaSettings;
 use App\Infrastructure\Currency\CurrencyConverter;
 use App\Domain\Sales\Services\InstallmentGenerator;
-use App\Infrastructure\SIFEN\ElectronicInvoicingService;
-use App\Infrastructure\SIFEN\Schema\SifenXmlBuilder;
-use App\Infrastructure\SIFEN\Schema\CdcGenerator;
-use App\Infrastructure\SIFEN\Signature\XmlDsigSigner;
-use App\Infrastructure\SIFEN\Validators\SifenResponseValidator;
 use App\Infrastructure\Mail\EmailSenderService;
 use App\Domain\Finance\Services\CajaService;
 use App\Domain\Sales\Events\SaleCompleted;
@@ -30,15 +25,6 @@ class AppServiceProvider extends ServiceProvider
         // Singletons de servicios core
         $this->app->singleton(CurrencyConverter::class, fn() => new CurrencyConverter());
         $this->app->singleton(InstallmentGenerator::class, fn() => new InstallmentGenerator());
-
-        $this->app->singleton(ElectronicInvoicingService::class, function () {
-            return new ElectronicInvoicingService(
-                new SifenXmlBuilder(),
-                new CdcGenerator(),
-                new XmlDsigSigner(),
-                new SifenResponseValidator(),
-            );
-        });
 
         // Singleton del servicio de envío de emails (inyectado en controllers y listeners)
         $this->app->singleton(EmailSenderService::class);

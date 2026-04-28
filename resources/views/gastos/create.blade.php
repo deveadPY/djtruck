@@ -12,7 +12,7 @@
     <div class="vehiculo-badge">
         <span style="font-size:2rem">🚛</span>
         <div>
-            <div style="font-weight:700">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} ({{ $vehiculo->año }})</div>
+            <div style="font-weight:700">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} ({{ $vehiculo->anio }})</div>
             <div style="font-size:.78rem;color:var(--text-muted)">Chasis: {{ $vehiculo->numero_chasis }} | Valor libro
                 actual: <strong style="color:var(--accent)">$
                     {{ number_format($vehiculo->costo_origen_usd + $vehiculo->total_gastos_usd, 2, ',', '.') }} USD</strong></div>

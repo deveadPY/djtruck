@@ -32,8 +32,6 @@ class ConfiguracionController extends Controller
             'moneda_base'       => 'required|in:USD,PYG,BRL',
             'prefijo_venta'     => 'required|string|max:5',
             'prefijo_factura'   => 'required|string|max:5',
-            'timbrado'          => 'nullable|string|max:20',
-            'vigencia_timbrado' => 'nullable|date',
             'logo'              => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
         ]);
 
