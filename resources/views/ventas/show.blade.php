@@ -32,13 +32,6 @@
                 </svg>
                 Imprimir Nota
             </a>
-            @if($venta->tiene_factura_electronica)
-                <div class="p-3 rounded-xl bg-accent/10 border border-accent/20 text-accent" title="Factura Electrónica Emitida">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </div>
-            @endif
         </div>
     </div>
 
