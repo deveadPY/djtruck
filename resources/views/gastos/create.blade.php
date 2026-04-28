@@ -125,7 +125,7 @@
         async function fetchRates() {
             try {
                 const fecha = document.querySelector('input[name="fecha_gasto"]').value || new Date().toISOString().split('T')[0];
-                const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${fecha}`);
+                const res = await fetch(`{{ route('cotizaciones.tasas-hoy') }}?fecha=${fecha}`);
                 const data = await res.json();
                 currentRates = data;
                 calcularTotalUsd();
