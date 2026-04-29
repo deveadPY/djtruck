@@ -19,6 +19,8 @@ use App\Domain\Sales\Events\Listeners\SendSaleCompletedEmail;
 use App\Domain\Sales\Events\Listeners\SendOverdueInstallmentNotification;
 use App\Infrastructure\Persistence\Eloquent\Models\VehicleModel;
 use App\Infrastructure\Persistence\Eloquent\Models\RepuestoModel;
+use App\Application\Sales\PayInstallmentUseCase;
+use App\Application\Sales\ProcessSaleUseCase;
 use App\Infrastructure\Services\ClienteCreditService;
 use Illuminate\Support\Facades\Event;
 
@@ -38,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Cálculo de crédito/deuda activa de clientes
         $this->app->singleton(ClienteCreditService::class);
+
+        // Application layer use cases — singletons para reutilización del grafo de dependencias
+        $this->app->singleton(ProcessSaleUseCase::class);
+        $this->app->singleton(PayInstallmentUseCase::class);
     }
 
     public function boot(): void

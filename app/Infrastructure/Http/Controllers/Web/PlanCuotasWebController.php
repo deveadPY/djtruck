@@ -2,12 +2,15 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Application\Sales\DTOs\PayInstallmentData;
+use App\Application\Sales\PayInstallmentUseCase;
 use App\Domain\Finance\Services\CajaService;
 use App\Domain\Sales\Services\InstallmentGenerator;
 use App\Domain\Sales\ValueObjects\InstallmentPlan;
 use App\Domain\Shared\ValueObjects\Currency;
 use App\Domain\Shared\ValueObjects\Money;
 use App\Infrastructure\Http\Requests\PayInstallmentRequest;
+use App\Infrastructure\Http\Requests\StorePlanCuotasRequest;
 use App\Infrastructure\Settings\EmpresaSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Routing\Controller;
@@ -21,6 +24,7 @@ class PlanCuotasWebController extends Controller
     public function __construct(
         private readonly CajaService          $cajaService,
         private readonly InstallmentGenerator $installmentGenerator,
+        private readonly PayInstallmentUseCase $payInstallment,
     ) {}
 
     public function create($ventaId)
@@ -32,19 +36,9 @@ class PlanCuotasWebController extends Controller
         return view('planes_cuotas.create', compact('venta', 'vehiculos_canje'));
     }
 
-    public function store(Request $request, $ventaId)
+    public function store(StorePlanCuotasRequest $request, $ventaId)
     {
-        $data = $request->validate([
-            'tipo_plan' => 'required|in:FRANCESA,ALEMANA,MANUAL',
-            'moneda' => 'required|string|max:3',
-            'capital_total' => 'required|numeric|min:0',
-            'capital_total_usd' => 'required|numeric|min:0',
-            'numero_cuotas' => 'nullable|integer|min:1|max:120',
-            'tasa_interes_mensual' => 'nullable|numeric|min:0',
-            'fecha_primera_cuota' => 'nullable|date',
-            'refuerzo_cada' => 'nullable|integer|min:0',
-            'refuerzo_monto' => 'nullable|numeric|min:0',
-        ]);
+        $data = $request->validated();
 
         $venta = DB::table('ventas')->where('id', $ventaId)->firstOrFail();
 
@@ -204,45 +198,17 @@ class PlanCuotasWebController extends Controller
         return $pdf->stream("recibo-cuota-{$cuotaId}.pdf");
     }
 
-    public function pagarCuota(PayInstallmentRequest $request, $cuotaId)
+    public function pagarCuota(PayInstallmentRequest $request, $cuotaId): \Illuminate\Http\RedirectResponse
     {
-        // ── Guard: evitar doble pago ─────────────────────────────────────────
-        $cuota = DB::table('cuotas')->where('id', $cuotaId)->whereNull('deleted_at')->firstOrFail();
-
-        if ($cuota->estado === 'PAGADA') {
-            return back()->with('info', 'Esta cuota ya estaba registrada como pagada.');
-        }
-
-        DB::table('cuotas')->where('id', $cuotaId)->update([
-            'estado' => 'PAGADA',
-            'fecha_pago_efectivo' => $request->fecha_pago,
-            'monto_pagado' => $request->monto_pagado,
-            'updated_at' => now(),
-            'updated_by' => Auth::id(),
-        ]);
-
-        // ── Registrar ingreso en Caja Capital por cobro de cuota ──
-        $cuota = DB::table('cuotas')->where('id', $cuotaId)->first();
-        $venta = DB::table('ventas')->where('id', $cuota->venta_id)->first();
         try {
-            $this->cajaService->ingresoCapital(
-                "Cobro cuota #{$cuota->numero_cuota}/{$cuota->total_cuotas} — Venta {$venta->numero_venta}",
-                'USD',
-                (float) $request->monto_pagado,
-                (float) $request->monto_pagado,
-                (int) $cuotaId,
-                'cuota'
-            );
-        } catch (\RuntimeException $e) {
-            Log::warning('PlanCuotasWebController pagarCuota: no se pudo registrar movimiento en caja: ' . $e->getMessage());
-        }
-
-        // ── Enviar recibo de pago al cliente por email (falla silenciosamente) ──
-        try {
-            app(\App\Domain\Sales\Events\Listeners\SendCuotaPagadaEmail::class)
-                ->sendRecibo((int) $cuotaId, (int) Auth::id());
-        } catch (\Throwable) {
-            // Never let an email failure break the payment flow
+            $this->payInstallment->execute(new PayInstallmentData(
+                cuotaId:     (int) $cuotaId,
+                montoPagado: (float) $request->monto_pagado,
+                fechaPago:   $request->fecha_pago,
+                userId:      (int) Auth::id(),
+            ));
+        } catch (\DomainException $e) {
+            return back()->with('info', $e->getMessage());
         }
 
         return back()->with('success', 'Cuota marcada como pagada.')->with('show_print_cuota', $cuotaId);

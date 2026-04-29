@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Http\Controllers\Web;
 
 use App\Domain\Finance\Services\CajaService;
+use App\Infrastructure\Http\Requests\StoreFacturaRequest;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,26 +47,9 @@ class FacturaWebController extends Controller
         return view('facturas.create', compact('proveedores', 'vehiculos'));
     }
 
-    public function store(Request $request)
+    public function store(StoreFacturaRequest $request)
     {
-        $data = $request->validate([
-            'proveedor_id'            => 'required|integer|exists:proveedores,id',
-            'numero_factura'          => 'required|string|max:50',
-            'fecha_factura'           => 'required|date',
-            'destino'                 => 'required|in:GASTO_OPERATIVO,VEHICULO,MIXTO',
-            'vehiculo_id'             => 'required_if:destino,VEHICULO|nullable|integer|exists:vehiculos,id',
-            'cuenta_gasto'            => 'nullable|string|max:100',
-            'moneda'                  => 'required|string|max:3',
-            'subtotal'                => 'required|numeric|min:0',
-            'impuestos'               => 'nullable|numeric|min:0',
-            'total_usd'               => 'required|numeric|min:0',
-            'estado'                  => 'required|string',
-            'descripcion'             => 'nullable|string',
-            'categoria_gasto'         => 'nullable|string',
-            'documentos'              => 'nullable|array|max:10',
-            'documentos.*'            => 'file|max:20480',
-            'documentos_descripcion'  => 'nullable|string|max:255',
-        ]);
+        $data = $request->validated();
 
         $data['impuestos'] = $data['impuestos'] ?? 0;
         $data['created_by'] = Auth::id();

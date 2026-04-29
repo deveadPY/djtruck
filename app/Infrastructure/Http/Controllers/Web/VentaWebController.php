@@ -2,11 +2,9 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
-use App\Domain\Finance\Services\CajaService;
-use App\Domain\Sales\Services\InstallmentGenerator;
-use App\Domain\Sales\ValueObjects\InstallmentPlan;
-use App\Domain\Shared\ValueObjects\Currency;
-use App\Domain\Shared\ValueObjects\Money;
+use App\Application\Sales\DTOs\ProcessSaleData;
+use App\Application\Sales\ProcessSaleUseCase;
+use App\Domain\Shared\Exceptions\InsufficientCreditException;
 use App\Infrastructure\Http\Requests\StoreSaleRequest;
 use App\Infrastructure\Services\ClienteCreditService;
 use App\Infrastructure\Settings\EmpresaSettings;
@@ -20,8 +18,7 @@ use Illuminate\Support\Facades\Log;
 class VentaWebController extends Controller
 {
     public function __construct(
-        private readonly CajaService          $cajaService,
-        private readonly InstallmentGenerator $installmentGenerator,
+        private readonly ProcessSaleUseCase   $processSale,
         private readonly ClienteCreditService $creditService,
     ) {}
 
@@ -103,240 +100,19 @@ class VentaWebController extends Controller
         return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'vehiculos_canje', 'repuestos'));
     }
 
-    public function store(StoreSaleRequest $request)
+    public function store(StoreSaleRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $data = $request->validated();
-
-        $modalidad = $data['modalidad_pago'];
-
-        // ── Descuento ──────────────────────────────────────────────────────
-        $data['descuento_moneda'] = floatval($data['descuento_moneda'] ?? 0);
-        $data['descuento_usd']    = floatval($data['descuento_usd'] ?? 0);
-        $precioFinalUsd = max(0, $data['precio_venta_usd'] - $data['descuento_usd']);
-
-        // ── Validar línea de crédito para ventas a cuotas ─────────────────
-        if ($modalidad === 'CUOTAS') {
-            $capitalTotalUsdEstimado = floatval($request->input('capital_total_usd', 0));
-            if ($capitalTotalUsdEstimado <= 0) {
-                $totalPagosIniciales = array_sum(array_map(
-                    fn($p) => floatval($p['monto_usd'] ?? 0),
-                    $request->input('pagos', [])
-                ));
-                $capitalTotalUsdEstimado = max(0, $precioFinalUsd - $totalPagosIniciales);
-            }
-
-            $cliente      = DB::table('clientes')->where('id', $data['cliente_id'])->first();
-            $lineaCredito = floatval($cliente->linea_credito_usd ?? 0);
-
-            if ($lineaCredito > 0) {
-                $creditoDisponible = $this->creditService->creditoDisponibleUsd(
-                    $data['cliente_id'],
-                    $lineaCredito
-                );
-
-                if ($capitalTotalUsdEstimado > $creditoDisponible) {
-                    return back()->withInput()->withErrors([
-                        'capital_total_usd' => sprintf(
-                            'El capital a financiar (USD %.2f) supera la línea de crédito disponible del cliente (USD %.2f).',
-                            $capitalTotalUsdEstimado,
-                            $creditoDisponible
-                        ),
-                    ]);
-                }
-            }
-        }
-
-        // ── Métricas del carrito ──────────────────────────────────────────
-        $tipoPlan        = $request->input('tipo_plan', 'MANUAL');
-        $capitalTotalUsd = floatval($request->input('capital_total_usd', 0));
-        unset($data['tipo_plan'], $data['capital_total_usd'], $data['numero_cuotas'], $data['fecha_primera_cuota'], $data['items']);
-
-        $items = $request->input('items', []);
-        $valorLibroTotal = array_sum(array_map(
-            fn($item) => (float)($item['costo_snapshot_usd'] ?? 0) * (float)$item['cantidad'],
-            $items
-        ));
-
-        $precioNeto               = max(0, (float)$data['precio_venta_usd'] - (float)($data['descuento_usd'] ?? 0));
-        $data['valor_libro_snapshot'] = $valorLibroTotal;
-        $data['margen_bruto_usd']     = round($precioNeto - $valorLibroTotal, 4);
-        $data['margen_pct']           = $valorLibroTotal > 0
-            ? round(($data['margen_bruto_usd'] / $valorLibroTotal) * 100, 4)
-            : 0;
-
-        $data['vendedor_id'] = Auth::id();
-        $data['created_by']  = Auth::id();
-
-        DB::beginTransaction();
         try {
-            // ── Insertar venta — usar PK como secuencia única ─────────────
-            $ventaId = DB::table('ventas')->insertGetId($data + [
-                'numero_venta' => '',
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ]);
-
-            $numeroVenta = 'V-' . date('Ym') . '-' . str_pad($ventaId, 4, '0', STR_PAD_LEFT);
-            DB::table('ventas')->where('id', $ventaId)->update(['numero_venta' => $numeroVenta]);
-            $data['numero_venta'] = $numeroVenta;
-
-            // ── Ítems del carrito ─────────────────────────────────────────
-            $tasaConversion = (float)($data['tasa_cambio_venta'] ?? 1);
-            foreach ($items as $item) {
-                $precioMoneda = (float)$item['precio_unitario_usd'] * $tasaConversion;
-
-                DB::table('venta_items')->insert([
-                    'venta_id'               => $ventaId,
-                    'itemable_id'            => $item['itemable_id'],
-                    'itemable_type'          => $item['itemable_type'],
-                    'descripcion'            => $item['descripcion'] ?? 'Item sin descripción',
-                    'cantidad'               => $item['cantidad'],
-                    'precio_unitario_moneda' => $precioMoneda,
-                    'precio_unitario_usd'    => $item['precio_unitario_usd'],
-                    'subtotal_moneda'        => $precioMoneda * (float)$item['cantidad'],
-                    'subtotal_usd'           => (float)$item['precio_unitario_usd'] * (float)$item['cantidad'],
-                    'costo_snapshot_usd'     => $item['costo_snapshot_usd'] ?? 0,
-                    'created_at'             => now(),
-                    'updated_at'             => now(),
-                ]);
-
-                if ($item['itemable_type'] === 'App\\Models\\Vehicle') {
-                    DB::table('vehiculos')->where('id', $item['itemable_id'])
-                        ->update(['estado' => 'VENDIDO', 'updated_at' => now()]);
-                }
-
-                if ($item['itemable_type'] === 'App\\Models\\StockRepuesto') {
-                    DB::table('stock_repuestos')
-                        ->where('id', $item['itemable_id'])
-                        ->decrement('stock_actual', $item['cantidad']);
-                }
-            }
-
-            // ── Pagos iniciales ───────────────────────────────────────────
-            $pagos                = $request->input('pagos', []);
-            $totalMontoInicialUsd = 0;
-
-            foreach ($pagos as $pago) {
-                $montoUsd = floatval($pago['monto_usd'] ?? 0);
-                if ($montoUsd <= 0) {
-                    continue;
-                }
-                $totalMontoInicialUsd += $montoUsd;
-
-                DB::table('detalles_pago')->insert([
-                    'venta_id'           => $ventaId,
-                    'tipo_pago'          => $pago['tipo'] ?? 'EFECTIVO',
-                    'moneda'             => 'USD',
-                    'monto_moneda'       => $montoUsd,
-                    'monto_usd'          => $montoUsd,
-                    'tasa_cambio'        => 1,
-                    'vehiculo_canje_id'  => ($pago['tipo'] === 'VEHICULO_CANJE' && !empty($pago['vehiculo_canje_id']))
-                        ? $pago['vehiculo_canje_id'] : null,
-                    'referencia_bancaria' => $pago['referencia'] ?? null,
-                    'fecha_pago'         => $data['fecha_venta'],
-                    'observaciones'      => $modalidad === 'CUOTAS' ? 'Entrega inicial' : null,
-                    'created_by'         => Auth::id(),
-                    'created_at'         => now(),
-                    'updated_at'         => now(),
-                ]);
-
-                if ($pago['tipo'] === 'VEHICULO_CANJE' && !empty($pago['vehiculo_canje_id'])) {
-                    DB::table('vehiculos')->where('id', $pago['vehiculo_canje_id'])
-                        ->update(['estado' => 'TOMA', 'updated_at' => now()]);
-                }
-
-                $tipoPagoActual = $pago['tipo'] ?? 'EFECTIVO';
-                if (in_array($tipoPagoActual, ['EFECTIVO', 'TRANSFERENCIA', 'CHEQUE', 'TARJETA'])) {
-                    $modalidadLabel = $modalidad === 'CUOTAS' ? 'entrega inicial' : 'contado';
-                    $tipoLabel = match ($tipoPagoActual) {
-                        'EFECTIVO'      => 'Efectivo',
-                        'TRANSFERENCIA' => 'Transferencia',
-                        'CHEQUE'        => 'Cheque',
-                        'TARJETA'       => 'Tarjeta',
-                        default         => $tipoPagoActual,
-                    };
-                    try {
-                        $this->cajaService->ingresoCapital(
-                            "Venta {$numeroVenta} – {$tipoLabel} ({$modalidadLabel})",
-                            'USD', $montoUsd, $montoUsd, $ventaId, 'venta'
-                        );
-                    } catch (\RuntimeException $e) {
-                        Log::warning('VentaWebController: no se pudo registrar en caja: ' . $e->getMessage());
-                    }
-                }
-            }
-
-            // ── Plan de cuotas ────────────────────────────────────────────
-            if ($modalidad === 'CUOTAS') {
-                if ($capitalTotalUsd <= 0) {
-                    $capitalTotalUsd = max(0, $precioFinalUsd - $totalMontoInicialUsd);
-                }
-
-                $cuotasManual = $request->input('cuotas_manual', []);
-                $numeroCuotas = (int) $request->input('numero_cuotas', 12);
-                if ($tipoPlan === 'MANUAL' && count($cuotasManual) > 0) {
-                    $numeroCuotas = count($cuotasManual);
-                }
-
-                $planId = DB::table('planes_cuotas')->insertGetId([
-                    'venta_id'              => $ventaId,
-                    'cliente_id'            => $data['cliente_id'],
-                    'tipo_plan'             => $tipoPlan,
-                    'moneda'                => $data['moneda_venta'],
-                    'capital_total'         => $capitalTotalUsd,
-                    'capital_total_usd'     => $capitalTotalUsd,
-                    'numero_cuotas'         => $numeroCuotas,
-                    'tasa_interes_mensual'  => $request->input('tasa_interes_mensual', 0),
-                    'fecha_primera_cuota'   => $request->input('fecha_primera_cuota', now()->addMonth()->toDateString()),
-                    'estado'                => 'ACTIVO',
-                    'created_by'            => Auth::id(),
-                    'created_at'            => now(),
-                    'updated_at'            => now(),
-                ]);
-
-                if ($tipoPlan === 'MANUAL' && count($cuotasManual) > 0) {
-                    $this->installmentGenerator->generateManual(
-                        $planId, $ventaId, $data['moneda_venta'], $cuotasManual
-                    );
-                } else {
-                    $moneda  = Currency::from($data['moneda_venta']);
-                    $capital = new Money($capitalTotalUsd, $moneda);
-                    $this->installmentGenerator->generate(
-                        $planId,
-                        $ventaId,
-                        InstallmentPlan::from($tipoPlan),
-                        $capital,
-                        $numeroCuotas,
-                        (float) $request->input('tasa_interes_mensual', 0),
-                        $request->input('fecha_primera_cuota', now()->addMonth()->toDateString()),
-                        (int)   $request->input('refuerzo_cada', 0),
-                        (float) $request->input('refuerzo_monto', 0),
-                    );
-                }
-
-                DB::table('detalles_pago')->insert([
-                    'venta_id'       => $ventaId,
-                    'tipo_pago'      => 'PLAN_CUOTAS',
-                    'moneda'         => $data['moneda_venta'],
-                    'monto_moneda'   => $capitalTotalUsd,
-                    'monto_usd'      => $capitalTotalUsd,
-                    'tasa_cambio'    => 1,
-                    'plan_cuotas_id' => $planId,
-                    'fecha_pago'     => $data['fecha_venta'],
-                    'created_by'     => Auth::id(),
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
-                ]);
-            }
-
-            DB::commit();
+            $data    = ProcessSaleData::fromRequest($request);
+            $ventaId = $this->processSale->execute($data);
 
             return redirect()->route('ventas.show', $ventaId)
                 ->with('success', 'Venta y pagos registrados correctamente.')
                 ->with('show_print_modal', true);
 
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (InsufficientCreditException $e) {
+            return back()->withInput()->withErrors(['capital_total_usd' => $e->getMessage()]);
+        } catch (\Throwable $e) {
             return back()->withInput()->withErrors(['error' => 'Error al registrar la venta: ' . $e->getMessage()]);
         }
     }
