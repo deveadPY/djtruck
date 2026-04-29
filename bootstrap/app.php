@@ -74,9 +74,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 'error'   => $e->getMessage(),
             ], 422);
         });
+
+        $exceptions->render(function (
+            \App\Domain\Shared\Exceptions\InsufficientCreditException $e,
+            Request $request
+        ) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Línea de crédito insuficiente.',
+                    'error'   => $e->getMessage(),
+                ], 422);
+            }
+        });
     })
     ->create();
-
-$app->usePublicPath(dirname(__DIR__).'/public');
-
-return $app;

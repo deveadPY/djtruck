@@ -2,6 +2,8 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Infrastructure\Http\Requests\StoreRepuestoRequest;
+use App\Infrastructure\Http\Requests\UpdateRepuestoRequest;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,18 +49,9 @@ class RepuestoWebController extends Controller
         return view('repuestos.create', compact('proveedores'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRepuestoRequest $request)
     {
-        $data = $request->validate([
-            'codigo'             => 'required|string|max:50|unique:stock_repuestos,codigo',
-            'descripcion'        => 'required|string|max:300',
-            'marca_compatible'   => 'nullable|string|max:80',
-            'unidad_medida'      => 'required|string|max:20',
-            'stock_minimo'       => 'nullable|numeric|min:0',
-            'costo_promedio_usd' => 'required|numeric|min:0',
-            'precio_venta_usd'   => 'nullable|numeric|min:0',
-            'proveedor_id'       => 'nullable|exists:proveedores,id',
-        ]);
+        $data = $request->validated();
         $data['stock_actual'] = 0;
         $data['created_by']   = Auth::id();
         $data['activo']       = true;
@@ -73,18 +66,9 @@ class RepuestoWebController extends Controller
         return view('repuestos.edit', compact('repuesto', 'proveedores'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRepuestoRequest $request, $id)
     {
-        $data = $request->validate([
-            'descripcion'        => 'required|string|max:300',
-            'marca_compatible'   => 'nullable|string|max:80',
-            'unidad_medida'      => 'required|string|max:20',
-            'stock_minimo'       => 'nullable|numeric|min:0',
-            'costo_promedio_usd' => 'required|numeric|min:0',
-            'precio_venta_usd'   => 'nullable|numeric|min:0',
-            'activo'             => 'boolean',
-            'proveedor_id'       => 'nullable|exists:proveedores,id',
-        ]);
+        $data = $request->validated();
         $data['updated_at'] = now();
         DB::table('stock_repuestos')->where('id', $id)->update($data);
         return redirect()->route('repuestos.index')->with('success', 'Repuesto actualizado.');

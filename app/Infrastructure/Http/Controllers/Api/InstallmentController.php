@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Controllers\Api;
 
-use App\Domain\Finance\Services\CajaService;
+use App\Application\Sales\DTOs\PayInstallmentData;
+use App\Application\Sales\PayInstallmentUseCase;
 use App\Domain\Sales\Services\InstallmentGenerator;
 use App\Domain\Sales\ValueObjects\InstallmentPlan;
-use App\Infrastructure\Persistence\Eloquent\Models\InstallmentModel;
 use App\Infrastructure\Currency\CurrencyConverter;
+use App\Infrastructure\Persistence\Eloquent\Models\InstallmentModel;
 use App\Domain\Shared\ValueObjects\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ final class InstallmentController extends BaseApiController
     public function __construct(
         private readonly InstallmentGenerator $generator,
         private readonly CurrencyConverter    $currency,
-        private readonly CajaService          $cajas,
+        private readonly PayInstallmentUseCase $payInstallment,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -60,56 +61,32 @@ final class InstallmentController extends BaseApiController
 
     public function pay(Request $request, int $id): JsonResponse
     {
-        $cuota     = InstallmentModel::findOrFail($id);
         $validated = $request->validate([
             'monto_pagado' => 'required|numeric|min:0.01',
             'moneda'       => 'required|in:USD,PYG,BRL',
             'caja_id'      => 'nullable|integer|exists:cajas,id',
+            'fecha_pago'   => 'nullable|date',
         ]);
 
-        // Si no se especifica caja, usar Caja Capital por defecto
-        $validated['caja_id'] = $validated['caja_id'] ?? $this->cajas->cajaCapitalId();
+        // Convertir a USD si la moneda no es USD
+        $moneda   = Currency::from($validated['moneda']);
+        $montoUsd = $moneda === Currency::USD
+            ? (float) $validated['monto_pagado']
+            : $this->currency->toBaseCurrency((float) $validated['monto_pagado'], $moneda)->amount;
 
-        if ($cuota->estado === 'PAGADA') {
-            return $this->errorResponse('Esta cuota ya fue pagada.', null, 409);
+        try {
+            $cuota = $this->payInstallment->execute(new PayInstallmentData(
+                cuotaId:     $id,
+                montoPagado: $montoUsd,
+                fechaPago:   $validated['fecha_pago'] ?? now()->toDateString(),
+                userId:      (int) auth()->id(),
+                cajaId:      isset($validated['caja_id']) ? (int) $validated['caja_id'] : null,
+            ));
+        } catch (\DomainException $e) {
+            return $this->errorResponse($e->getMessage(), null, 409);
         }
 
-        DB::transaction(function () use ($cuota, $validated) {
-            $moneda    = Currency::from($validated['moneda']);
-            $montoUsd  = $moneda === Currency::USD
-                ? $validated['monto_pagado']
-                : $this->currency->toBaseCurrency($validated['monto_pagado'], $moneda)->amount;
-
-            $diasMora     = $cuota->diasMora();
-            $interesExtra = $diasMora > 0
-                ? round($cuota->monto_total * (config('erp.installments.tasa_mora_diaria_pct', 0.1) / 100) * $diasMora, 2)
-                : 0;
-
-            $cuota->update([
-                'estado'             => 'PAGADA',
-                'fecha_pago_efectivo'=> now()->toDateString(),
-                'monto_pagado'       => $validated['monto_pagado'],
-                'interes_mora'       => $interesExtra,
-                'caja_cobro_id'      => $validated['caja_id'],
-                'updated_by'         => auth()->id(),
-            ]);
-
-            // Registrar en movimientos de caja
-            DB::table('movimientos_caja')->insert([
-                'caja_id'       => $validated['caja_id'],
-                'tipo'          => 'INGRESO',
-                'concepto'      => "Cobro cuota #{$cuota->numero_cuota}/{$cuota->total_cuotas} - Venta #{$cuota->venta_id}",
-                'referencia_id' => $cuota->id,
-                'ref_type'      => 'cuota',
-                'moneda'        => $validated['moneda'],
-                'monto'         => $validated['monto_pagado'],
-                'monto_usd'     => $montoUsd,
-                'created_at'    => now(),
-                'created_by'    => auth()->id(),
-            ]);
-        });
-
-        return $this->successResponse($cuota->fresh(), 'Cuota registrada como pagada.');
+        return $this->successResponse($cuota, 'Cuota registrada como pagada.');
     }
 
     public function partialPay(Request $request, int $id): JsonResponse

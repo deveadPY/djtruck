@@ -2,17 +2,20 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
-use Illuminate\Routing\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Infrastructure\Http\Requests\StoreClienteRequest;
 use App\Infrastructure\Http\Requests\UpdateClienteRequest;
+use App\Infrastructure\Services\ClienteCreditService;
 use App\Infrastructure\Settings\EmpresaSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ClienteWebController extends Controller
 {
+    public function __construct(private readonly ClienteCreditService $creditService) {}
+
     public function index(Request $request)
     {
         $q = $request->input('q');
@@ -107,13 +110,7 @@ class ClienteWebController extends Controller
             ->where('cliente_id', $id)
             ->get();
 
-        // Calcular saldo deudor en planes activos (solo cuotas pendientes/mora)
-        $saldo_deudor = DB::table('cuotas')
-            ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
-            ->where('planes_cuotas.cliente_id', $id)
-            ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
-            ->whereNull('cuotas.deleted_at')
-            ->sum(DB::raw('cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado'));
+        $saldo_deudor = $this->creditService->saldoDeudorUsd($id);
 
         $documentos = DB::table('documentos')
             ->where('documentable_type', 'clientes')
@@ -197,15 +194,10 @@ class ClienteWebController extends Controller
     {
         $cliente = DB::table('clientes')->where('id', $id)->whereNull('deleted_at')->firstOrFail();
 
-        // Calcular crédito disponible
-        $saldoDeudorActual = DB::table('cuotas')
-            ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
-            ->where('planes_cuotas.cliente_id', $id)
-            ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
-            ->whereNull('cuotas.deleted_at')
-            ->sum(DB::raw('cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado'));
-
-        $creditoDisponible = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) $saldoDeudorActual);
+        $creditoDisponible = $this->creditService->creditoDisponibleUsd(
+            $id,
+            floatval($cliente->linea_credito_usd ?? 0)
+        );
 
         // Obtener todos los planes activos con sus cuotas
         $planes = DB::table('planes_cuotas')->where('cliente_id', $id)->get();

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Controllers\Web;
 
 use App\Domain\Finance\Services\CajaService;
-use App\Infrastructure\Currency\CurrencyConverter;
-use App\Infrastructure\Settings\EmpresaSettings;
 use App\Domain\Shared\ValueObjects\Currency;
+use App\Infrastructure\Currency\CurrencyConverter;
+use App\Infrastructure\Http\Requests\StoreMovimientoRequest;
+use App\Infrastructure\Http\Requests\TransferirCajaRequest;
+use App\Infrastructure\Settings\EmpresaSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -99,14 +101,9 @@ final class FinanceWebController extends Controller
 
     // ── Movimiento manual ───────────────────────────────────────────────────
 
-    public function storeMovimiento(Request $request, string $codigo): \Illuminate\Http\RedirectResponse
+    public function storeMovimiento(StoreMovimientoRequest $request, string $codigo): \Illuminate\Http\RedirectResponse
     {
-        $v = $request->validate([
-            'tipo'     => 'required|in:INGRESO,EGRESO',
-            'concepto' => 'required|string|max:300',
-            'moneda'   => 'required|in:USD,PYG,BRL',
-            'monto'    => 'required|numeric|min:0.01',
-        ]);
+        $v = $request->validated();
 
         $caja     = DB::table('cajas')->where('codigo', strtoupper($codigo))->firstOrFail();
         $moneda   = Currency::from($v['moneda']);
@@ -164,15 +161,9 @@ final class FinanceWebController extends Controller
 
     // ── Transferencia entre cajas ───────────────────────────────────────────
 
-    public function transferir(Request $request): \Illuminate\Http\RedirectResponse
+    public function transferir(TransferirCajaRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $v = $request->validate([
-            'origen'   => 'required|in:CAJA_CHICA,CAJA_CAPITAL',
-            'destino'  => 'required|in:CAJA_CHICA,CAJA_CAPITAL|different:origen',
-            'moneda'   => 'required|in:USD,PYG,BRL',
-            'monto'    => 'required|numeric|min:0.01',
-            'concepto' => 'nullable|string|max:255',
-        ]);
+        $v = $request->validated();
 
         $moneda   = Currency::from($v['moneda']);
         $montoUsd = $moneda === Currency::USD

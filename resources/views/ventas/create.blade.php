@@ -1164,7 +1164,7 @@
             async function fetchRates() {
                 try {
                     const fecha = document.querySelector('input[name="fecha_venta"]').value || new Date().toISOString().split('T')[0];
-                    const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${fecha}`);
+                    const res = await fetch(`{{ route('cotizaciones.tasas-hoy') }}?fecha=${fecha}`);
                     currentRates = await res.json();
                     calcularTotalVentaUsd();
                 } catch (e) { console.error('Error fetching rates', e); }

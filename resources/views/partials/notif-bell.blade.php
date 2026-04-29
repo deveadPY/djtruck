@@ -235,7 +235,7 @@
             function fetchNotifications() {
                 var token = document.querySelector('meta[name="csrf-token"]')
                     ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
-                fetch('{{ route("api.notificaciones") }}', {
+                fetch('{{ route("notificaciones.feed") }}', {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json',

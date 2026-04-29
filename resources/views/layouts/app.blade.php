@@ -465,17 +465,20 @@
                             {{ ucfirst(auth()->user()->roles->first()?->name ?? auth()->user()->role ?? 'Usuario') }}</div>
                     </div>
                 </div>
-                <a href="{{ route('logout') }}"
-                    class="block mt-1.5 text-center text-[0.72rem] no-underline py-1.5 rounded-lg transition-all duration-200 sidebar-text hover:bg-red-500/10 hover:text-red-500"
-                    style="color: var(--text-muted);">
-                    <span class="inline-flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                        </svg>
-                        Cerrar sesión
-                    </span>
-                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"
+                        class="block w-full mt-1.5 text-center text-[0.72rem] py-1.5 rounded-lg transition-all duration-200 sidebar-text hover:bg-red-500/10 hover:text-red-500 cursor-pointer"
+                        style="color: var(--text-muted); background: none; border: none;">
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                            </svg>
+                            Cerrar sesión
+                        </span>
+                    </button>
+                </form>
             @endauth
         </div>
 

@@ -2,19 +2,30 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Application\Sales\DTOs\PayInstallmentData;
+use App\Application\Sales\PayInstallmentUseCase;
 use App\Domain\Finance\Services\CajaService;
-use Illuminate\Routing\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use App\Domain\Sales\Services\InstallmentGenerator;
+use App\Domain\Sales\ValueObjects\InstallmentPlan;
+use App\Domain\Shared\ValueObjects\Currency;
+use App\Domain\Shared\ValueObjects\Money;
 use App\Infrastructure\Http\Requests\PayInstallmentRequest;
+use App\Infrastructure\Http\Requests\StorePlanCuotasRequest;
 use App\Infrastructure\Settings\EmpresaSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PlanCuotasWebController extends Controller
 {
-    public function __construct(private readonly CajaService $cajaService) {}
+    public function __construct(
+        private readonly CajaService          $cajaService,
+        private readonly InstallmentGenerator $installmentGenerator,
+        private readonly PayInstallmentUseCase $payInstallment,
+    ) {}
 
     public function create($ventaId)
     {
@@ -25,19 +36,9 @@ class PlanCuotasWebController extends Controller
         return view('planes_cuotas.create', compact('venta', 'vehiculos_canje'));
     }
 
-    public function store(Request $request, $ventaId)
+    public function store(StorePlanCuotasRequest $request, $ventaId)
     {
-        $data = $request->validate([
-            'tipo_plan' => 'required|in:FRANCESA,ALEMANA,MANUAL',
-            'moneda' => 'required|string|max:3',
-            'capital_total' => 'required|numeric|min:0',
-            'capital_total_usd' => 'required|numeric|min:0',
-            'numero_cuotas' => 'nullable|integer|min:1|max:120',
-            'tasa_interes_mensual' => 'nullable|numeric|min:0',
-            'fecha_primera_cuota' => 'nullable|date',
-            'refuerzo_cada' => 'nullable|integer|min:0',
-            'refuerzo_monto' => 'nullable|numeric|min:0',
-        ]);
+        $data = $request->validated();
 
         $venta = DB::table('ventas')->where('id', $ventaId)->firstOrFail();
 
@@ -111,9 +112,23 @@ class PlanCuotasWebController extends Controller
 
         // ── 3. Generar las CUOTAS ─────────────────────────────
         if ($tipoPlan === 'MANUAL' && count($cuotasManual) > 0) {
-            $this->generarCuotasManuales($planId, $ventaId, $data, $cuotasManual);
+            $this->installmentGenerator->generateManual(
+                $planId, $ventaId, $data['moneda'], $cuotasManual
+            );
         } else {
-            $this->generarCuotasAutomaticas($planId, $ventaId, $data, $request);
+            $moneda  = Currency::from($data['moneda']);
+            $capital = new Money((float) $data['capital_total'], $moneda);
+            $this->installmentGenerator->generate(
+                $planId,
+                $ventaId,
+                InstallmentPlan::from($tipoPlan),
+                $capital,
+                (int)   ($data['numero_cuotas'] ?? 12),
+                (float) ($data['tasa_interes_mensual'] ?? 0),
+                $data['fecha_primera_cuota'] ?? now()->addMonth()->toDateString(),
+                (int)   $request->input('refuerzo_cada', 0),
+                (float) $request->input('refuerzo_monto', 0),
+            );
         }
 
         // Register the plan as a detalle_pago of type PLAN_CUOTAS
@@ -132,147 +147,6 @@ class PlanCuotasWebController extends Controller
         ]);
 
         return redirect()->route('ventas.show', $ventaId)->with('success', 'Plan de pagos creado exitosamente.');
-    }
-
-    /**
-     * Generate cuotas from the manual grid submitted by user.
-     */
-    private function generarCuotasManuales(int $planId, int $ventaId, array $plan, array $cuotasManual): void
-    {
-        $cuotas = [];
-        $i = 1;
-        $totalCuotas = count($cuotasManual);
-
-        foreach ($cuotasManual as $row) {
-            $monto = floatval($row['monto'] ?? 0);
-            if ($monto <= 0)
-                continue;
-
-            $cuotas[] = [
-                'plan_cuotas_id' => $planId,
-                'venta_id' => $ventaId,
-                'numero_cuota' => $i,
-                'total_cuotas' => $totalCuotas,
-                'tipo_plan' => 'MANUAL',
-                'moneda' => $plan['moneda'],
-                'capital' => round($monto, 4),
-                'interes' => 0,
-                'fecha_vencimiento' => $row['fecha'] ?? now()->addMonths($i)->toDateString(),
-                'estado' => 'PENDIENTE',
-                'monto_pagado' => 0,
-                'interes_mora' => 0,
-                'created_by' => Auth::id(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-            $i++;
-        }
-
-        if (count($cuotas) > 0) {
-            DB::table('cuotas')->insert($cuotas);
-        }
-    }
-
-    /**
-     * Generate cuotas automatically (Francesa, Alemana, or Manual uniform).
-     * Also supports reinforcement payments every N months.
-     */
-    private function generarCuotasAutomaticas(int $planId, int $ventaId, array $plan, Request $request): void
-    {
-        $capital = $plan['capital_total'];
-        $n = $plan['numero_cuotas'];
-        $tasa = ($plan['tasa_interes_mensual'] ?? 0) / 100;
-        $tipo = $plan['tipo_plan'];
-        $moneda = $plan['moneda'];
-        $fecha = \Carbon\Carbon::parse($plan['fecha_primera_cuota']);
-
-        $refuerzoCada = intval($request->input('refuerzo_cada', 0));
-        $refuerzoMonto = floatval($request->input('refuerzo_monto', 0));
-
-        // If there are reinforcements, reduce the capital proportionally
-        $numRefuerzos = 0;
-        if ($refuerzoCada > 0 && $refuerzoMonto > 0) {
-            $numRefuerzos = intdiv($n, $refuerzoCada);
-            $capital -= ($numRefuerzos * $refuerzoMonto);
-        }
-
-        $cuotas = [];
-        $cuotaNumero = 0;
-        $capitalRestante = $capital;
-
-        for ($i = 1; $i <= $n; $i++) {
-            $cuotaNumero++;
-            $fechaCuota = $fecha->copy()->addMonths($i - 1)->toDateString();
-
-            if ($tipo === 'FRANCESA') {
-                $cuotaTotal = $tasa > 0
-                    ? $capital * $tasa / (1 - pow(1 + $tasa, -$n))
-                    : $capital / $n;
-                $interes = $capitalRestante * $tasa;
-                $cap = $cuotaTotal - $interes;
-            } elseif ($tipo === 'ALEMANA') {
-                $cap = $capital / $n;
-                $interes = $capitalRestante * $tasa;
-            } else {
-                $cap = $capital / $n;
-                $interes = 0;
-            }
-
-            $cuotas[] = [
-                'plan_cuotas_id' => $planId,
-                'venta_id' => $ventaId,
-                'numero_cuota' => $cuotaNumero,
-                'total_cuotas' => $n + $numRefuerzos,
-                'tipo_plan' => $tipo,
-                'moneda' => $moneda,
-                'capital' => round($cap, 4),
-                'interes' => round($interes, 4),
-                'fecha_vencimiento' => $fechaCuota,
-                'estado' => 'PENDIENTE',
-                'monto_pagado' => 0,
-                'interes_mora' => 0,
-                'created_by' => Auth::id(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-            if ($tipo === 'ALEMANA') {
-                $capitalRestante -= $cap;
-            }
-
-            // Insert reinforcement cuota after every N months
-            if ($refuerzoCada > 0 && $refuerzoMonto > 0 && $i % $refuerzoCada === 0) {
-                $cuotaNumero++;
-                $cuotas[] = [
-                    'plan_cuotas_id' => $planId,
-                    'venta_id' => $ventaId,
-                    'numero_cuota' => $cuotaNumero,
-                    'total_cuotas' => $n + $numRefuerzos,
-                    'tipo_plan' => $tipo,
-                    'moneda' => $moneda,
-                    'capital' => round($refuerzoMonto, 4),
-                    'interes' => 0,
-                    'fecha_vencimiento' => $fechaCuota,
-                    'estado' => 'PENDIENTE',
-                    'monto_pagado' => 0,
-                    'interes_mora' => 0,
-                    'created_by' => Auth::id(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-
-        // Update total_cuotas with actual final count
-        $totalFinal = count($cuotas);
-        foreach ($cuotas as &$c) {
-            $c['total_cuotas'] = $totalFinal;
-        }
-
-        DB::table('cuotas')->insert($cuotas);
-
-        // Update plan with actual numero_cuotas
-        DB::table('planes_cuotas')->where('id', $planId)->update(['numero_cuotas' => $totalFinal]);
     }
 
     public function show($planId)
@@ -324,45 +198,17 @@ class PlanCuotasWebController extends Controller
         return $pdf->stream("recibo-cuota-{$cuotaId}.pdf");
     }
 
-    public function pagarCuota(PayInstallmentRequest $request, $cuotaId)
+    public function pagarCuota(PayInstallmentRequest $request, $cuotaId): \Illuminate\Http\RedirectResponse
     {
-        // ── Guard: evitar doble pago ─────────────────────────────────────────
-        $cuota = DB::table('cuotas')->where('id', $cuotaId)->whereNull('deleted_at')->firstOrFail();
-
-        if ($cuota->estado === 'PAGADA') {
-            return back()->with('info', 'Esta cuota ya estaba registrada como pagada.');
-        }
-
-        DB::table('cuotas')->where('id', $cuotaId)->update([
-            'estado' => 'PAGADA',
-            'fecha_pago_efectivo' => $request->fecha_pago,
-            'monto_pagado' => $request->monto_pagado,
-            'updated_at' => now(),
-            'updated_by' => Auth::id(),
-        ]);
-
-        // ── Registrar ingreso en Caja Capital por cobro de cuota ──
-        $cuota = DB::table('cuotas')->where('id', $cuotaId)->first();
-        $venta = DB::table('ventas')->where('id', $cuota->venta_id)->first();
         try {
-            $this->cajaService->ingresoCapital(
-                "Cobro cuota #{$cuota->numero_cuota}/{$cuota->total_cuotas} — Venta {$venta->numero_venta}",
-                'USD',
-                (float) $request->monto_pagado,
-                (float) $request->monto_pagado,
-                (int) $cuotaId,
-                'cuota'
-            );
-        } catch (\RuntimeException $e) {
-            Log::warning('PlanCuotasWebController pagarCuota: no se pudo registrar movimiento en caja: ' . $e->getMessage());
-        }
-
-        // ── Enviar recibo de pago al cliente por email (falla silenciosamente) ──
-        try {
-            app(\App\Domain\Sales\Events\Listeners\SendCuotaPagadaEmail::class)
-                ->sendRecibo((int) $cuotaId, (int) Auth::id());
-        } catch (\Throwable) {
-            // Never let an email failure break the payment flow
+            $this->payInstallment->execute(new PayInstallmentData(
+                cuotaId:     (int) $cuotaId,
+                montoPagado: (float) $request->monto_pagado,
+                fechaPago:   $request->fecha_pago,
+                userId:      (int) Auth::id(),
+            ));
+        } catch (\DomainException $e) {
+            return back()->with('info', $e->getMessage());
         }
 
         return back()->with('success', 'Cuota marcada como pagada.')->with('show_print_cuota', $cuotaId);

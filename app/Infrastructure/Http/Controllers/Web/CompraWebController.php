@@ -2,17 +2,20 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Domain\Finance\Services\CajaService;
+use App\Domain\Shared\ValueObjects\Currency;
+use App\Infrastructure\Currency\CurrencyConverter;
+use App\Infrastructure\Http\Requests\StoreCompraRequest;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Domain\Shared\ValueObjects\Currency;
-use App\Infrastructure\Currency\CurrencyConverter;
 
 class CompraWebController extends Controller
 {
     public function __construct(
-        private readonly CurrencyConverter $currency
+        private readonly CurrencyConverter $currency,
+        private readonly CajaService       $cajaService,
     ) {}
 
     public function index(Request $request)
@@ -42,23 +45,9 @@ class CompraWebController extends Controller
         return view('compras.create', compact('proveedores', 'productos'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCompraRequest $request)
     {
-        $v = $request->validate([
-            'proveedor_id'    => 'required|exists:proveedores,id',
-            'fecha_compra'    => 'required|date',
-            'numero_factura'  => 'nullable|string|max:50',
-            'moneda_compra'   => 'required|in:USD,PYG,BRL',
-            'tasa_cambio'     => 'required|numeric|min:1',
-            'items'           => 'required|array|min:1',
-            'items.*.repuesto_id' => 'required|exists:stock_repuestos,id',
-            'items.*.cantidad'    => 'required|numeric|min:0.001',
-            'items.*.precio_compra'=> 'required|numeric|min:0',
-            'items.*.precio_venta_sugerido'=> 'nullable|numeric|min:0',
-            'observaciones'   => 'nullable|string',
-            'adjuntos'        => 'nullable|array|max:5',
-            'adjuntos.*'      => 'file|mimes:pdf,jpg,jpeg,png|max:4096',
-        ]);
+        $v = $request->validated();
 
         $adjuntosFiles = $request->file('adjuntos') ?? [];
 
@@ -91,7 +80,7 @@ class CompraWebController extends Controller
                 'monto_total_usd'    => round($totalUsd, 2),
                 'tasa_cambio'        => $tasa,
                 'observaciones'      => $v['observaciones'],
-                'caja_id'            => DB::table('cajas')->where('codigo', 'CAJA_CAPITAL')->value('id'),
+                'caja_id'            => $this->cajaService->cajaCapitalId(),
                 'created_by'         => Auth::id(),
                 'created_at'         => now(),
                 'updated_at'         => now(),
@@ -136,19 +125,14 @@ class CompraWebController extends Controller
 
             // 3. Registrar Movimiento en Caja Capital (EGRESO)
             $proveedor = DB::table('proveedores')->where('id', $v['proveedor_id'])->first();
-            $movimientoId = DB::table('movimientos_caja')->insertGetId([
-                'caja_id'    => DB::table('cajas')->where('codigo', 'CAJA_CAPITAL')->value('id'),
-                'tipo'       => 'EGRESO',
-                'concepto'   => "Compra de productos - Fac. " . ($v['numero_factura'] ?? 'S/N') . " - Prov: " . $proveedor->razon_social,
-                'moneda'     => $v['moneda_compra'],
-                'monto'      => $totalMoneda,
-                'monto_usd'  => round($totalUsd, 2),
-                'ref_type'      => 'compra',
-                'referencia_id' => $compraId,
-                'created_by' => Auth::id(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $this->cajaService->egresoCapital(
+                concepto: "Compra de productos - Fac. " . ($v['numero_factura'] ?? 'S/N') . " - Prov: " . $proveedor->razon_social,
+                moneda:   $v['moneda_compra'],
+                monto:    $totalMoneda,
+                montoUsd: round($totalUsd, 2),
+                refId:    $compraId,
+                refType:  'compra',
+            );
 
             // 4. Asociar con Facturas y Gastos para visualización
             $facturaId = DB::table('facturas_proveedores')->insertGetId([

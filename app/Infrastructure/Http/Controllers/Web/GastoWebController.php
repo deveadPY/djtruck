@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Infrastructure\Http\Requests\StoreGastoRequest;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,20 +17,9 @@ class GastoWebController extends Controller
         return view('gastos.create', compact('vehiculo', 'repuestos'));
     }
 
-    public function store(Request $request, $vehiculoId)
+    public function store(StoreGastoRequest $request, $vehiculoId)
     {
-        $data = $request->validate([
-            'concepto' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'categoria' => 'required|string',
-            'origen_tipo' => 'required|string',
-            'moneda' => 'required|string|max:3',
-            'monto_moneda' => 'required|numeric|min:0',
-            'monto_usd' => 'required|numeric|min:0',
-            'fecha_gasto' => 'required|date',
-            'repuesto_id' => 'nullable|integer|exists:stock_repuestos,id',
-            'repuesto_cantidad' => 'nullable|numeric|min:0',
-        ]);
+        $data = $request->validated();
 
         $data['vehiculo_id'] = $vehiculoId;
         $data['created_by'] = Auth::id();

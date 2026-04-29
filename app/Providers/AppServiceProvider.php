@@ -7,6 +7,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Infrastructure\Settings\EmpresaSettings;
 use App\Infrastructure\Currency\CurrencyConverter;
 use App\Domain\Sales\Services\InstallmentGenerator;
@@ -16,6 +17,11 @@ use App\Domain\Sales\Events\SaleCompleted;
 use App\Domain\Sales\Events\InstallmentOverdue;
 use App\Domain\Sales\Events\Listeners\SendSaleCompletedEmail;
 use App\Domain\Sales\Events\Listeners\SendOverdueInstallmentNotification;
+use App\Infrastructure\Persistence\Eloquent\Models\VehicleModel;
+use App\Infrastructure\Persistence\Eloquent\Models\RepuestoModel;
+use App\Application\Sales\PayInstallmentUseCase;
+use App\Application\Sales\ProcessSaleUseCase;
+use App\Infrastructure\Services\ClienteCreditService;
 use Illuminate\Support\Facades\Event;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,10 +37,25 @@ class AppServiceProvider extends ServiceProvider
 
         // Singleton de Caja — gestión de Caja Chica y Caja Capital
         $this->app->singleton(CajaService::class);
+
+        // Cálculo de crédito/deuda activa de clientes
+        $this->app->singleton(ClienteCreditService::class);
+
+        // Application layer use cases — singletons para reutilización del grafo de dependencias
+        $this->app->singleton(ProcessSaleUseCase::class);
+        $this->app->singleton(PayInstallmentUseCase::class);
     }
 
     public function boot(): void
     {
+        // ── Morph map — aliases para relaciones polimórficas ──────────────
+        // Permite que morphTo() resuelva al modelo correcto aunque el DB
+        // almacene strings cortos en lugar de FQCNs.
+        Relation::morphMap([
+            'App\Models\Vehicle'       => VehicleModel::class,
+            'App\Models\StockRepuesto' => RepuestoModel::class,
+        ]);
+
         // ── Configuración de empresa — compartida cuando la app ya está lista ──
         // booted() garantiza que la BD y todos los providers están listos
         $this->app->booted(function () {

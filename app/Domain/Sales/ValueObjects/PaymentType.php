@@ -34,18 +34,3 @@ enum PaymentType: string
     }
 }
 
-enum InstallmentPlan: string
-{
-    case FRANCESA = 'FRANCESA';
-    case ALEMANA  = 'ALEMANA';
-    case MANUAL   = 'MANUAL';
-
-    public function description(): string
-    {
-        return match ($this) {
-            self::FRANCESA => 'Cuota fija (capital + interés constante)',
-            self::ALEMANA  => 'Capital fijo + interés decreciente',
-            self::MANUAL   => 'Montos definidos manualmente',
-        };
-    }
-}

@@ -33,7 +33,7 @@ Route::middleware('guest')->group(function () {
 // ── Rutas autenticadas ───────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Dashboard (accesible a todos los roles)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -196,7 +196,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/cotizaciones', [CotizacionWebController::class, 'index'])->name('cotizaciones.index');
     Route::get('/cotizaciones/create', [CotizacionWebController::class, 'create'])->name('cotizaciones.create');
     Route::post('/cotizaciones', [CotizacionWebController::class, 'store'])->name('cotizaciones.store');
-    Route::get('/api/cotizaciones/today', [CotizacionWebController::class, 'getTodayRates'])->name('api.cotizaciones.today');
+    Route::get('/cotizaciones/tasas-hoy', [CotizacionWebController::class, 'getTodayRates'])->name('cotizaciones.tasas-hoy');
 
     // ══════════════════════════════════════════════════════════════════════
     // DOCUMENTOS
@@ -263,7 +263,7 @@ Route::middleware('auth')->group(function () {
     // NOTIFICACIONES (campana + página completa)
     // ══════════════════════════════════════════════════════════════════════
     Route::middleware('permission:cuotas.ver')->group(function () {
-        Route::get('/api/notificaciones', [NotificacionesWebController::class, 'apiIndex'])->name('api.notificaciones');
+        Route::get('/notificaciones/feed', [NotificacionesWebController::class, 'apiIndex'])->name('notificaciones.feed');
         Route::get('/notificaciones', [NotificacionesWebController::class, 'index'])->name('notificaciones.index');
     });
 
