@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Log;
 class CreateSaleUseCase
 {
     public function __construct(
-        private readonly CajaService $cajaService
+        private readonly CajaService $cajaService,
+        private readonly \App\Domain\Sales\Repositories\SaleRepositoryInterface $saleRepository
     ) {}
 
     /**
@@ -68,9 +69,9 @@ class CreateSaleUseCase
         $ventaData['modalidad_pago'] = $modalidad;
 
         return DB::transaction(function () use ($ventaData, $items, $pagos, $modalidad, $tipoPlan, $capitalTotalUsd, $cuotasManual, $numeroCuotas, $data, $precioFinalUsd) {
-            // 4. Insertar Venta
-            $ventaId = DB::table('ventas')->insertGetId($ventaData + ['created_at' => now(), 'updated_at' => now()]);
-            $venta = SaleModel::find($ventaId);
+            // 4. Insertar Venta usando el Repositorio
+            $venta = $this->saleRepository->create($ventaData + ['created_at' => now(), 'updated_at' => now()]);
+            $ventaId = $venta->id;
 
             // 5. Procesar Items
             $this->processItems($ventaId, $items, $ventaData['tasa_cambio_venta'] ?? 1);
