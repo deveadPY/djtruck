@@ -31,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Singleton de Caja — gestión de Caja Chica y Caja Capital
         $this->app->singleton(CajaService::class);
+
+        // Repositorios
+        $this->app->bind(
+            \App\Domain\Sales\Repositories\SaleRepositoryInterface::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentSaleRepository::class
+        );
     }
 
     public function boot(): void
