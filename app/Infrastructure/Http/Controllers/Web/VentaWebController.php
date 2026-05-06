@@ -182,5 +182,3 @@ class VentaWebController extends Controller
         }
     }
 }
-
-}
