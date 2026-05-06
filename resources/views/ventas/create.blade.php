@@ -1114,15 +1114,17 @@
                 const bgColor = tipo === 'REFUERZO' ? 'background:rgba(245,158,11,.08);border-radius:6px;padding:4px;' : '';
 
                 const html = `
-                                    <div class="cuota-row" id="cuota_${cuotaIdx}">
+                                    <div class="cuota-row grid grid-cols-[30px_1fr_1fr_1fr_auto] gap-2 items-center px-2 mb-2 bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700" id="cuota_${cuotaIdx}">
                                         <div style="${bgColor}"><strong style="font-size:.75rem;${tipo === 'REFUERZO' ? 'color:var(--warning)' : ''}">${cuotaIdx}</strong></div>
-                                        <input type="date" name="cuotas_manual[${cuotaIdx}][fecha]" value="${nextDate.toISOString().split('T')[0]}">
-                                        <select name="cuotas_manual[${cuotaIdx}][tipo]">
+                                        <input type="date" name="cuotas_manual[${cuotaIdx}][fecha]" value="${nextDate.toISOString().split('T')[0]}" class="form-input">
+                                        <select name="cuotas_manual[${cuotaIdx}][tipo]" class="form-input">
                                             <option value="REGULAR" ${tipo === 'REGULAR' ? 'selected' : ''}>Regular</option>
                                             <option value="REFUERZO" ${tipo === 'REFUERZO' ? 'selected' : ''}>Refuerzo</option>
                                         </select>
-                                        <input type="number" name="cuotas_manual[${cuotaIdx}][monto]" step="0.01" min="0" value="0" class="cuota-monto" oninput="recalcularCuotasManuales()" style="${tipo === 'REFUERZO' ? 'border-color:var(--warning)' : ''}">
-                                        <button type="button" class="btn btn-ghost" onclick="removeCuota(${cuotaIdx})" style="color:var(--danger);padding:.2rem">✕</button>
+                                        <input type="number" name="cuotas_manual[${cuotaIdx}][monto]" step="0.01" min="0" value="0" class="form-input cuota-monto" oninput="recalcularCuotasManuales()" style="${tipo === 'REFUERZO' ? 'border-color:var(--warning)' : ''}">
+                                        <button type="button" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 rounded-lg transition-colors" onclick="removeCuota(${cuotaIdx})" title="Eliminar cuota">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
                                     </div>`;
                 container.insertAdjacentHTML('beforeend', html);
                 recalcularCuotasManuales();
