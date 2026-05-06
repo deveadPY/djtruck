@@ -41,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Vehicle\Repositories\VehicleRepositoryInterface::class,
             \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentVehicleRepository::class
         );
+        $this->app->bind(
+            \App\Domain\Purchases\Repositories\PurchaseRepositoryInterface::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentPurchaseRepository::class
+        );
     }
 
     public function boot(): void
