@@ -1,0 +1,46 @@
+/node_modules
+/public_html/hot
+/public_html/storage
+/storage/*.key
+/storage/logs/*.log
+/storage/debugbar
+/vendor
+.env
+.env.backup
+.env.production
+.env.local
+.phpunit.result.cache
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# SIFEN certificates - sensitive
+/storage/certs/*.pfx
+/storage/certs/*.p12
+/storage/certs/*.pem
+/storage/certs/*.key
+/storage/certs/*.crt
+
+# Uploads
+/public_html/uploads/*
+!/public_html/uploads/.gitkeep
+
+# Framework cache
+/bootstrap/cache/*.php
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+!/storage/framework/cache/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/testing/.gitkeep
+!/storage/framework/views/.gitkeep
+.claude/

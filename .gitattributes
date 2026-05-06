@@ -1,0 +1,18 @@
+# ── Normalizar line endings para Laravel en Linux/Windows ──────────
+* text=auto eol=lf
+
+# Binarios — no convertir
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.p12 binary
+*.pfx binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

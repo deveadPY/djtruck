@@ -1,0 +1,46 @@
+[28-Apr-2026 13:42:55 UTC] PHP Fatal error:  Uncaught BadMethodCallException: Method Illuminate\Foundation\Application::tap does not exist. in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:115
+Stack trace:
+#0 /home/customer/djtrucks.devead.com/bootstrap/app.php(79): Illuminate\Foundation\Application->__call('tap', Array)
+#1 /home/customer/djtrucks.devead.com/artisan(8): require_once('/home/customer/...')
+#2 {main}
+  thrown in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php on line 115
+[28-Apr-2026 13:43:58 UTC] PHP Fatal error:  Uncaught BadMethodCallException: Method Illuminate\Foundation\Application::tap does not exist. in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:115
+Stack trace:
+#0 /home/customer/djtrucks.devead.com/bootstrap/app.php(79): Illuminate\Foundation\Application->__call('tap', Array)
+#1 /home/customer/djtrucks.devead.com/artisan(8): require_once('/home/customer/...')
+#2 {main}
+  thrown in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php on line 115
+[28-Apr-2026 13:43:59 UTC] PHP Fatal error:  Uncaught BadMethodCallException: Method Illuminate\Foundation\Application::tap does not exist. in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:115
+Stack trace:
+#0 /home/customer/djtrucks.devead.com/bootstrap/app.php(79): Illuminate\Foundation\Application->__call('tap', Array)
+#1 /home/customer/djtrucks.devead.com/artisan(8): require_once('/home/customer/...')
+#2 {main}
+  thrown in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php on line 115
+[28-Apr-2026 13:46:25 UTC] PHP Fatal error:  Uncaught BadMethodCallException: Method Illuminate\Foundation\Application::tap does not exist. in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:115
+Stack trace:
+#0 /home/customer/djtrucks.devead.com/bootstrap/app.php(79): Illuminate\Foundation\Application->__call('tap', Array)
+#1 /home/customer/djtrucks.devead.com/artisan(8): require_once('/home/customer/...')
+#2 {main}
+  thrown in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php on line 115
+[28-Apr-2026 13:48:19 UTC] PHP Fatal error:  Uncaught BadMethodCallException: Method Illuminate\Foundation\Application::tap does not exist. in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:115
+Stack trace:
+#0 /home/customer/djtrucks.devead.com/bootstrap/app.php(79): Illuminate\Foundation\Application->__call('tap', Array)
+#1 /home/customer/djtrucks.devead.com/artisan(8): require_once('/home/customer/...')
+#2 {main}
+  thrown in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php on line 115
+[28-Apr-2026 13:48:19 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Foundation\Application" not found in /home/customer/djtrucks.devead.com/bootstrap/app.php:9
+Stack trace:
+#0 Command line code(1): require()
+#1 {main}
+  thrown in /home/customer/djtrucks.devead.com/bootstrap/app.php on line 9
+[28-Apr-2026 13:48:31 UTC] PHP Fatal error:  Uncaught BadMethodCallException: Method Illuminate\Foundation\Application::tap does not exist. in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:115
+Stack trace:
+#0 /home/customer/djtrucks.devead.com/bootstrap/app.php(79): Illuminate\Foundation\Application->__call('tap', Array)
+#1 /home/customer/djtrucks.devead.com/artisan(8): require_once('/home/customer/...')
+#2 {main}
+  thrown in /home/customer/djtrucks.devead.com/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php on line 115
+[28-Apr-2026 13:48:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Foundation\Application" not found in /home/customer/djtrucks.devead.com/bootstrap/app.php:9
+Stack trace:
+#0 Command line code(1): require()
+#1 {main}
+  thrown in /home/customer/djtrucks.devead.com/bootstrap/app.php on line 9
