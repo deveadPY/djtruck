@@ -8,45 +8,32 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Infrastructure\Http\Requests\StoreVehicleRequest;
 use App\Infrastructure\Http\Requests\UpdateVehicleRequest;
+use App\Domain\Vehicle\Repositories\VehicleRepositoryInterface;
+use App\Application\Vehicle\CreateVehicleUseCase;
+use App\Application\Vehicle\UpdateVehicleUseCase;
 
 class VehicleWebController extends Controller
 {
+    public function __construct(
+        private readonly VehicleRepositoryInterface $vehicleRepository,
+        private readonly CreateVehicleUseCase $createVehicleUseCase,
+        private readonly UpdateVehicleUseCase $updateVehicleUseCase
+    ) {}
+
     public function index(Request $request)
     {
         $q = $request->input('q');
-
-        $query = DB::table('vehiculos')
-            ->leftJoin('ventas', function ($join) {
-                $join->on('vehiculos.id', '=', 'ventas.vehiculo_id')
-                    ->whereNull('ventas.deleted_at');
-            })
-            ->select(
-                'vehiculos.*',
-                'ventas.precio_venta_usd as venta_precio_usd',
-                'ventas.precio_venta_moneda as venta_precio_moneda',
-                'ventas.moneda_venta as venta_moneda'
-            )
-            ->whereNull('vehiculos.deleted_at');
-
-        if ($q) {
-            $query->where(function ($query) use ($q) {
-                $query->where('vehiculos.marca', 'like', "%{$q}%")
-                      ->orWhere('vehiculos.modelo', 'like', "%{$q}%")
-                      ->orWhere('vehiculos.numero_chasis', 'like', "%{$q}%")
-                      ->orWhere('vehiculos.numero_motor', 'like', "%{$q}%");
-            });
-        }
-
-        $vehiculos = $query->latest('vehiculos.created_at')
-            ->paginate(15)
-            ->withQueryString();
+        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15);
+        $vehiculos->appends(['q' => $q]); // Ensure pagination links keep the query
 
         return view('vehicles.index', compact('vehiculos', 'q'));
     }
 
     public function show($id)
     {
-        $vehiculo = DB::table('vehiculos')->where('id', $id)->whereNull('deleted_at')->firstOrFail();
+        $vehiculo = $this->vehicleRepository->findById((int) $id);
+        if (!$vehiculo) abort(404);
+
         $gastos = DB::table('gastos_vehiculo')->where('vehiculo_id', $id)->whereNull('deleted_at')->latest()->get();
         $proveedor = $vehiculo->proveedor_id ? DB::table('proveedores')->where('id', $vehiculo->proveedor_id)->first() : null;
         $imagenes = DB::table('vehiculo_imagenes')->where('vehiculo_id', $id)->whereNull('deleted_at')->orderBy('orden')->get();
@@ -70,43 +57,19 @@ class VehicleWebController extends Controller
     public function store(StoreVehicleRequest $request)
     {
         $data = $request->validated();
-
-        $data['created_by'] = Auth::id();
-        $data['kilometraje'] = $data['kilometraje'] ?? 0;
-        $data['total_gastos_usd'] = 0;
-
-        // Remove imagenes from data before inserting (not a DB column)
+        $imagenes = $request->hasFile('imagenes') ? $request->file('imagenes') : null;
         unset($data['imagenes']);
 
-        $vehiculoId = DB::table('vehiculos')->insertGetId($data + ['created_at' => now(), 'updated_at' => now()]);
+        $vehicle = $this->createVehicleUseCase->execute($data, $imagenes);
 
-        // Handle image uploads
-        if ($request->hasFile('imagenes')) {
-            $orden = 0;
-            foreach ($request->file('imagenes') as $imagen) {
-                $nombre = time() . '_' . $orden . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('uploads/vehiculos'), $nombre);
-
-                DB::table('vehiculo_imagenes')->insert([
-                    'vehiculo_id' => $vehiculoId,
-                    'ruta' => 'uploads/vehiculos/' . $nombre,
-                    'nombre_original' => $imagen->getClientOriginalName(),
-                    'orden' => $orden,
-                    'es_portada' => $orden === 0,
-                    'created_by' => Auth::id(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-                $orden++;
-            }
-        }
-
-        return redirect()->route('vehicles.show', $vehiculoId)->with('success', 'Vehículo registrado correctamente.');
+        return redirect()->route('vehicles.show', $vehicle->id)->with('success', 'Vehículo registrado correctamente.');
     }
 
     public function edit($id)
     {
-        $vehiculo = DB::table('vehiculos')->where('id', $id)->whereNull('deleted_at')->firstOrFail();
+        $vehiculo = $this->vehicleRepository->findById((int) $id);
+        if (!$vehiculo) abort(404);
+
         $proveedores = DB::table('proveedores')->where('activo', true)->whereNull('deleted_at')->get();
         return view('vehicles.edit', compact('vehiculo', 'proveedores'));
     }
@@ -114,39 +77,10 @@ class VehicleWebController extends Controller
     public function update(UpdateVehicleRequest $request, $id)
     {
         $data = $request->validated();
-
-        $data['updated_by'] = Auth::id();
-        $data['updated_at'] = now();
-
-        // Remove imagenes from data before updating (not a DB column)
+        $imagenes = $request->hasFile('imagenes') ? $request->file('imagenes') : null;
         unset($data['imagenes']);
 
-        DB::table('vehiculos')->where('id', $id)->update($data);
-
-        // Handle new image uploads
-        if ($request->hasFile('imagenes')) {
-            $ultimoOrden = DB::table('vehiculo_imagenes')
-                ->where('vehiculo_id', $id)
-                ->whereNull('deleted_at')
-                ->max('orden') ?? -1;
-
-            foreach ($request->file('imagenes') as $imagen) {
-                $ultimoOrden++;
-                $nombre = time() . '_' . $ultimoOrden . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('uploads/vehiculos'), $nombre);
-
-                DB::table('vehiculo_imagenes')->insert([
-                    'vehiculo_id'     => $id,
-                    'ruta'            => 'uploads/vehiculos/' . $nombre,
-                    'nombre_original' => $imagen->getClientOriginalName(),
-                    'orden'           => $ultimoOrden,
-                    'es_portada'      => false,
-                    'created_by'      => Auth::id(),
-                    'created_at'      => now(),
-                    'updated_at'      => now(),
-                ]);
-            }
-        }
+        $this->updateVehicleUseCase->execute((int) $id, $data, $imagenes);
 
         return redirect()->route('vehicles.show', $id)->with('success', 'Vehículo actualizado.');
     }
@@ -203,10 +137,7 @@ class VehicleWebController extends Controller
 
     public function destroy($id)
     {
-        DB::table('vehiculos')->where('id', $id)->update([
-            'deleted_at' => now(),
-            'deleted_by' => Auth::id(),
-        ]);
+        $this->vehicleRepository->delete((int) $id, Auth::id());
         return redirect()->route('vehicles.index')->with('success', 'Vehículo eliminado.');
     }
 }
