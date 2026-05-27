@@ -22,16 +22,34 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 
-# SIFEN certificates - sensitive
+# Billing API credentials & certificates - sensitive
 /storage/certs/*.pfx
 /storage/certs/*.p12
 /storage/certs/*.pem
 /storage/certs/*.key
 /storage/certs/*.crt
+/storage/billing/*
 
 # Uploads
 /public_html/uploads/*
 !/public_html/uploads/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Database dumps
+*.sql
+
+# Test/debug artifacts
+cookies.txt
+
+# IDE
+/.trae/
+
+# Documentación interna (análisis, planes, sprints)
+ANALISIS_*.md
+IMPLEMENTACION_*.md
+BILLING_SKELETON.md
+TWO_FACTOR_AUTH.md
 
 # Framework cache
 /bootstrap/cache/*.php

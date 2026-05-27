@@ -25,6 +25,24 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @if($venta->estado !== 'CANCELADO')
+            <a href="{{ route('ventas.edit', $venta->id) }}" class="btn btn-ghost flex-1 md:flex-none py-3 px-5 rounded-xl border border-accent/30 text-accent hover:bg-accent/10 transition-all text-xs font-black uppercase tracking-wider">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                </svg>
+                Editar
+            </a>
+            <form action="{{ route('ventas.destroy', $venta->id) }}" method="POST" onsubmit="return confirm('¿Está seguro de cancelar esta venta? Se revertirá el stock, vehículos, pagos y cuotas. Esta acción no se puede deshacer.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-ghost flex-1 md:flex-none py-3 px-5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all text-xs font-black uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                    Cancelar Venta
+                </button>
+            </form>
+            @endif
             <a href="{{ route('ventas.imprimir', $venta->id) }}" target="_blank" class="btn btn-primary flex-1 md:flex-none py-3 px-6 rounded-xl shadow-lg shadow-primary/25 border-b-2 border-primary-hover active:translate-y-0.5 transition-all text-xs font-black uppercase tracking-wider">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path d="M6.72 13.844 2.4 12l4.32-1.844L8.564 5.84l1.844-4.32L12.252 5.84l4.32 1.844-4.32 1.844-1.844 4.322-1.844-4.322Z" />

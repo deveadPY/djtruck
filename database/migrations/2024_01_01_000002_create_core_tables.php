@@ -191,10 +191,6 @@ return new class extends Migration {
             $table->decimal('precio_venta_usd',    20, 4);
             $table->decimal('tasa_cambio_venta',   20, 8)->nullable();
             $table->decimal('valor_libro_snapshot', 20, 4);
-            $table->boolean('tiene_factura_electronica')->default(false);
-            $table->string('cdc_sifen', 44)->nullable();
-            $table->string('numero_timbrado', 20)->nullable();
-            $table->dateTime('fecha_emision_fe')->nullable();
             $table->text('observaciones')->nullable();
             $table->date('fecha_venta');
             $table->timestamps();

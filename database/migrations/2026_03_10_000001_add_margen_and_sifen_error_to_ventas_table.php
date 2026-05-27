@@ -12,7 +12,6 @@ return new class extends Migration
         Schema::table('ventas', function (Blueprint $table) {
             $table->decimal('margen_bruto_usd', 20, 4)->nullable()->default(null)->after('valor_libro_snapshot');
             $table->decimal('margen_pct',       8,  4)->nullable()->default(null)->after('margen_bruto_usd');
-            $table->text('sifen_error')->nullable()->after('fecha_emision_fe');
         });
 
         // Calcular margen para registros existentes
@@ -32,7 +31,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ventas', function (Blueprint $table) {
-            $table->dropColumn(['margen_bruto_usd', 'margen_pct', 'sifen_error']);
+            $table->dropColumn(['margen_bruto_usd', 'margen_pct']);
         });
     }
 };

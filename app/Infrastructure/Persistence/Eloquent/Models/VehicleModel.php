@@ -25,6 +25,10 @@ class VehicleModel extends Model
         'precio_contado_usd', 'precio_cuotas_usd',
         'valor_toma_usd', 'proveedor_id', 'factura_compra_numero', 'factura_compra_fecha',
         'venta_canje_origen_id', 'vehiculo_canje_ref_id',
+        // Catálogo web
+        'motor_descripcion', 'potencia_hp', 'par_nm', 'tipo_traccion', 'tipo_transmision',
+        'cabina', 'norma_euro', 'peso_bruto_t', 'deposito_litros', 'neumaticos',
+        'descripcion_publica', 'equipamiento', 'publicar_en_web', 'mostrar_precio',
         'created_by', 'updated_by', 'deleted_by',
     ];
 
@@ -39,7 +43,11 @@ class VehicleModel extends Model
         'precio_contado_usd'        => 'decimal:4',
         'precio_cuotas_usd'         => 'decimal:4',
         'margen_objetivo_pct'       => 'decimal:2',
+        'peso_bruto_t'              => 'decimal:2',
         'factura_compra_fecha'      => 'date',
+        'equipamiento'              => 'array',
+        'publicar_en_web'           => 'boolean',
+        'mostrar_precio'            => 'boolean',
         'deleted_at'                => 'datetime',
     ];
 

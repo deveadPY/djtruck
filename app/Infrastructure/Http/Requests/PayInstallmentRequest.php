@@ -16,10 +16,17 @@ class PayInstallmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fecha_pago'   => 'required|date',
-            'monto_pagado' => 'required|numeric|min:0.01',
-            'caja_id'      => 'nullable|integer|exists:cajas,id',
-            'observacion'  => 'nullable|string|max:500',
+            'fecha_pago'                 => 'required|date',
+            'monto_pagado'               => 'required|numeric|min:0.01',
+            'caja_id'                    => 'nullable|integer|exists:cajas,id',
+            'observacion'                => 'nullable|string|max:500',
+            // Descuento por anticipo (opcional)
+            'aplicar_descuento_anticipo'  => 'nullable|boolean',
+            'descuento_anticipo_pct'     => 'nullable|numeric|min:0|max:50',
+            'descuento_proporcional'     => 'nullable|boolean',
+            // Pago múltiple (opcional)
+            'cuotas_ids'                 => 'nullable|array',
+            'cuotas_ids.*'               => 'integer|exists:cuotas,id',
         ];
     }
 

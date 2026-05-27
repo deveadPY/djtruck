@@ -13,8 +13,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Directorio de Clientes</h1>
-                    <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold hidden md:block">Gestión de cartera de clientes y límites de crédito</p>
+                    <h1 class="erp-page-title">Directorio de Clientes</h1>
+                    <p class="erp-page-subtitle">Gestión de cartera de clientes y límites de crédito</p>
                 </div>
             </div>
 
@@ -36,8 +36,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>
                 </span>
-                <input type="text" name="q" value="{{ $q }}" placeholder="RUC, razón social o nombre..." 
-                    class="form-input !pl-11 !bg-surface/40 !backdrop-blur-md border-white/5 h-12 text-sm rounded-2xl focus:ring-primary/20 transition-all font-medium">
+                <input type="text" name="q" value="{{ $q }}" placeholder="RUC, razón social o nombre..."
+                    class="form-input !pl-11 h-11 text-sm rounded-xl transition-all">
             </div>
             
             @if($q)
@@ -77,12 +77,12 @@
                     @forelse($clientes as $c)
                         <tr class="hover:bg-primary/5 transition-all duration-200 group cursor-pointer" onclick="window.location='{{ route('clientes.show', $c->id) }}'">
                             <td class="!pl-6">
-                                <span class="font-mono text-[0.68rem] font-black text-muted-foreground bg-surface2 px-2 py-1 rounded border border-white/5 group-hover:border-primary/30 group-hover:text-primary transition-all">
+                                <span class="font-mono text-xs text-muted-foreground bg-surface2 px-2 py-1 rounded border border-border group-hover:border-primary/30 group-hover:text-primary transition-all">
                                     {{ $c->ruc ?: 'SIN RUC' }}
                                 </span>
                             </td>
                             <td>
-                                <div class="font-black text-sm tracking-tight text-white group-hover:text-primary transition-colors">{{ $c->razon_social }}</div>
+                                <div class="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{{ $c->razon_social }}</div>
                                 @if($c->nombre_fantasia)
                                     <div class="text-[0.65rem] text-muted-foreground uppercase font-bold tracking-widest mt-0.5 italic">{{ $c->nombre_fantasia }}</div>
                                 @endif
@@ -109,7 +109,7 @@
                                 </div>
                             </td>
                             <td class="text-center">
-                                <span class="badge-status {{ $c->activo ? 'badge-disponible' : 'badge-vendido' }} !text-[0.6rem] !px-2.5 !font-black uppercase tracking-tighter">
+                                <span class="badge-status {{ $c->activo ? 'badge-disponible' : 'badge-vendido' }}">
                                     {{ $c->activo ? 'ACTIVO' : 'INACTIVO' }}
                                 </span>
                             </td>
@@ -148,44 +148,44 @@
     {{-- Vista de Móvil (Grid Cards) --}}
     <div class="md:hidden space-y-4">
         @forelse($clientes as $c)
-            <div class="relative overflow-hidden rounded-3xl border border-white/5 bg-surface2/40 backdrop-blur-md p-5 transition-all duration-300 active:scale-[0.98]" onclick="window.location='{{ route('clientes.show', $c->id) }}'">
-                <div class="absolute top-0 right-0 px-3 py-1 bg-surface2 rounded-bl-xl border-l border-b border-white/5">
-                    <span class="badge-status {{ $c->activo ? 'badge-disponible' : 'badge-vendido' }} !text-[0.55rem] !px-1.5 !py-0 !font-black uppercase tracking-tighter">{{ $c->activo ? 'ACTIVO' : 'INACTIVO' }}</span>
+            <div class="relative overflow-hidden rounded-2xl border bg-surface2 p-5 transition-all duration-200 active:scale-[0.99] cursor-pointer" style="border-color:var(--border)" onclick="window.location='{{ route('clientes.show', $c->id) }}'">
+                <div class="absolute top-3 right-3">
+                    <span class="badge-status {{ $c->activo ? 'badge-disponible' : 'badge-vendido' }}">{{ $c->activo ? 'ACTIVO' : 'INACTIVO' }}</span>
                 </div>
 
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 shadow-inner">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <div class="flex items-start gap-4 mb-4 pr-20">
+                    <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="font-black text-[1rem] leading-tight text-white transition-colors truncate">{{ $c->razon_social }}</div>
-                        <div class="text-[0.65rem] text-muted-foreground font-mono font-black mt-1 uppercase tracking-tighter">{{ $c->ruc ?: 'SIN RUC' }}</div>
+                        <div class="font-semibold text-base text-foreground truncate">{{ $c->razon_social }}</div>
+                        <div class="text-xs text-muted-foreground font-mono mt-0.5">{{ $c->ruc ?: 'SIN RUC' }}</div>
                     </div>
                 </div>
 
-                <div class="space-y-3 pt-4 border-t border-white/5">
+                <div class="pt-4 border-t" style="border-color:var(--border)">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-3.5 h-3.5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                             </svg>
-                            <span class="text-[0.7rem] font-bold text-white/80 tracking-tight">{{ $c->telefono ?: 'No especificado' }}</span>
+                            <span class="text-sm text-foreground">{{ $c->telefono ?: 'No especificado' }}</span>
                         </div>
                         <div class="text-right">
-                            <div class="text-[0.55rem] text-muted-foreground font-black uppercase tracking-widest mb-0.5">Línea de Crédito</div>
-                            <div class="text-[0.85rem] font-black text-accent leading-none">$ {{ number_format($c->linea_credito_usd, 2, ',', '.') }}</div>
+                            <div class="text-xs text-muted-foreground mb-0.5">Línea de Crédito</div>
+                            <div class="text-sm font-bold text-accent">$ {{ number_format($c->linea_credito_usd, 2, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-5 flex gap-2" onclick="event.stopPropagation()">
-                    <a href="{{ route('clientes.edit', $c->id) }}" class="flex-1 h-11 flex items-center justify-center gap-2 rounded-xl bg-surface2 text-muted-foreground text-[0.65rem] font-black uppercase border border-white/5 hover:bg-primary/10 hover:text-primary hover:border-primary/20 transition-all">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <div class="mt-4 flex gap-2" onclick="event.stopPropagation()">
+                    <a href="{{ route('clientes.edit', $c->id) }}" class="flex-1 h-10 flex items-center justify-center gap-2 rounded-xl bg-surface3 text-muted-foreground text-xs font-medium border border-border hover:bg-primary/10 hover:text-primary hover:border-primary/20 transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
-                        Editar Client
+                        Editar Cliente
                     </a>
                 </div>
             </div>

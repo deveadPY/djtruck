@@ -46,12 +46,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Proveedor</label>
-                        <select name="proveedor_id" class="form-input">
-                            <option value="">-- Sin proveedor --</option>
-                            @foreach($proveedores as $p)
-                                <option value="{{ $p->id }}" @selected(old('proveedor_id', $repuesto->proveedor_id) == $p->id)>{{ $p->razon_social }}</option>
-                            @endforeach
-                        </select>
+                        @include('repuestos.partials.proveedor-select', ['selected' => old('proveedor_id', $repuesto->proveedor_id), 'proveedores' => $proveedores])
                     </div>
 
                     <div class="form-group">
@@ -122,6 +117,8 @@
             </form>
         </div>
     </div>
+
+    @include('repuestos.partials.proveedor-modal')
 
     @push('scripts')
     <script>

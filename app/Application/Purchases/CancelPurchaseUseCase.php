@@ -6,6 +6,7 @@ namespace App\Application\Purchases;
 
 use App\Domain\Purchases\Repositories\PurchaseRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CancelPurchaseUseCase
 {
@@ -17,10 +18,12 @@ class CancelPurchaseUseCase
     {
         return DB::transaction(function () use ($id) {
             $compra = $this->purchaseRepository->findById($id);
-            
+
             if (!$compra || $compra->deleted_at) {
                 return false; // Ya anulada o no existe
             }
+
+            $oldValues = $compra->toArray();
 
             $items = DB::table('compra_items')->where('compra_id', $id)->get();
 
@@ -45,21 +48,45 @@ class CancelPurchaseUseCase
 
             // 3. Anular Compra (Soft Delete) a través del Repositorio
             $this->purchaseRepository->update($id, [
-                'deleted_at' => now(),
-                'updated_at' => now(),
                 'estado'     => 'ANULADO'
             ]);
+            $this->purchaseRepository->delete($id);
 
             // 4. Anular Factura asociada
             DB::table('facturas_proveedores')
                 ->where('compra_id', $id)
                 ->update([
-                    'estado' => 'ANULADO',
+                    'estado' => 'ANULADA',
                     'deleted_at' => now(),
                     'updated_at' => now()
                 ]);
 
+            // 5. Auditoría
+            $this->auditar('CANCEL_PURCHASE', 'compra', $id, $oldValues, ['estado' => 'ANULADO', 'deleted_at' => now()->toDateTimeString()], Auth::id(), request()->ip());
+
             return true;
         });
+    }
+
+    private function auditar(
+        string $action,
+        string $entityType,
+        int $entityId,
+        array $oldValues,
+        array $newValues,
+        ?int $userId,
+        ?string $ipAddress,
+    ): void {
+        DB::table('audit_logs')->insert([
+            'user_id'     => $userId,
+            'action'      => $action,
+            'entity_type' => $entityType,
+            'entity_id'   => $entityId,
+            'old_values'  => json_encode($oldValues),
+            'new_values'  => json_encode($newValues),
+            'metadata'    => null,
+            'ip_address'  => $ipAddress,
+            'created_at'  => now(),
+        ]);
     }
 }

@@ -7,9 +7,11 @@
         window.toggleCotizDropdown = function () {
             const dropdown = document.getElementById('cotizDropdown');
             isOpen = !isOpen;
-            dropdown.style.display = isOpen ? 'block' : 'none';
-            if (isOpen && !ratesLoaded) {
-                fetchRates();
+            if (isOpen) {
+                erpShowDropdown(dropdown);
+                if (!ratesLoaded) fetchRates();
+            } else {
+                erpHideDropdown(dropdown);
             }
         };
 

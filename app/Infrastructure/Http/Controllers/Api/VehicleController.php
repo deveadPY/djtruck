@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Controllers\Api;
 
 use App\Infrastructure\Currency\CurrencyConverter;
+use App\Infrastructure\Http\Resources\VehicleResource;
 use App\Infrastructure\Persistence\Eloquent\Models\VehicleModel;
 use App\Infrastructure\Persistence\Eloquent\Models\VehicleExpenseModel;
 use App\Domain\Shared\ValueObjects\Currency;
@@ -25,9 +26,9 @@ final class VehicleController extends BaseApiController
         if ($request->has('marca'))   $query->where('marca', 'like', "%{$request->marca}%");
         if ($request->has('modelo'))  $query->where('modelo', 'like', "%{$request->modelo}%");
 
-        $vehicles = $query->orderByDesc('created_at')->paginate(20);
+        $vehicles = $query->with(['proveedor'])->orderByDesc('created_at')->paginate(20);
 
-        return $this->paginatedResponse($vehicles);
+        return $this->paginatedResponse($vehicles, 'OK', VehicleResource::class);
     }
 
     public function store(Request $request): JsonResponse
@@ -57,13 +58,13 @@ final class VehicleController extends BaseApiController
             'created_by'       => auth()->id(),
         ]));
 
-        return $this->successResponse($vehicle, 'Vehículo registrado exitosamente.', 201);
+        return $this->successResponse(new VehicleResource($vehicle), 'Vehículo registrado exitosamente.', 201);
     }
 
     public function show(int $id): JsonResponse
     {
-        $vehicle = VehicleModel::with(['gastos', 'proveedor'])->findOrFail($id);
-        return $this->successResponse($vehicle);
+        $vehicle = VehicleModel::with(['gastos', 'proveedor', 'imagenes'])->findOrFail($id);
+        return $this->successResponse(new VehicleResource($vehicle));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -77,7 +78,7 @@ final class VehicleController extends BaseApiController
             'precio_venta_sugerido_usd' => 'sometimes|numeric|min:0',
         ]);
         $vehicle->update(array_merge($validated, ['updated_by' => auth()->id()]));
-        return $this->successResponse($vehicle, 'Vehículo actualizado.');
+        return $this->successResponse(new VehicleResource($vehicle->refresh()), 'Vehículo actualizado.');
     }
 
     public function destroy(int $id): JsonResponse

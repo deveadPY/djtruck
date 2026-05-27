@@ -6,11 +6,19 @@ namespace App\Domain\Sales\Events\Listeners;
 
 use App\Domain\Sales\Events\InstallmentOverdue;
 use App\Infrastructure\Mail\EmailSenderService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class SendOverdueInstallmentNotification
+class SendOverdueInstallmentNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    public string $queue = 'emails';
+    public int $tries = 3;
+    public int $backoff = 120;
+
     public function __construct(
         private readonly EmailSenderService $mailer
     ) {}

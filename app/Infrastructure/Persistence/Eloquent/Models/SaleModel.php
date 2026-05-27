@@ -46,6 +46,11 @@ class SaleModel extends Model
         return $this->belongsTo(ClienteModel::class, 'cliente_id');
     }
 
+    public function vendedor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'vendedor_id');
+    }
+
     public function detallesPago(): HasMany
     {
         return $this->hasMany(PaymentDetailModel::class, 'venta_id');

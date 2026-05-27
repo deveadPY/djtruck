@@ -7,10 +7,18 @@ namespace App\Domain\Sales\Events\Listeners;
 use App\Domain\Sales\Events\SaleCompleted;
 use App\Infrastructure\Mail\EmailSenderService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
 
-class SendSaleCompletedEmail
+class SendSaleCompletedEmail implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    public string $queue = 'emails';
+    public int $tries = 3;
+    public int $backoff = 60;
+
     public function __construct(
         private readonly EmailSenderService $mailer
     ) {}

@@ -3,15 +3,34 @@
 @section('page-title', 'Resumen de Compra #' . $compra->id)
 
 @section('content')
+<div x-data="{ showDeleteModal: false }">
 <div class="mb-6">
-    <a href="{{ route('compras.index') }}" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors group">
-        <div class="p-2 rounded-lg bg-surface2 group-hover:bg-primary/10 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
+    <div class="flex items-center gap-4">
+        <a href="{{ route('compras.index') }}" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors group">
+            <div class="p-2 rounded-lg bg-surface2 group-hover:bg-primary/10 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+            </div>
+            Volver al Historial
+        </a>
+        @if($compra->estado !== 'ANULADO')
+        <div class="flex items-center gap-2 ml-auto">
+            <a href="{{ route('compras.edit', $compra->id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-all text-xs font-black uppercase tracking-wider">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                </svg>
+                Editar Compra
+            </a>
+            <button type="button" @click="showDeleteModal = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all text-xs font-black uppercase tracking-wider">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+                Anular Compra
+            </button>
         </div>
-        Volver al Historial
-    </a>
+        @endif
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -203,5 +222,53 @@
         'documentableType' => 'compras',
         'documentableId' => $compra->id,
     ])
+</div>
+
+</div>
+
+    {{-- Modal de Confirmación de Eliminación / Anulación --}}
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all" x-show="showDeleteModal" x-cloak style="display: none;">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDeleteModal = false" x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+        
+        <div class="relative w-full max-w-md bg-surface border border-white/10 rounded-3xl shadow-2xl overflow-hidden" 
+            x-show="showDeleteModal" 
+            x-transition:enter="transition ease-out duration-300 transform" 
+            x-transition:enter-start="opacity-0 translate-y-8 scale-95" 
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 translate-y-8 scale-95">
+            
+            <div class="p-6 text-center">
+                {{-- Icono de Alerta Redondeado en Rojo --}}
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/25 mb-4 shadow-inner">
+                    <svg class="h-8 w-8 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZMM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                
+                <h3 class="text-sm font-black text-white uppercase tracking-wider mb-2">¿Confirmar Anulación de Compra?</h3>
+                <p class="text-xs text-muted-foreground leading-relaxed px-2">
+                    Esta acción revertirá el stock de los productos ingresados, anulará los movimientos de caja y cancelará la factura del proveedor asociada. 
+                </p>
+                <div class="mt-4 p-3 bg-red-500/5 rounded-2xl border border-red-500/10 text-[0.7rem] text-red-400 font-bold uppercase tracking-wider">
+                    Esta acción no se puede deshacer
+                </div>
+            </div>
+            
+            <div class="p-6 bg-surface3/30 border-t border-white/5 flex gap-3">
+                <button type="button" @click="showDeleteModal = false" class="btn btn-ghost flex-1 h-11 rounded-xl text-[0.65rem] font-black tracking-widest uppercase border border-white/5">
+                    Cancelar
+                </button>
+                <form action="{{ route('compras.destroy', $compra->id) }}" method="POST" class="flex-1">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="w-full btn btn-danger bg-red-500 hover:bg-red-600 text-white font-black text-[0.65rem] uppercase tracking-widest h-11 rounded-xl shadow-lg shadow-red-500/20 active:translate-y-0.5 transition-all">
+                        Anular Compra
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

@@ -6,7 +6,7 @@
     {{-- ── Cabecera y Filtros ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div class="flex flex-col">
-            <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Directorio Geográfico</h1>
+            <h1 class="text-xl md:text-2xl font-black tracking-tight uppercase italic" style="color: var(--text)">Directorio Geográfico</h1>
             <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold">Gestión centralizada de proveedores y aliados comerciales</p>
         </div>
 
@@ -31,7 +31,8 @@
                 </span>
                 <input type="text" name="q" value="{{ $q }}" 
                     placeholder="Búsqueda global: RUC, Razón Social, Marca..." 
-                    class="form-input !bg-surface/40 !backdrop-blur-md !border-white/5 !pl-12 !h-14 !text-sm !font-bold rounded-2xl focus:ring-primary/20 transition-all shadow-xl"
+                    class="form-input !bg-surface/60 !backdrop-blur-md !pl-12 !h-14 !text-sm !font-bold rounded-2xl transition-all shadow-xl"
+                    style="border-color: var(--border)"
                     autocomplete="off">
                 @if($q)
                     <a href="{{ route('proveedores.index') }}" class="absolute inset-y-0 right-4 flex items-center text-muted-foreground hover:text-white transition-colors">
@@ -42,12 +43,12 @@
                 @endif
             </form>
         </div>
-        <div class="hidden lg:flex items-center justify-between p-4 bg-surface2/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-xl">
+        <div class="hidden lg:flex items-center justify-between p-4 bg-surface2/60 backdrop-blur-md rounded-2xl shadow-xl border" style="border-color: var(--border)">
             <div class="flex flex-col">
                 <span class="text-[0.55rem] font-black text-muted-foreground uppercase tracking-widest">Base de Datos</span>
-                <span class="text-lg font-black text-white italic">{{ $proveedores->total() }}</span>
+                <span class="text-lg font-black italic" style="color: var(--text)">{{ $proveedores->total() }}</span>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border" style="border-color: var(--primary)">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-2.123-7.674 4.125 4.125 0 0 0-4.618 6.255Z" />
                     <path d="M15 8.25a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM3.751 20.117a15.921 15.921 0 0 1 11.25-4.867 15.92 15.92 0 0 1 11.25 4.867A15.921 15.921 0 0 1 3.75 20.117Z" />
@@ -57,7 +58,7 @@
     </div>
 
     {{-- ── Vista Escritorio (Table Master) ── --}}
-    <div class="hidden md:block erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden shadow-2xl">
+    <div class="hidden md:block erp-card !bg-surface/60 !backdrop-blur-xl relative overflow-hidden shadow-2xl" style="border-color: var(--border)">
         <div class="overflow-x-auto">
             <table class="erp-table">
                 <thead>
@@ -75,7 +76,7 @@
                         <tr class="hover:bg-primary/5 transition-all duration-200 group cursor-pointer" onclick="window.location='{{ route('proveedores.show', $p->id) }}'">
                             <td class="!pl-6">
                                 <div class="flex flex-col">
-                                    <span class="font-black text-sm text-white group-hover:text-primary transition-colors uppercase italic">{{ $p->razon_social }}</span>
+                                    <span class="font-black text-sm group-hover:text-primary transition-colors uppercase italic" style="color: var(--text)">{{ $p->razon_social }}</span>
                                     @if($p->nombre_fantasia)
                                         <div class="flex items-center gap-1.5 mt-0.5">
                                             <span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
@@ -105,12 +106,12 @@
                                             <div class="bg-surface3 w-full h-full flex items-center justify-center text-[0.5rem] font-bold">{{ $p->pais }}</div>
                                         @endif
                                     </div>
-                                    <span class="text-[0.65rem] font-black text-white/70 uppercase tracking-tighter">{{ $p->moneda_principal }}</span>
+                                    <span class="text-[0.65rem] font-black uppercase tracking-tighter" style="color: var(--text-muted)">{{ $p->moneda_principal }}</span>
                                 </div>
                             </td>
                             <td>
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-white/80">{{ $p->telefono ?: '—' }}</span>
+                                    <span class="text-xs font-bold" style="color: var(--text)">{{ $p->telefono ?: '—' }}</span>
                                     <span class="text-[0.6rem] text-muted-foreground truncate max-w-[120px]">{{ $p->email }}</span>
                                 </div>
                             </td>
@@ -144,9 +145,11 @@
     {{-- ── Vista Móvil (Grid Cards) ── --}}
     <div class="md:hidden space-y-4">
         @forelse($proveedores as $p)
-            <div class="relative overflow-hidden rounded-3xl border border-white/5 bg-surface2/40 backdrop-blur-md p-5 transition-all duration-300 active:scale-[0.98] shadow-xl" onclick="window.location='{{ route('proveedores.show', $p->id) }}'">
+            <div class="relative overflow-hidden rounded-3xl border bg-surface/60 backdrop-blur-md p-5 transition-all duration-300 active:scale-[0.98] shadow-xl" 
+                style="border-color: var(--border)"
+                onclick="window.location='{{ route('proveedores.show', $p->id) }}'">
                 <div class="absolute top-0 right-0 p-3 flex gap-2">
-                    <div class="w-6 h-4 rounded overflow-hidden shadow-sm border border-white/5">
+                    <div class="w-6 h-4 rounded overflow-hidden shadow-sm border" style="border-color: var(--border)">
                         <img src="https://flagcdn.com/w40/{{ strtolower($p->pais) }}.png" class="w-full h-full object-cover">
                     </div>
                 </div>
@@ -160,15 +163,15 @@
                             <span class="w-1.5 h-1.5 rounded-full {{ $p->tipo === 'DISTRIBUIDOR' ? 'bg-green-500' : 'bg-primary' }}"></span>
                             {{ $p->tipo }}
                         </div>
-                        <div class="font-black text-base leading-tight text-white mb-1 truncate uppercase italic">{{ $p->razon_social }}</div>
+                        <div class="font-black text-base leading-tight mb-1 truncate uppercase italic" style="color: var(--text)">{{ $p->razon_social }}</div>
                         <div class="font-mono text-[0.65rem] text-muted-foreground font-bold tracking-tight">RUC: {{ $p->ruc_rut_nit ?: '—' }}</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t" style="border-color: var(--border)">
                     <div class="flex flex-col">
                         <span class="text-[0.5rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Contacto Directo</span>
-                        <span class="text-xs font-bold text-white/90 truncate">{{ $p->telefono ?: 'No disp.' }}</span>
+                        <span class="text-xs font-bold truncate" style="color: var(--text)">{{ $p->telefono ?: 'No disp.' }}</span>
                     </div>
                     <div class="flex flex-col items-end">
                         <span class="text-[0.5rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Operativa</span>

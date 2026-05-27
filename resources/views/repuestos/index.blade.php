@@ -152,9 +152,39 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                             </svg>
                                         </a>
+
+                                        {{-- Descontinuar / Reactivar --}}
+                                        <form method="POST"
+                                              action="{{ route('repuestos.toggleActive', $r->id) }}"
+                                              class="inline"
+                                              data-danger-confirm="{{ $r->activo ? 'Ya no aparecerá en alertas de stock ni en selectores de venta. Esta acción es reversible.' : 'El producto volverá a estar disponible en ventas y alertas.' }}"
+                                              data-danger-title="{{ $r->activo ? 'Descontinuar ' . $r->codigo . '?' : 'Reactivar ' . $r->codigo . '?' }}"
+                                              data-danger-action-label="{{ $r->activo ? 'Descontinuar' : 'Reactivar' }}"
+                                              data-danger-icon="{{ $r->activo ? 'stop' : 'warning' }}">
+                                            @csrf
+                                            <input type="hidden" name="discontinuar" value="{{ $r->activo ? 1 : 0 }}">
+                                            <button class="p-2 rounded-xl transition-all {{ $r->activo ? 'hover:bg-amber-500/10 text-amber-500' : 'hover:bg-green-500/10 text-green-500' }}"
+                                                    title="{{ $r->activo ? 'Descontinuar (ya no se vende)' : 'Reactivar' }}">
+                                                @if($r->activo)
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                    </svg>
+                                                @endif
+                                            </button>
+                                        </form>
                                     @endcan
                                     @can('repuestos.eliminar')
-                                        <form method="POST" action="{{ route('repuestos.destroy', $r->id) }}" class="inline" onsubmit="return confirm('¿Eliminar producto {{ addslashes($r->codigo) }}?')">
+                                        <form method="POST"
+                                              action="{{ route('repuestos.destroy', $r->id) }}"
+                                              class="inline"
+                                              data-danger-confirm="Esta acción eliminará el producto {{ $r->codigo }} ({{ \Illuminate\Support\Str::limit($r->descripcion, 50) }}) del inventario. Se conservará el historial de ventas previas."
+                                              data-danger-title="Eliminar producto"
+                                              data-danger-action-label="Sí, eliminar"
+                                              data-danger-icon="trash">
                                             @csrf @method('DELETE')
                                             <button class="p-2 rounded-xl hover:bg-red-500/10 text-red-500 transition-all" title="Eliminar">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -236,7 +266,13 @@
                         Editar
                     </a>
                     @can('repuestos.eliminar')
-                        <form method="POST" action="{{ route('repuestos.destroy', $r->id) }}" class="contents" onsubmit="return confirm('¿Eliminar producto?')">
+                        <form method="POST"
+                              action="{{ route('repuestos.destroy', $r->id) }}"
+                              class="contents"
+                              data-danger-confirm="Esta acción eliminará el producto {{ $r->codigo }} del inventario. Se conservará el historial de ventas previas."
+                              data-danger-title="Eliminar producto"
+                              data-danger-action-label="Sí, eliminar"
+                              data-danger-icon="trash">
                             @csrf @method('DELETE')
                             <button type="submit" class="w-11 h-11 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 active:scale-[0.98] transition-all">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">

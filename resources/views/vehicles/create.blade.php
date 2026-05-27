@@ -155,6 +155,130 @@
                     </div>
                 </div>
 
+                {{-- Especificaciones técnicas para el catálogo --}}
+                <div class="mt-6 pt-5 border-t" style="border-color: var(--border);">
+                    <h3 class="form-label mb-3 flex items-center gap-2 text-base font-semibold">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                        Especificaciones técnicas <span class="text-xs font-normal opacity-50">(para el catálogo web)</span>
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Motor</label>
+                            <input type="text" name="motor_descripcion" value="{{ old('motor_descripcion') }}"
+                                placeholder="Ej: DC13 500 CV Euro 6" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Potencia (HP)</label>
+                            <input type="number" name="potencia_hp" value="{{ old('potencia_hp') }}"
+                                min="0" max="9999" placeholder="500" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Par motor (Nm)</label>
+                            <input type="number" name="par_nm" value="{{ old('par_nm') }}"
+                                min="0" max="99999" placeholder="2550" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tracción</label>
+                            <select name="tipo_traccion" class="form-input">
+                                <option value="">— Sin especificar —</option>
+                                @foreach(['4x2', '4x4', '6x2', '6x4', '8x4', '6x6', '8x8'] as $t)
+                                    <option value="{{ $t }}" {{ old('tipo_traccion') == $t ? 'selected' : '' }}>{{ $t }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Transmisión</label>
+                            <select name="tipo_transmision" class="form-input">
+                                <option value="">— Sin especificar —</option>
+                                <option value="MANUAL" {{ old('tipo_transmision') == 'MANUAL' ? 'selected' : '' }}>Manual</option>
+                                <option value="AUTOMATICA" {{ old('tipo_transmision') == 'AUTOMATICA' ? 'selected' : '' }}>Automática</option>
+                                <option value="AUTOMATIZADA" {{ old('tipo_transmision') == 'AUTOMATIZADA' ? 'selected' : '' }}>Automatizada (AMT)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cabina</label>
+                            <input type="text" name="cabina" value="{{ old('cabina') }}"
+                                placeholder="Ej: Highline, Topline, Day Cab" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Norma de emisión</label>
+                            <input type="text" name="norma_euro" value="{{ old('norma_euro') }}"
+                                placeholder="Ej: Euro 6, Euro 5" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Peso bruto vehicular (t)</label>
+                            <input type="number" name="peso_bruto_t" value="{{ old('peso_bruto_t') }}"
+                                min="0" max="999" step="0.01" placeholder="48.00" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Depósito combustible (L)</label>
+                            <input type="number" name="deposito_litros" value="{{ old('deposito_litros') }}"
+                                min="0" max="9999" placeholder="600" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Neumáticos</label>
+                            <input type="text" name="neumaticos" value="{{ old('neumaticos') }}"
+                                placeholder="Ej: 295/60 R22.5" class="form-input">
+                        </div>
+                    </div>
+
+                    {{-- Descripción pública --}}
+                    <div class="form-group mt-4">
+                        <label class="form-label">Descripción para el sitio web</label>
+                        <textarea name="descripcion_publica" rows="3" maxlength="2000"
+                            placeholder="Descripción comercial que verán los visitantes del sitio..."
+                            class="form-input">{{ old('descripcion_publica') }}</textarea>
+                    </div>
+
+                    {{-- Equipamiento --}}
+                    <div class="form-group mt-4">
+                        <label class="form-label mb-2">Equipamiento / Características destacadas</label>
+                        <div id="equipamiento-tags" class="flex flex-wrap gap-2 mb-2">
+                            @foreach(old('equipamiento', []) as $item)
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border" style="border-color:var(--border);background:var(--bg-card)">
+                                    {{ $item }}
+                                    <button type="button" onclick="removeTag(this)" class="opacity-60 hover:opacity-100">&times;</button>
+                                    <input type="hidden" name="equipamiento[]" value="{{ $item }}">
+                                </span>
+                            @endforeach
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="equipamiento-input" placeholder="Ej: ABS, Aire acondicionado, GPS…"
+                                class="form-input flex-1" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag()}">
+                            <button type="button" onclick="addTag()" class="btn btn-ghost text-sm">Agregar</button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Publicación en el sitio web --}}
+                <div class="mt-6 pt-5 border-t" style="border-color: var(--border);">
+                    <h3 class="form-label mb-3 flex items-center gap-2 text-base font-semibold">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253M2.99 9.337A8.993 8.993 0 0 0 3 12c0 .778.1 1.533.284 2.253" />
+                        </svg>
+                        Publicación en el sitio web
+                    </h3>
+                    <div class="flex flex-col gap-3">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="hidden" name="publicar_en_web" value="0">
+                            <input type="checkbox" name="publicar_en_web" value="1"
+                                {{ old('publicar_en_web') ? 'checked' : '' }}
+                                class="w-4 h-4 rounded" style="accent-color:var(--primary)">
+                            <span class="text-sm">Publicar este vehículo en el sitio web</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="hidden" name="mostrar_precio" value="0">
+                            <input type="checkbox" name="mostrar_precio" value="1"
+                                {{ old('mostrar_precio', true) ? 'checked' : '' }}
+                                class="w-4 h-4 rounded" style="accent-color:var(--primary)">
+                            <span class="text-sm">Mostrar precio al público</span>
+                        </label>
+                    </div>
+                </div>
+
                 {{-- Zona de carga de imágenes --}}
                 <div class="mt-6 pt-5 border-t" style="border-color: var(--border);">
                     <label class="form-label mb-2 flex items-center gap-2">
@@ -286,6 +410,27 @@
             }
 
             window.removeFile = removeFile;
+
+            // ── Equipamiento Tags ──────────────────────────
+            function addTag() {
+                const input = document.getElementById('equipamiento-input');
+                const val = input.value.trim();
+                if (!val) return;
+                const container = document.getElementById('equipamiento-tags');
+                const span = document.createElement('span');
+                span.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border';
+                span.style = 'border-color:var(--border);background:var(--bg-card)';
+                span.innerHTML = `${val} <button type="button" onclick="removeTag(this)" class="opacity-60 hover:opacity-100">&times;</button><input type="hidden" name="equipamiento[]" value="${val}">`;
+                container.appendChild(span);
+                input.value = '';
+            }
+
+            function removeTag(btn) {
+                btn.closest('span').remove();
+            }
+
+            window.addTag    = addTag;
+            window.removeTag = removeTag;
         </script>
     @endpush
 @endsection

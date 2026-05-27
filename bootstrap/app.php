@@ -6,7 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            '2fa.enforce'        => \App\Infrastructure\Http\Middleware\EnforceTwoFactorMiddleware::class,
+            '2fa.verify'         => \App\Infrastructure\Http\Middleware\VerifyTwoFactorMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

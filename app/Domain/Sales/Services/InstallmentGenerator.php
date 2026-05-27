@@ -27,6 +27,8 @@ final class InstallmentGenerator
         int             $numeroCuotas,
         float           $tasaMensual,
         string          $fechaPrimeraCuota,
+        int             $refuerzoCada = 0,
+        ?Money          $refuerzoMonto = null,
     ): array {
         if ($numeroCuotas <= 0 || $numeroCuotas > 60) {
             throw new InvalidInstallmentPlanException(
@@ -35,8 +37,8 @@ final class InstallmentGenerator
         }
 
         $cuotas = match ($tipo) {
-            InstallmentPlan::FRANCESA => $this->generarFrancesa($capital, $numeroCuotas, $tasaMensual),
-            InstallmentPlan::ALEMANA  => $this->generarAlemana($capital, $numeroCuotas, $tasaMensual),
+            InstallmentPlan::FRANCESA => $this->generarFrancesa($capital, $numeroCuotas, $tasaMensual, $refuerzoCada, $refuerzoMonto),
+            InstallmentPlan::ALEMANA  => $this->generarAlemana($capital, $numeroCuotas, $tasaMensual, $refuerzoCada, $refuerzoMonto),
             InstallmentPlan::MANUAL   => throw new InvalidInstallmentPlanException(
                 "Plan MANUAL requiere montos explícitos. Use generateManual()."
             ),
@@ -52,40 +54,72 @@ final class InstallmentGenerator
     // Sistema Francés: cuota fija = PMT
     // PMT = PV * [r(1+r)^n] / [(1+r)^n - 1]
     // ─────────────────────────────────────────────────────────
-    private function generarFrancesa(Money $capital, int $n, float $tasaMensualPct): array
+    private function generarFrancesa(Money $capital, int $n, float $tasaMensualPct, int $refuerzoCada = 0, ?Money $refuerzoMonto = null): array
     {
         $cuotas  = [];
-        $pv      = $capital->amount;
-        $r       = $tasaMensualPct / 100;
-
-        if ($r == 0) {
-            // Sin interés: división simple
-            $cuotaFija = round($pv / $n, $capital->currency->decimals());
-            for ($i = 1; $i <= $n; $i++) {
-                $cuotas[] = [
-                    'numero'   => $i,
-                    'capital'  => $cuotaFija,
-                    'interes'  => 0.0,
-                ];
-            }
-            return $cuotas;
+        
+        $hasRefuerzos = ($refuerzoCada > 0 && $refuerzoMonto !== null && $refuerzoMonto->amount > 0);
+        $numRefuerzos = $hasRefuerzos ? intdiv($n, $refuerzoCada) : 0;
+        
+        $capitalAmortizable = $capital;
+        if ($hasRefuerzos) {
+            $totalRefuerzos = $refuerzoMonto->multiply($numRefuerzos);
+            $capitalAmortizable = $capital->subtract($totalRefuerzos);
         }
 
-        $factor  = pow(1 + $r, $n);
-        $pmt     = $pv * ($r * $factor) / ($factor - 1);
-        $saldo   = $pv;
+        $pv      = $capitalAmortizable->amount;
+        $r       = $tasaMensualPct / 100;
+        $decimals = $capital->currency->decimals();
 
-        for ($i = 1; $i <= $n; $i++) {
-            $interes = round($saldo * $r, $capital->currency->decimals());
-            $cap     = round($pmt - $interes, $capital->currency->decimals());
-
-            // Última cuota: absorber diferencia de redondeo
-            if ($i === $n) {
-                $cap = round($saldo, $capital->currency->decimals());
+        $normalCuotas = [];
+        if ($r == 0) {
+            $cuotaFija = round($pv / $n, $decimals);
+            for ($i = 1; $i <= $n; $i++) {
+                $normalCuotas[] = [
+                    'numero_base' => $i,
+                    'capital'     => $i === $n ? round($pv - ($cuotaFija * ($n - 1)), $decimals) : $cuotaFija,
+                    'interes'     => 0.0,
+                ];
             }
+        } else {
+            $factor  = pow(1 + $r, $n);
+            $pmt     = $pv * ($r * $factor) / ($factor - 1);
+            $saldo   = $pv;
 
-            $cuotas[] = ['numero' => $i, 'capital' => $cap, 'interes' => $interes];
-            $saldo   -= $cap;
+            for ($i = 1; $i <= $n; $i++) {
+                $interes = round($saldo * $r, $decimals);
+                $cap     = ($i === $n) ? round($saldo, $decimals) : round($pmt - $interes, $decimals);
+
+                $normalCuotas[] = [
+                    'numero_base' => $i,
+                    'capital'     => $cap,
+                    'interes'     => $interes,
+                ];
+                $saldo   -= $cap;
+            }
+        }
+
+        $cuotaNumero = 0;
+        foreach ($normalCuotas as $c) {
+            $cuotaNumero++;
+            $cuotas[] = [
+                'numero'      => $cuotaNumero,
+                'capital'     => $c['capital'],
+                'interes'     => $c['interes'],
+                'es_refuerzo' => false,
+                'vencimiento_offset' => $c['numero_base'] - 1,
+            ];
+
+            if ($hasRefuerzos && $c['numero_base'] % $refuerzoCada === 0) {
+                $cuotaNumero++;
+                $cuotas[] = [
+                    'numero'      => $cuotaNumero,
+                    'capital'     => $refuerzoMonto->amount,
+                    'interes'     => 0.0,
+                    'es_refuerzo' => true,
+                    'vencimiento_offset' => $c['numero_base'] - 1,
+                ];
+            }
         }
 
         return $cuotas;
@@ -94,20 +128,60 @@ final class InstallmentGenerator
     // ─────────────────────────────────────────────────────────
     // Sistema Alemán: capital fijo, interés decreciente
     // ─────────────────────────────────────────────────────────
-    private function generarAlemana(Money $capital, int $n, float $tasaMensualPct): array
+    private function generarAlemana(Money $capital, int $n, float $tasaMensualPct, int $refuerzoCada = 0, ?Money $refuerzoMonto = null): array
     {
         $cuotas     = [];
-        $pv         = $capital->amount;
+        
+        $hasRefuerzos = ($refuerzoCada > 0 && $refuerzoMonto !== null && $refuerzoMonto->amount > 0);
+        $numRefuerzos = $hasRefuerzos ? intdiv($n, $refuerzoCada) : 0;
+        
+        $capitalAmortizable = $capital;
+        if ($hasRefuerzos) {
+            $totalRefuerzos = $refuerzoMonto->multiply($numRefuerzos);
+            $capitalAmortizable = $capital->subtract($totalRefuerzos);
+        }
+
+        $pv         = $capitalAmortizable->amount;
         $r          = $tasaMensualPct / 100;
-        $capFijo    = round($pv / $n, $capital->currency->decimals());
+        $decimals   = $capital->currency->decimals();
+        
+        $capFijo    = round($pv / $n, $decimals);
         $saldo      = $pv;
 
+        $normalCuotas = [];
         for ($i = 1; $i <= $n; $i++) {
-            $interes = round($saldo * $r, $capital->currency->decimals());
-            $cap     = ($i === $n) ? round($saldo, $capital->currency->decimals()) : $capFijo;
+            $interes = round($saldo * $r, $decimals);
+            $cap     = ($i === $n) ? round($saldo, $decimals) : $capFijo;
 
-            $cuotas[] = ['numero' => $i, 'capital' => $cap, 'interes' => $interes];
+            $normalCuotas[] = [
+                'numero_base' => $i,
+                'capital'     => $cap,
+                'interes'     => $interes,
+            ];
             $saldo   -= $cap;
+        }
+
+        $cuotaNumero = 0;
+        foreach ($normalCuotas as $c) {
+            $cuotaNumero++;
+            $cuotas[] = [
+                'numero'      => $cuotaNumero,
+                'capital'     => $c['capital'],
+                'interes'     => $c['interes'],
+                'es_refuerzo' => false,
+                'vencimiento_offset' => $c['numero_base'] - 1,
+            ];
+
+            if ($hasRefuerzos && $c['numero_base'] % $refuerzoCada === 0) {
+                $cuotaNumero++;
+                $cuotas[] = [
+                    'numero'      => $cuotaNumero,
+                    'capital'     => $refuerzoMonto->amount,
+                    'interes'     => 0.0,
+                    'es_refuerzo' => true,
+                    'vencimiento_offset' => $c['numero_base'] - 1,
+                ];
+            }
         }
 
         return $cuotas;
@@ -126,7 +200,8 @@ final class InstallmentGenerator
         $registros   = [];
 
         foreach ($cuotas as $cuota) {
-            $vencimiento = $fecha->copy()->addMonths($cuota['numero'] - 1)->toDateString();
+            $offset = $cuota['vencimiento_offset'] ?? ($cuota['numero'] - 1);
+            $vencimiento = $fecha->copy()->addMonths($offset)->toDateString();
 
             $id = DB::table('cuotas')->insertGetId([
                 'plan_cuotas_id'  => $planId,
@@ -166,13 +241,16 @@ final class InstallmentGenerator
         float           $tasaMensual,
         InstallmentPlan $tipo,
         string          $fechaPrimera,
+        int             $refuerzoCada = 0,
+        float           $refuerzoMonto = 0.0,
     ): array {
         $moneda  = \App\Domain\Shared\ValueObjects\Currency::from($monedaCode);
         $capital = new Money($capitalMonto, $moneda);
+        $moneyRefuerzo = new Money($refuerzoMonto, $moneda);
 
         $cuotas = match ($tipo) {
-            InstallmentPlan::FRANCESA => $this->generarFrancesa($capital, $numeroCuotas, $tasaMensual),
-            InstallmentPlan::ALEMANA  => $this->generarAlemana($capital, $numeroCuotas, $tasaMensual),
+            InstallmentPlan::FRANCESA => $this->generarFrancesa($capital, $numeroCuotas, $tasaMensual, $refuerzoCada, $moneyRefuerzo),
+            InstallmentPlan::ALEMANA  => $this->generarAlemana($capital, $numeroCuotas, $tasaMensual, $refuerzoCada, $moneyRefuerzo),
             default => throw new InvalidInstallmentPlanException("Tipo no simulable: {$tipo->value}"),
         };
 
@@ -182,7 +260,8 @@ final class InstallmentGenerator
         $resultado    = [];
 
         foreach ($cuotas as $c) {
-            $vencimiento    = $fecha->copy()->addMonths($c['numero'] - 1)->toDateString();
+            $offset         = $c['vencimiento_offset'] ?? ($c['numero'] - 1);
+            $vencimiento    = $fecha->copy()->addMonths($offset)->toDateString();
             $totalCapital  += $c['capital'];
             $totalInteres  += $c['interes'];
             $resultado[]    = [

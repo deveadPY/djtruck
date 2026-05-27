@@ -33,6 +33,9 @@ class DocumentoWebController extends Controller
         $desc = $request->input('descripcion');
         $tipo = $request->input('tipo');
 
+        // VALIDACIÓN DE SEGURIDAD (IDOR): Verificar que el usuario tiene permiso para ver/editar la entidad
+        $this->authorizeAccessToEntity($type, (int)$id);
+
         $uploadDir = 'uploads/documentos/' . $type . '/' . $id;
 
         foreach ($request->file('archivos') as $archivo) {
@@ -64,6 +67,10 @@ class DocumentoWebController extends Controller
     public function download($id)
     {
         $doc = DB::table('documentos')->where('id', $id)->whereNull('deleted_at')->firstOrFail();
+        
+        // VALIDACIÓN DE SEGURIDAD (IDOR): Verificar acceso a la entidad dueña del documento
+        $this->authorizeAccessToEntity($doc->documentable_type, (int)$doc->documentable_id);
+
         $path = public_path($doc->ruta);
 
         if (!file_exists($path)) {
@@ -75,10 +82,45 @@ class DocumentoWebController extends Controller
 
     public function destroy($id)
     {
+        $doc = DB::table('documentos')->where('id', $id)->whereNull('deleted_at')->firstOrFail();
+
+        // VALIDACIÓN DE SEGURIDAD (IDOR): Verificar permiso de edición en la entidad
+        $this->authorizeAccessToEntity($doc->documentable_type, (int)$doc->documentable_id);
+
         DB::table('documentos')->where('id', $id)->update([
             'deleted_at' => now(),
         ]);
 
         return back()->with('success', 'Documento eliminado.');
+    }
+
+    /**
+     * Valida que el usuario tenga permisos suficientes sobre la entidad documentable.
+     */
+    private function authorizeAccessToEntity(string $type, int $id): void
+    {
+        $user = Auth::user();
+
+        // Mapeo de tipos a permisos específicos del sistema (basado en routes/web.php)
+        $permissionMap = [
+            'clientes'             => 'clientes.ver',
+            'vehiculos'            => 'vehiculos.ver',
+            'proveedores'          => 'proveedores.ver',
+            'facturas_proveedores' => 'repuestos.ver',
+            'compras'              => 'repuestos.ver',
+            'ventas'               => 'ventas.ver',
+        ];
+
+        $permission = $permissionMap[$type] ?? null;
+
+        if ($permission && !$user->can($permission)) {
+            abort(403, "No tienes permiso para acceder a los documentos de esta entidad ($type).");
+        }
+
+        // Verificar que la entidad existe
+        $exists = DB::table($type)->where('id', $id)->whereNull('deleted_at')->exists();
+        if (!$exists) {
+            abort(404, "La entidad destino no existe o ha sido eliminada.");
+        }
     }
 }

@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Domain\Shared\ValueObjects\Currency;
 use App\Infrastructure\Currency\CurrencyConverter;
 use App\Domain\Purchases\Repositories\PurchaseRepositoryInterface;
+use App\Application\Purchases\CreatePurchaseDTO;
 use App\Application\Purchases\CreatePurchaseUseCase;
+use App\Application\Purchases\UpdatePurchaseDTO;
+use App\Application\Purchases\UpdatePurchaseUseCase;
 use App\Application\Purchases\CancelPurchaseUseCase;
 
 class CompraWebController extends Controller
@@ -18,6 +21,7 @@ class CompraWebController extends Controller
         private readonly CurrencyConverter $currency,
         private readonly PurchaseRepositoryInterface $purchaseRepository,
         private readonly CreatePurchaseUseCase $createPurchaseUseCase,
+        private readonly UpdatePurchaseUseCase $updatePurchaseUseCase,
         private readonly CancelPurchaseUseCase $cancelPurchaseUseCase
     ) {}
 
@@ -55,10 +59,8 @@ class CompraWebController extends Controller
             'adjuntos.*'      => 'file|mimes:pdf,jpg,jpeg,png|max:4096',
         ]);
 
-        $adjuntosFiles = $request->file('adjuntos');
-
         try {
-            $this->createPurchaseUseCase->execute($data, $adjuntosFiles);
+            $this->createPurchaseUseCase->execute(CreatePurchaseDTO::fromRequest($request));
             return redirect()->route('compras.index')->with('success', 'Compra registrada con éxito, stock actualizado y vinculada a Facturas y Gastos.');
         } catch (\Exception $e) {
             return back()->withInput()->withErrors(['error' => 'Error al registrar la compra: ' . $e->getMessage()]);
@@ -95,6 +97,48 @@ class CompraWebController extends Controller
             ->get();
 
         return view('compras.show', ['compra' => $compra_raw, 'items' => $items, 'documentos' => $documentos]);
+    }
+
+    public function edit($id)
+    {
+        $compra = $this->purchaseRepository->findById((int)$id);
+        if (!$compra || $compra->deleted_at) {
+            abort(404);
+        }
+
+        $proveedores = DB::table('proveedores')->whereNull('deleted_at')->orderBy('razon_social')->get();
+        $productos = DB::table('stock_repuestos')->where('activo', true)->whereNull('deleted_at')->get();
+        $items = DB::table('compra_items')->where('compra_id', $id)->get();
+
+        return view('compras.edit', compact('compra', 'proveedores', 'productos', 'items'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $data = $request->validate([
+            'proveedor_id'    => 'required|exists:proveedores,id',
+            'fecha_compra'    => 'required|date',
+            'numero_factura'  => 'nullable|string|max:50',
+            'moneda_compra'   => 'required|in:USD,PYG,BRL',
+            'tasa_cambio'     => 'required|numeric|min:1',
+            'items'           => 'required|array|min:1',
+            'items.*.repuesto_id' => 'required|exists:stock_repuestos,id',
+            'items.*.cantidad'    => 'required|numeric|min:0.001',
+            'items.*.precio_compra'=> 'required|numeric|min:0',
+            'items.*.precio_venta_sugerido'=> 'nullable|numeric|min:0',
+            'observaciones'   => 'nullable|string',
+            'adjuntos'        => 'nullable|array|max:5',
+            'adjuntos.*'      => 'file|mimes:pdf,jpg,jpeg,png|max:4096',
+        ]);
+
+        try {
+            $this->updatePurchaseUseCase->execute(UpdatePurchaseDTO::fromRequest((int)$id, $request));
+            return redirect()->route('compras.show', $id)->with('success', 'Compra actualizada con éxito. Stock y movimientos ajustados.');
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            return back()->withInput()->withErrors(['error' => 'Error al actualizar la compra: ' . $e->getMessage()]);
+        }
     }
 
     public function destroy($id)

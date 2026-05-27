@@ -32,6 +32,22 @@ class UpdateVehicleRequest extends FormRequest
             'precio_cuotas_usd'          => 'nullable|numeric|min:0',
             'imagenes'                   => 'nullable|array|max:10',
             'imagenes.*'                 => 'image|max:5120',
+            // Catálogo web
+            'motor_descripcion'          => 'nullable|string|max:100',
+            'potencia_hp'                => 'nullable|integer|min:0|max:9999',
+            'par_nm'                     => 'nullable|integer|min:0|max:99999',
+            'tipo_traccion'              => 'nullable|in:4x2,4x4,6x2,6x4,8x4,6x6,8x8',
+            'tipo_transmision'           => 'nullable|in:MANUAL,AUTOMATICA,AUTOMATIZADA',
+            'cabina'                     => 'nullable|string|max:80',
+            'norma_euro'                 => 'nullable|string|max:10',
+            'peso_bruto_t'               => 'nullable|numeric|min:0|max:999',
+            'deposito_litros'            => 'nullable|integer|min:0|max:9999',
+            'neumaticos'                 => 'nullable|string|max:50',
+            'descripcion_publica'        => 'nullable|string|max:2000',
+            'equipamiento'               => 'nullable|array',
+            'equipamiento.*'             => 'string|max:80',
+            'publicar_en_web'            => 'nullable|boolean',
+            'mostrar_precio'             => 'nullable|boolean',
         ];
     }
 }

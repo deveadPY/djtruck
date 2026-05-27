@@ -20,6 +20,8 @@ final class InstallmentController extends BaseApiController
         private readonly InstallmentGenerator $generator,
         private readonly CurrencyConverter    $currency,
         private readonly CajaService          $cajas,
+        private readonly \App\Application\Installments\PayInstallmentsUseCase $payUseCase,
+        private readonly \App\Application\Installments\LiquidatePlanUseCase $liquidateUseCase,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -60,74 +62,80 @@ final class InstallmentController extends BaseApiController
 
     public function pay(Request $request, int $id): JsonResponse
     {
-        $cuota     = InstallmentModel::findOrFail($id);
         $validated = $request->validate([
-            'monto_pagado' => 'required|numeric|min:0.01',
-            'moneda'       => 'required|in:USD,PYG,BRL',
-            'caja_id'      => 'nullable|integer|exists:cajas,id',
+            'monto_pagado'               => 'required|numeric|min:0.01',
+            'moneda'                     => 'required|in:USD,PYG,BRL',
+            'fecha_pago'                 => 'nullable|date',
+            'caja_id'                    => 'nullable|integer|exists:cajas,id',
+            'aplicar_descuento_anticipo'  => 'nullable|boolean',
+            'descuento_anticipo_pct'     => 'nullable|numeric|min:0|max:50',
+            'descuento_proporcional'     => 'nullable|boolean',
         ]);
 
-        // Si no se especifica caja, usar Caja Capital por defecto
-        $validated['caja_id'] = $validated['caja_id'] ?? $this->cajas->cajaCapitalId();
-
+        $cuota = InstallmentModel::findOrFail($id);
         if ($cuota->estado === 'PAGADA') {
             return $this->errorResponse('Esta cuota ya fue pagada.', null, 409);
         }
 
-        DB::transaction(function () use ($cuota, $validated) {
-            $moneda    = Currency::from($validated['moneda']);
-            $montoUsd  = $moneda === Currency::USD
-                ? $validated['monto_pagado']
-                : $this->currency->toBaseCurrency($validated['monto_pagado'], $moneda)->amount;
+        $dto = \App\Application\Installments\PayInstallmentsDTO::fromArray([
+            'cuotas_ids'                 => [$id],
+            'monto_pagado'               => (float) $validated['monto_pagado'],
+            'moneda'                     => $validated['moneda'],
+            'fecha_pago'                 => $validated['fecha_pago'] ?? now()->toDateString(),
+            'caja_id'                    => $validated['caja_id'] ?? null,
+            'aplicar_descuento_anticipo'  => (bool) ($validated['aplicar_descuento_anticipo'] ?? false),
+            'descuento_anticipo_pct'     => $validated['descuento_anticipo_pct'] ?? null,
+            'descuento_proporcional'     => (bool) ($validated['descuento_proporcional'] ?? false),
+            'observaciones'              => null,
+            'user_id'                    => (int) auth()->id(),
+            'ip_address'                 => $request->ip(),
+        ]);
 
-            $diasMora     = $cuota->diasMora();
-            $interesExtra = $diasMora > 0
-                ? round($cuota->monto_total * (config('erp.installments.tasa_mora_diaria_pct', 0.1) / 100) * $diasMora, 2)
-                : 0;
-
-            $cuota->update([
-                'estado'             => 'PAGADA',
-                'fecha_pago_efectivo'=> now()->toDateString(),
-                'monto_pagado'       => $validated['monto_pagado'],
-                'interes_mora'       => $interesExtra,
-                'caja_cobro_id'      => $validated['caja_id'],
-                'updated_by'         => auth()->id(),
-            ]);
-
-            // Registrar en movimientos de caja
-            DB::table('movimientos_caja')->insert([
-                'caja_id'       => $validated['caja_id'],
-                'tipo'          => 'INGRESO',
-                'concepto'      => "Cobro cuota #{$cuota->numero_cuota}/{$cuota->total_cuotas} - Venta #{$cuota->venta_id}",
-                'referencia_id' => $cuota->id,
-                'ref_type'      => 'cuota',
-                'moneda'        => $validated['moneda'],
-                'monto'         => $validated['monto_pagado'],
-                'monto_usd'     => $montoUsd,
-                'created_at'    => now(),
-                'created_by'    => auth()->id(),
-            ]);
-        });
-
-        return $this->successResponse($cuota->fresh(), 'Cuota registrada como pagada.');
+        try {
+            $result = $this->payUseCase->execute($dto);
+            return $this->successResponse($result, 'Cuota pagada correctamente.');
+        } catch (\RuntimeException $e) {
+            return $this->errorResponse($e->getMessage(), null, 422);
+        }
     }
 
     public function partialPay(Request $request, int $id): JsonResponse
     {
-        $cuota     = InstallmentModel::findOrFail($id);
+        // Pago parcial: igual que pay() pero el use case determina si es parcial o total
+        return $this->pay($request, $id);
+    }
+
+    /**
+     * Liquida el plan completo de cuotas.
+     */
+    public function liquidate(Request $request): JsonResponse
+    {
         $validated = $request->validate([
-            'monto_pagado' => 'required|numeric|min:0.01',
-            'moneda'       => 'required|in:USD,PYG,BRL',
-            'caja_id'      => 'required|integer',
+            'plan_id'                      => 'required|integer|exists:planes_cuotas,id',
+            'fecha_liquidacion'            => 'required|date',
+            'caja_id'                      => 'nullable|integer|exists:cajas,id',
+            'aplicar_descuento_liquidacion' => 'nullable|boolean',
+            'descuento_liquidacion_pct'    => 'nullable|numeric|min:0|max:100',
+            'observaciones'                => 'nullable|string|max:500',
         ]);
 
-        $cuota->update([
-            'estado'       => 'PAGADA_PARCIAL',
-            'monto_pagado' => $validated['monto_pagado'],
-            'updated_by'   => auth()->id(),
+        $dto = \App\Application\Installments\LiquidatePlanDTO::fromArray([
+            'plan_id'                      => (int) $validated['plan_id'],
+            'fecha_liquidacion'            => $validated['fecha_liquidacion'],
+            'caja_id'                      => $validated['caja_id'] ?? null,
+            'aplicar_descuento_liquidacion' => (bool) ($validated['aplicar_descuento_liquidacion'] ?? false),
+            'descuento_liquidacion_pct'    => $validated['descuento_liquidacion_pct'] ?? null,
+            'observaciones'                => $validated['observaciones'] ?? null,
+            'user_id'                      => (int) auth()->id(),
+            'ip_address'                   => $request->ip(),
         ]);
 
-        return $this->successResponse($cuota->fresh(), 'Pago parcial registrado.');
+        try {
+            $result = $this->liquidateUseCase->execute($dto);
+            return $this->successResponse($result, 'Plan liquidado correctamente.');
+        } catch (\RuntimeException $e) {
+            return $this->errorResponse($e->getMessage(), null, 422);
+        }
     }
 
     public function clientStatement(int $clientId): JsonResponse

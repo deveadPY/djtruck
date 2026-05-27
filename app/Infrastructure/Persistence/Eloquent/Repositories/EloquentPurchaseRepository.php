@@ -27,6 +27,13 @@ class EloquentPurchaseRepository implements PurchaseRepositoryInterface
         return $purchase->update($data);
     }
 
+    public function delete(int $id): bool
+    {
+        $purchase = PurchaseModel::find($id);
+        if (!$purchase) return false;
+        return $purchase->delete();
+    }
+
     public function searchPaginated(?string $searchQuery, int $limit = 25): LengthAwarePaginator
     {
         $query = PurchaseModel::select('compras.*', 'proveedores.razon_social as proveedor_nombre')

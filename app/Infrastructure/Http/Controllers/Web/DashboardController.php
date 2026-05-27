@@ -70,7 +70,7 @@ class DashboardController extends Controller
             ->where('activo', true)
             ->where('stock_minimo', '>', 0)
             ->whereRaw('stock_actual <= stock_minimo')
-            ->select('codigo', 'descripcion', 'stock_actual', 'stock_minimo')
+            ->select('id', 'codigo', 'descripcion', 'stock_actual', 'stock_minimo')
             ->limit(5)
             ->get();
 
@@ -101,12 +101,42 @@ class DashboardController extends Controller
             ])
             ->get();
 
+        // ── Comparativo mes anterior ──────────────────────────────────────
+        $ingresosUsdMesAnterior = (float) DB::table('ventas')
+            ->whereMonth('fecha_venta', now()->subMonth()->month)
+            ->whereYear('fecha_venta', now()->subMonth()->year)
+            ->where('estado', 'COMPLETADO')
+            ->whereNull('deleted_at')
+            ->sum('precio_venta_usd');
+
+        $ventasMesAnterior = DB::table('ventas')
+            ->whereMonth('fecha_venta', now()->subMonth()->month)
+            ->whereYear('fecha_venta', now()->subMonth()->year)
+            ->whereIn('estado', ['COMPLETADO', 'EN_PROCESO'])
+            ->whereNull('deleted_at')
+            ->count();
+
+        // ── Cobros próximos 7d (suma) ─────────────────────────────────────
+        $cobrosProximos7dTotal = (float) DB::table('cuotas')
+            ->where('estado', 'PENDIENTE')
+            ->whereBetween('fecha_vencimiento', [$hoy, now()->addDays(7)->toDateString()])
+            ->whereNull('deleted_at')
+            ->selectRaw('SUM(capital + interes) as total')
+            ->value('total');
+
+        // ── Distribución vehículos por estado ────────────────────────────
+        $vehiculosPorEstado = DB::table('vehiculos')
+            ->whereNull('deleted_at')
+            ->selectRaw('estado, COUNT(*) as total')
+            ->groupBy('estado')
+            ->pluck('total', 'estado');
+
         // ── Gráfico: ventas por mes (último año) ──────────────────────────
         $ventasPorMes = DB::table('ventas')
             ->where('estado', 'COMPLETADO')
             ->whereNull('deleted_at')
             ->where('fecha_venta', '>=', now()->subMonths(11)->startOfMonth()->toDateString())
-            ->selectRaw("DATE_FORMAT(fecha_venta, '%Y-%m') as mes, COUNT(*) as cantidad, SUM(precio_venta_usd) as total_usd")
+            ->selectRaw("DATE_FORMAT(fecha_venta, '%Y-%m') as mes, COUNT(*) as cantidad, SUM(precio_venta_usd) as total_usd, SUM(COALESCE(margen_bruto_usd, 0)) as margen_usd")
             ->groupBy('mes')
             ->orderBy('mes')
             ->get();
@@ -127,7 +157,7 @@ class DashboardController extends Controller
                 'ventas.numero_venta',
             ])
             ->orderBy('cuotas.fecha_vencimiento')
-            ->limit(8)
+            ->limit(10)
             ->get();
 
         return view('dashboard.index', compact(
@@ -136,13 +166,17 @@ class DashboardController extends Controller
             'disponibles',
             'enPreparacion',
             'ventasMes',
+            'ventasMesAnterior',
             'ingresosUsdMes',
+            'ingresosUsdMesAnterior',
             'margenUsdMes',
             'cuotasEnMora',
             'montoMoraUsd',
             'cuotasHoy',
             'stockBajoMinimo',
             'repuestosBajos',
+            'cobrosProximos7dTotal',
+            'vehiculosPorEstado',
             'ventasRecientes',
             'ventasPorMes',
             'cuotasProximas',

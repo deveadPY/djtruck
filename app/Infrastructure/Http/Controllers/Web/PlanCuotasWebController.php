@@ -14,7 +14,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PlanCuotasWebController extends Controller
 {
-    public function __construct(private readonly CajaService $cajaService) {}
+    public function __construct(
+        private readonly CajaService $cajaService,
+        private readonly \App\Application\Installments\PayInstallmentsUseCase $payUseCase,
+        private readonly \App\Application\Installments\LiquidatePlanUseCase $liquidateUseCase,
+    ) {}
 
     public function create($ventaId)
     {
@@ -28,7 +32,7 @@ class PlanCuotasWebController extends Controller
     public function store(Request $request, $ventaId)
     {
         $data = $request->validate([
-            'tipo_plan' => 'required|in:FRANCESA,ALEMANA,MANUAL',
+            'tipo_plan' => 'required|in:FRANCESA,MANUAL',
             'moneda' => 'required|string|max:3',
             'capital_total' => 'required|numeric|min:0',
             'capital_total_usd' => 'required|numeric|min:0',
@@ -307,7 +311,9 @@ class PlanCuotasWebController extends Controller
         $plan     = DB::table('planes_cuotas')->where('id', $cuota->plan_cuotas_id)->firstOrFail();
         $venta    = DB::table('ventas')->where('id', $cuota->venta_id)->firstOrFail();
         $cliente  = DB::table('clientes')->where('id', $plan->cliente_id)->firstOrFail();
-        $vehiculo = DB::table('vehiculos')->where('id', $venta->vehiculo_id)->firstOrFail();
+        $vehiculo = $venta->vehiculo_id
+            ? DB::table('vehiculos')->where('id', $venta->vehiculo_id)->first()
+            : null;
 
         $empresa = EmpresaSettings::get();
 
@@ -326,45 +332,71 @@ class PlanCuotasWebController extends Controller
 
     public function pagarCuota(PayInstallmentRequest $request, $cuotaId)
     {
-        // ── Guard: evitar doble pago ─────────────────────────────────────────
-        $cuota = DB::table('cuotas')->where('id', $cuotaId)->whereNull('deleted_at')->firstOrFail();
-
-        if ($cuota->estado === 'PAGADA') {
-            return back()->with('info', 'Esta cuota ya estaba registrada como pagada.');
-        }
-
-        DB::table('cuotas')->where('id', $cuotaId)->update([
-            'estado' => 'PAGADA',
-            'fecha_pago_efectivo' => $request->fecha_pago,
-            'monto_pagado' => $request->monto_pagado,
-            'updated_at' => now(),
-            'updated_by' => Auth::id(),
+        $dto = \App\Application\Installments\PayInstallmentsDTO::fromArray([
+            'cuotas_ids'                 => [(int) $cuotaId],
+            'monto_pagado'               => (float) $request->monto_pagado,
+            'moneda'                     => 'USD',
+            'fecha_pago'                 => $request->fecha_pago,
+            'caja_id'                    => $request->caja_id,
+            'aplicar_descuento_anticipo'  => (bool) ($request->aplicar_descuento_anticipo ?? false),
+            'descuento_anticipo_pct'     => $request->descuento_anticipo_pct,
+            'descuento_proporcional'     => (bool) ($request->descuento_proporcional ?? false),
+            'observaciones'              => $request->observacion,
+            'user_id'                    => Auth::id(),
+            'ip_address'                 => $request->ip(),
         ]);
 
-        // ── Registrar ingreso en Caja Capital por cobro de cuota ──
-        $cuota = DB::table('cuotas')->where('id', $cuotaId)->first();
-        $venta = DB::table('ventas')->where('id', $cuota->venta_id)->first();
         try {
-            $this->cajaService->ingresoCapital(
-                "Cobro cuota #{$cuota->numero_cuota}/{$cuota->total_cuotas} — Venta {$venta->numero_venta}",
-                'USD',
-                (float) $request->monto_pagado,
-                (float) $request->monto_pagado,
-                (int) $cuotaId,
-                'cuota'
-            );
+            $result = $this->payUseCase->execute($dto);
+
+            $msg = "Cuota pagada correctamente. Recibo: {$result['numero_recibo']}";
+            if ($result['descuento_aplicado'] > 0) {
+                $msg .= ' (descuento por anticipo: $' . number_format($result['descuento_aplicado'], 2) . ')';
+            }
+
+            return back()->with('success', $msg)->with('show_print_cuota', $cuotaId);
         } catch (\RuntimeException $e) {
-            Log::warning('PlanCuotasWebController pagarCuota: no se pudo registrar movimiento en caja: ' . $e->getMessage());
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
+    }
 
-        // ── Enviar recibo de pago al cliente por email (falla silenciosamente) ──
+    /**
+     * Liquida el plan de cuotas completo.
+     */
+    public function liquidarPlan(Request $request, $planId)
+    {
+        $validated = $request->validate([
+            'fecha_liquidacion'            => 'required|date',
+            'caja_id'                      => 'nullable|integer|exists:cajas,id',
+            'aplicar_descuento_liquidacion' => 'nullable|boolean',
+            'descuento_liquidacion_pct'    => 'nullable|numeric|min:0|max:100',
+            'observaciones'                => 'nullable|string|max:500',
+        ]);
+
+        $dto = \App\Application\Installments\LiquidatePlanDTO::fromArray([
+            'plan_id'                      => (int) $planId,
+            'fecha_liquidacion'            => $validated['fecha_liquidacion'],
+            'caja_id'                      => $validated['caja_id'] ?? null,
+            'aplicar_descuento_liquidacion' => (bool) ($validated['aplicar_descuento_liquidacion'] ?? false),
+            'descuento_liquidacion_pct'    => $validated['descuento_liquidacion_pct'] ?? null,
+            'observaciones'                => $validated['observaciones'] ?? null,
+            'user_id'                      => Auth::id(),
+            'ip_address'                   => $request->ip(),
+        ]);
+
         try {
-            app(\App\Domain\Sales\Events\Listeners\SendCuotaPagadaEmail::class)
-                ->sendRecibo((int) $cuotaId, (int) Auth::id());
-        } catch (\Throwable) {
-            // Never let an email failure break the payment flow
-        }
+            $result = $this->liquidateUseCase->execute($dto);
 
-        return back()->with('success', 'Cuota marcada como pagada.')->with('show_print_cuota', $cuotaId);
+            $msg = "Plan liquidado correctamente. Recibo: {$result['numero_recibo']}";
+            $msg .= ' | Total: $' . number_format($result['total_liquidacion'], 2);
+            if ($result['descuento_aplicado'] > 0) {
+                $msg .= ' (ahorro: $' . number_format($result['descuento_aplicado'], 2) . ')';
+            }
+
+            return redirect()->route('planes_cuotas.show', $planId)
+                ->with('success', $msg);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }

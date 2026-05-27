@@ -13,8 +13,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Inventario Vehículos</h1>
-                    <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold hidden md:block">Gestión de stock físico de camiones y maquinaria</p>
+                    <h1 class="erp-page-title">Inventario Vehículos</h1>
+                    <p class="erp-page-subtitle">Gestión de stock físico de camiones y maquinaria</p>
                 </div>
             </div>
 
@@ -36,8 +36,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>
                 </span>
-                <input type="text" name="q" value="{{ $q }}" placeholder="Chasis, marca o modelo..." 
-                    class="form-input !pl-11 !bg-surface/40 !backdrop-blur-md border-white/5 h-12 text-sm rounded-2xl focus:ring-primary/20 transition-all font-medium">
+                <input type="text" name="q" value="{{ $q }}" placeholder="Chasis, marca o modelo..."
+                    class="form-input !pl-11 h-11 text-sm rounded-xl transition-all">
             </div>
             
             @if($q)
@@ -78,27 +78,24 @@
                     @forelse($vehiculos as $v)
                         <tr class="hover:bg-primary/5 transition-all duration-200 group cursor-pointer" onclick="window.location='{{ route('vehicles.show', $v->id) }}'">
                             <td class="!pl-6">
-                                <div class="font-mono text-[0.68rem] font-black text-accent bg-surface2 px-2 py-1 rounded border border-white/5 group-hover:border-accent/30 transition-colors w-fit">
+                                <div class="font-mono text-xs font-bold text-accent bg-surface2 px-2 py-1 rounded border border-border group-hover:border-accent/30 transition-colors w-fit">
                                     {{ $v->numero_chasis }}
                                 </div>
                             </td>
                             <td>
-                                <div class="font-black text-sm tracking-tight text-white group-hover:text-primary transition-colors">{{ $v->marca }}</div>
-                                <div class="text-[0.65rem] text-muted-foreground uppercase font-bold tracking-widest mt-0.5">{{ $v->modelo }}</div>
+                                <div class="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{{ $v->marca }}</div>
+                                <div class="text-xs text-muted-foreground mt-0.5">{{ $v->modelo }}</div>
                             </td>
                             <td>
                                 <div class="flex flex-col">
-                                    <span class="font-black text-xs">{{ $v->anio }}</span>
-                                    <span class="text-[0.65rem] text-muted-foreground font-mono">{{ number_format($v->kilometraje, 0, ',', '.') }} km</span>
+                                    <span class="font-medium text-sm text-foreground">{{ $v->anio }}</span>
+                                    <span class="text-xs text-muted-foreground font-mono">{{ number_format($v->kilometraje, 0, ',', '.') }} km</span>
                                 </div>
                             </td>
                             <td>
                                 <div class="flex flex-col">
-                                    <span class="font-mono font-bold text-sm text-white">$ {{ number_format($v->costo_origen_usd + ($v->total_gastos_usd ?? 0), 2, ',', '.') }}</span>
-                                    <div class="flex items-center gap-1.5 mt-0.5">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-surface2 border border-white/5"></div>
-                                        <span class="text-[0.6rem] text-muted-foreground opacity-60 uppercase font-bold tracking-tighter">Base: $ {{ number_format($v->costo_origen_usd, 2, ',', '.') }}</span>
-                                    </div>
+                                    <span class="font-mono font-bold text-sm text-foreground">$ {{ number_format($v->costo_origen_usd + ($v->total_gastos_usd ?? 0), 2, ',', '.') }}</span>
+                                    <span class="text-xs text-muted-foreground mt-0.5">Base: $ {{ number_format($v->costo_origen_usd, 2, ',', '.') }}</span>
                                 </div>
                             </td>
                             <td>
@@ -135,7 +132,7 @@
                             </td>
                             <td>
                                 @php $cls = match ($v->estado) { 'DISPONIBLE' => 'badge-disponible', 'EN_PREPARACION' => 'badge-preparacion', 'TOMA' => 'badge-toma', default => 'badge-vendido'}; @endphp
-                                <span class="badge-status {{ $cls }} !text-[0.6rem] !px-2.5 !font-black uppercase tracking-tighter shadow-sm">{{ $v->estado }}</span>
+                                <span class="badge-status {{ $cls }}">{{ $v->estado }}</span>
                             </td>
                             <td class="text-right !pr-6" onclick="event.stopPropagation()">
                                 <div class="flex justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
@@ -173,27 +170,27 @@
     {{-- Vista de Móvil (Grid Cards) --}}
     <div class="md:hidden space-y-4">
         @forelse($vehiculos as $v)
-            <div class="relative overflow-hidden rounded-3xl border border-white/5 bg-surface2/40 backdrop-blur-md p-4 transition-all duration-300 active:scale-[0.98]" onclick="window.location='{{ route('vehicles.show', $v->id) }}'">
+            <div class="relative overflow-hidden rounded-2xl border bg-surface2 p-4 transition-all duration-200 active:scale-[0.99] cursor-pointer" style="border-color:var(--border)" onclick="window.location='{{ route('vehicles.show', $v->id) }}'">
                 @php $cls = match ($v->estado) { 'DISPONIBLE' => 'badge-disponible', 'EN_PREPARACION' => 'badge-preparacion', 'TOMA' => 'badge-toma', default => 'badge-vendido'}; @endphp
-                <div class="absolute top-0 right-0 px-3 py-1 bg-surface2 rounded-bl-xl border-l border-b border-white/5">
-                    <span class="badge-status {{ $cls }} !text-[0.55rem] !px-1.5 !py-0 !font-black uppercase tracking-tighter">{{ $v->estado }}</span>
+                <div class="absolute top-3 right-3">
+                    <span class="badge-status {{ $cls }}">{{ $v->estado }}</span>
                 </div>
 
-                <div class="flex items-start gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-surface/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0">
-                        <span class="text-[0.5rem] text-muted-foreground font-black uppercase tracking-tighter">Año</span>
-                        <span class="text-xs font-black text-accent">{{ $v->anio }}</span>
+                <div class="flex items-start gap-3 mb-4 pr-24">
+                    <div class="w-11 h-11 rounded-xl bg-surface3 flex flex-col items-center justify-center flex-shrink-0">
+                        <span class="text-[0.6rem] text-muted-foreground">Año</span>
+                        <span class="text-sm font-bold text-accent">{{ $v->anio }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="font-black text-[0.9rem] leading-tight text-white group-active:text-primary transition-colors truncate">{{ $v->marca }} {{ $v->modelo }}</div>
+                        <div class="font-semibold text-base text-foreground truncate">{{ $v->marca }} {{ $v->modelo }}</div>
                         <div class="flex items-center gap-2 mt-1.5">
-                            <span class="px-2 py-0.5 rounded font-mono text-[0.65rem] font-black bg-surface text-accent/80 border border-white/10 uppercase tracking-tighter truncate max-w-[120px]">{{ $v->numero_chasis }}</span>
-                            <span class="text-[0.6rem] text-muted-foreground font-bold uppercase tracking-widest whitespace-nowrap">{{ number_format($v->kilometraje, 0, ',', '.') }} km</span>
+                            <span class="font-mono text-xs text-muted-foreground truncate max-w-[120px]">{{ $v->numero_chasis }}</span>
+                            <span class="text-xs text-muted-foreground">{{ number_format($v->kilometraje, 0, ',', '.') }} km</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t" style="border-color:var(--border)">
                     <div>
                         <div class="text-[0.55rem] text-muted-foreground font-black uppercase tracking-widest mb-1">Precio sugerido vta</div>
                         <div class="text-sm font-black text-accent-light leading-none">
@@ -228,7 +225,7 @@
                 </div>
 
                 <div class="mt-4 flex gap-2" onclick="event.stopPropagation()">
-                    <a href="{{ route('vehicles.edit', $v->id) }}" class="flex-1 h-11 flex items-center justify-center gap-2 rounded-xl bg-primary/10 text-primary text-[0.65rem] font-black uppercase border border-primary/20 tracking-[0.15em] transition-all">
+                    <a href="{{ route('vehicles.edit', $v->id) }}" class="flex-1 h-10 flex items-center justify-center gap-2 rounded-xl bg-primary/10 text-primary text-xs font-semibold border border-primary/20 transition-all hover:bg-primary/20">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>

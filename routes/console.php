@@ -26,3 +26,15 @@ Schedule::command('erp:notify-low-stock')
     ->timezone('America/Asuncion')
     ->withoutOverlapping()
     ->description('Verifica repuestos con stock bajo mínimo y registra alertas');
+
+Schedule::command('erp:backup --keep=14')
+    ->dailyAt('03:00')
+    ->timezone('America/Asuncion')
+    ->withoutOverlapping()
+    ->description('Backup diario de base de datos (14 días retención)');
+
+Schedule::command('erp:backup --include-uploads --keep=4')
+    ->weeklyOn(0, '03:30')
+    ->timezone('America/Asuncion')
+    ->withoutOverlapping()
+    ->description('Backup semanal completo (BD + uploads, 4 semanas retención)');

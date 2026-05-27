@@ -43,6 +43,21 @@ return [
         'max_tasa_mensual_pct' => 10.0,
         'dias_gracia_mora'     => 5,
         'tasa_mora_diaria_pct' => 0.1,
+
+        // Descuento por pronto pago (anticipo de cuotas)
+        'early_payment_discount' => [
+            'enabled'            => true,
+            'default_pct'        => 5.0,     // 5% sobre capital
+            'max_pct'            => 15.0,    // tope máximo
+            'proporcional'       => false,   // si true, escala con días de anticipación
+        ],
+
+        // Descuento por liquidación del plan completo
+        'liquidation_discount' => [
+            'enabled'            => true,
+            'default_pct'        => 20.0,    // 20% sobre interés no devengado
+            'max_pct'            => 50.0,    // tope máximo
+        ],
     ],
 
     // ── Módulos habilitados ───────────────────────────────────────────
@@ -52,7 +67,6 @@ return [
         'installments' => true,
         'suppliers'    => true,
         'cash'         => true,
-        'sifen'        => false,
         'reports'      => true,
     ],
 ];

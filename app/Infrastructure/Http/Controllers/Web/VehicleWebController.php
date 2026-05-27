@@ -10,14 +10,19 @@ use App\Infrastructure\Http\Requests\StoreVehicleRequest;
 use App\Infrastructure\Http\Requests\UpdateVehicleRequest;
 use App\Domain\Vehicle\Repositories\VehicleRepositoryInterface;
 use App\Application\Vehicle\CreateVehicleUseCase;
+use App\Application\Vehicle\CreateVehicleDTO;
 use App\Application\Vehicle\UpdateVehicleUseCase;
+use App\Domain\Vehicle\Processors\VehicleImageProcessor;
+use App\Domain\Vehicle\Repositories\VehicleImageRepositoryInterface;
 
 class VehicleWebController extends Controller
 {
     public function __construct(
         private readonly VehicleRepositoryInterface $vehicleRepository,
         private readonly CreateVehicleUseCase $createVehicleUseCase,
-        private readonly UpdateVehicleUseCase $updateVehicleUseCase
+        private readonly UpdateVehicleUseCase $updateVehicleUseCase,
+        private readonly VehicleImageProcessor $imageProcessor,
+        private readonly VehicleImageRepositoryInterface $imageRepository
     ) {}
 
     public function index(Request $request)
@@ -56,11 +61,7 @@ class VehicleWebController extends Controller
 
     public function store(StoreVehicleRequest $request)
     {
-        $data = $request->validated();
-        $imagenes = $request->hasFile('imagenes') ? $request->file('imagenes') : null;
-        unset($data['imagenes']);
-
-        $vehicle = $this->createVehicleUseCase->execute($data, $imagenes);
+        $vehicle = $this->createVehicleUseCase->execute(CreateVehicleDTO::fromRequest($request));
 
         return redirect()->route('vehicles.show', $vehicle->id)->with('success', 'Vehículo registrado correctamente.');
     }
@@ -71,7 +72,9 @@ class VehicleWebController extends Controller
         if (!$vehiculo) abort(404);
 
         $proveedores = DB::table('proveedores')->where('activo', true)->whereNull('deleted_at')->get();
-        return view('vehicles.edit', compact('vehiculo', 'proveedores'));
+        $imagenes    = $this->imageRepository->getByVehicle((int) $id);
+
+        return view('vehicles.edit', compact('vehiculo', 'proveedores', 'imagenes'));
     }
 
     public function update(UpdateVehicleRequest $request, $id)
@@ -87,33 +90,10 @@ class VehicleWebController extends Controller
 
     public function destroyImagen($vehiculoId, $imagenId)
     {
-        $imagen = DB::table('vehiculo_imagenes')
-            ->where('id', $imagenId)
-            ->where('vehiculo_id', $vehiculoId)
-            ->whereNull('deleted_at')
-            ->first();
+        $eliminado = $this->imageProcessor->remove((int) $vehiculoId, (int) $imagenId);
 
-        if (!$imagen) {
-            abort(404);
-        }
-
-        // Soft delete
-        DB::table('vehiculo_imagenes')->where('id', $imagenId)->update([
-            'deleted_at' => now(),
-            'deleted_by' => Auth::id(),
-        ]);
-
-        // If the cover was deleted, promote next image to cover
-        if ($imagen->es_portada) {
-            $siguiente = DB::table('vehiculo_imagenes')
-                ->where('vehiculo_id', $vehiculoId)
-                ->whereNull('deleted_at')
-                ->orderBy('orden')
-                ->first();
-
-            if ($siguiente) {
-                DB::table('vehiculo_imagenes')->where('id', $siguiente->id)->update(['es_portada' => true]);
-            }
+        if (!$eliminado) {
+            return back()->withErrors(['error' => 'Imagen no encontrada o ya eliminada.']);
         }
 
         return back()->with('success', 'Imagen eliminada.');
@@ -121,16 +101,11 @@ class VehicleWebController extends Controller
 
     public function setPortada($vehiculoId, $imagenId)
     {
-        // Remove cover from all images of this vehicle
-        DB::table('vehiculo_imagenes')
-            ->where('vehiculo_id', $vehiculoId)
-            ->update(['es_portada' => false]);
+        $actualizado = $this->imageProcessor->setCover((int) $vehiculoId, (int) $imagenId);
 
-        // Set new cover
-        DB::table('vehiculo_imagenes')
-            ->where('id', $imagenId)
-            ->where('vehiculo_id', $vehiculoId)
-            ->update(['es_portada' => true, 'updated_at' => now()]);
+        if (!$actualizado) {
+            return back()->withErrors(['error' => 'No se pudo actualizar la portada.']);
+        }
 
         return back()->with('success', 'Imagen de portada actualizada.');
     }

@@ -533,8 +533,7 @@
                                 <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Tipo de
                                     plan <span class="text-red-500">*</span></label>
                                 <select name="tipo_plan" id="tipo_plan" class="form-input" onchange="onTipoPlanChange()">
-                                    <option value="FRANCESA">Francesa (cuota fija)</option>
-                                    <option value="ALEMANA">Alemana (capital fijo)</option>
+                                    <option value="FRANCESA">Cuota Fija</option>
                                     <option value="MANUAL" selected>Manual / Personalizado</option>
                                 </select>
                             </div>

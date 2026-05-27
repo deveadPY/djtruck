@@ -21,6 +21,7 @@ use App\Infrastructure\Http\Controllers\Web\NotificacionesWebController;
 use App\Infrastructure\Http\Controllers\Web\EmailConfiguracionController;
 use App\Infrastructure\Http\Controllers\Web\ReportWebController;
 use App\Infrastructure\Http\Controllers\Web\CompraWebController;
+use App\Infrastructure\Http\Controllers\Web\TwoFactorController;
 
 Route::get('/', fn() => redirect('/dashboard'));
 
@@ -30,8 +31,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 });
 
-// ── Rutas autenticadas ───────────────────────────────────────────────────
+// ── Rutas de Two-Factor Authentication ──────────────────────────────────
+// Auth requerido pero SIN middleware 2fa.verify ni 2fa.enforce (eso causaría loop).
 Route::middleware('auth')->group(function () {
+    Route::get('/2fa/setup',             [TwoFactorController::class, 'setup'])->name('2fa.setup');
+    Route::post('/2fa/confirm',          [TwoFactorController::class, 'confirm'])->name('2fa.confirm');
+    Route::get('/2fa/recovery-codes',    [TwoFactorController::class, 'showRecovery'])->name('2fa.recovery.show');
+    Route::get('/2fa/verify',            [TwoFactorController::class, 'verifyForm'])->name('2fa.verify');
+    Route::post('/2fa/verify',           [TwoFactorController::class, 'verify'])->name('2fa.verify.submit');
+    Route::post('/2fa/disable',          [TwoFactorController::class, 'disable'])->name('2fa.disable');
+    Route::post('/2fa/regenerate-codes', [TwoFactorController::class, 'regenerate'])->name('2fa.regenerate');
+});
+
+// ── Rutas autenticadas (con 2FA enforced + verified) ────────────────────
+Route::middleware(['auth', '2fa.enforce', '2fa.verify'])->group(function () {
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -78,6 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:repuestos.editar')->group(function () {
         Route::get('/repuestos/{id}/edit', [RepuestoWebController::class, 'edit'])->name('repuestos.edit');
         Route::put('/repuestos/{id}', [RepuestoWebController::class, 'update'])->name('repuestos.update');
+        Route::post('/repuestos/{id}/toggle-active', [RepuestoWebController::class, 'toggleActive'])->name('repuestos.toggleActive');
     });
     Route::middleware('permission:repuestos.eliminar')->group(function () {
         Route::delete('/repuestos/{id}', [RepuestoWebController::class, 'destroy'])->name('repuestos.destroy');
@@ -87,6 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:repuestos.crear')->group(function () {
         Route::get('/compras/create', [CompraWebController::class, 'create'])->name('compras.create');
         Route::post('/compras', [CompraWebController::class, 'store'])->name('compras.store');
+        Route::get('/compras/{id}/edit', [CompraWebController::class, 'edit'])->name('compras.edit');
+        Route::put('/compras/{id}', [CompraWebController::class, 'update'])->name('compras.update');
     });
     Route::middleware('permission:repuestos.ver')->group(function () {
         Route::get('/compras', [CompraWebController::class, 'index'])->name('compras.index');
@@ -102,6 +118,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:ventas.crear')->group(function () {
         Route::get('/ventas/create', [VentaWebController::class, 'create'])->name('ventas.create');
         Route::post('/ventas', [VentaWebController::class, 'store'])->name('ventas.store');
+        Route::get('/ventas/{id}/edit', [VentaWebController::class, 'edit'])->name('ventas.edit');
+        Route::put('/ventas/{id}', [VentaWebController::class, 'update'])->name('ventas.update');
+        Route::delete('/ventas/{id}', [VentaWebController::class, 'destroy'])->name('ventas.destroy');
     });
     Route::middleware('permission:ventas.ver')->group(function () {
         Route::get('/ventas', [VentaWebController::class, 'index'])->name('ventas.index');
@@ -120,6 +139,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('permission:cuotas.pagar')->group(function () {
         Route::post('/cuotas/{cuotaId}/pagar', [PlanCuotasWebController::class, 'pagarCuota'])->name('cuotas.pagar');
+        Route::post('/planes-cuotas/{planId}/liquidar', [PlanCuotasWebController::class, 'liquidarPlan'])->name('planes_cuotas.liquidar');
     });
 
     // ══════════════════════════════════════════════════════════════════════
@@ -152,6 +172,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:proveedores.crear')->group(function () {
         Route::get('/proveedores/create', [ProveedorWebController::class, 'create'])->name('proveedores.create');
         Route::post('/proveedores', [ProveedorWebController::class, 'store'])->name('proveedores.store');
+        // Endpoint AJAX para crear proveedor inline desde otros formularios
+        Route::post('/proveedores/quick-create', [ProveedorWebController::class, 'quickStore'])->name('proveedores.quickStore');
     });
     Route::middleware('permission:proveedores.ver')->group(function () {
         Route::get('/proveedores', [ProveedorWebController::class, 'index'])->name('proveedores.index');
@@ -264,6 +286,8 @@ Route::middleware('auth')->group(function () {
     // ══════════════════════════════════════════════════════════════════════
     Route::middleware('permission:cuotas.ver')->group(function () {
         Route::get('/api/notificaciones', [NotificacionesWebController::class, 'apiIndex'])->name('api.notificaciones');
+        Route::post('/api/notificaciones/descartar', [NotificacionesWebController::class, 'descartar'])->name('api.notificaciones.descartar');
+        Route::post('/api/notificaciones/descartar-todas', [NotificacionesWebController::class, 'descartarTodas'])->name('api.notificaciones.descartar-todas');
         Route::get('/notificaciones', [NotificacionesWebController::class, 'index'])->name('notificaciones.index');
     });
 

@@ -15,5 +15,7 @@ interface PurchaseRepositoryInterface
     
     public function update(int $id, array $data): bool;
     
+    public function delete(int $id): bool;
+    
     public function searchPaginated(?string $searchQuery, int $limit = 25): LengthAwarePaginator;
 }

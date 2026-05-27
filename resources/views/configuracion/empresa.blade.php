@@ -7,12 +7,12 @@
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-1">
         <div class="flex flex-col">
-            <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Configuración Global</h1>
+            <h1 class="text-xl md:text-2xl font-black tracking-tight uppercase italic" style="color: var(--text)">Configuración Global</h1>
             <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold italic">Definiendo la identidad y parámetros del ecosistema</p>
         </div>
         
         <div class="flex items-center gap-3">
-             <a href="{{ route('dashboard') }}" class="h-10 px-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/5 text-[0.6rem] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2">
+             <a href="{{ route('dashboard') }}" class="h-10 px-4 rounded-xl border text-[0.6rem] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2" style="background: var(--surface2); border-color: var(--border); color: var(--text)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
                 Regresar
             </a>
@@ -47,15 +47,15 @@
             <div class="lg:col-span-8 space-y-8">
                 
                 {{-- Card: Datos Maestros --}}
-                <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden group">
+                <div class="erp-card !bg-surface/60 !backdrop-blur-xl relative overflow-hidden group" style="border-color: var(--border)">
                     <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/50 to-accent/50 opacity-30"></div>
                     
-                    <div class="erp-card-header !bg-transparent border-b border-white/5 p-6 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-primary border border-white/5">
+                    <div class="erp-card-header !bg-transparent p-6 flex items-center gap-3" style="border-color: var(--border)">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-primary border" style="background: var(--surface2); border-color: var(--border)">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" /></svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-white italic">Ficha Institucional</h2>
+                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] italic" style="color: var(--text)">Ficha Institucional</h2>
                             <p class="text-[0.55rem] text-muted-foreground font-bold uppercase tracking-widest mt-1">Datos legales y de contacto comercial</p>
                         </div>
                     </div>
@@ -66,69 +66,69 @@
                             <div class="col-span-1 md:col-span-2 space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Razón Social <span class="text-primary">*</span></label>
                                 <input type="text" name="nombre_empresa" value="{{ old('nombre_empresa', $empresa?->nombre_empresa) }}" required
-                                    class="form-input !bg-surface !h-12 !text-[0.75rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4 w-full tracking-wider">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.75rem] !font-black rounded-xl transition-all uppercase px-4 w-full tracking-wider" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- RUC --}}
                             <div class="space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">RUC / Registro Fiscal</label>
                                 <input type="text" name="ruc" value="{{ old('ruc', $empresa?->ruc) }}" placeholder="Ej: 80012345-0"
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black font-mono rounded-xl transition-all px-4" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- Telefono --}}
                             <div class="space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Línea de Contacto</label>
                                 <input type="text" name="telefono" value="{{ old('telefono', $empresa?->telefono) }}" placeholder="+595 ..."
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all px-4" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- Email --}}
                             <div class="space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Email Corporativo</label>
                                 <input type="email" name="email" value="{{ old('email', $empresa?->email) }}" placeholder="admin@empresa.com"
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black font-mono rounded-xl transition-all px-4" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- Web --}}
                             <div class="space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Sitio Web</label>
                                 <input type="url" name="sitio_web" value="{{ old('sitio_web', $empresa?->sitio_web) }}" placeholder="https://..."
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all px-4" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- Direccion --}}
                             <div class="col-span-1 md:col-span-2 space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Dirección Física</label>
                                 <input type="text" name="direccion" value="{{ old('direccion', $empresa?->direccion) }}" placeholder="Calle, Nro, Oficina"
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4 w-full">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all uppercase px-4 w-full" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- Ciudad --}}
                             <div class="space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Ciudad</label>
                                 <input type="text" name="ciudad" value="{{ old('ciudad', $empresa?->ciudad) }}"
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all uppercase px-4" style="border-color: var(--border); color: var(--text)">
                             </div>
 
                             {{-- País --}}
                             <div class="space-y-2">
                                 <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">País</label>
                                 <input type="text" name="pais" value="{{ old('pais', $empresa?->pais ?? 'Paraguay') }}"
-                                    class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4">
+                                    class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all uppercase px-4" style="border-color: var(--border); color: var(--text)">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {{-- Card: Parámetros Operativos --}}
-                <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden group">
-                    <div class="erp-card-header !bg-transparent border-b border-white/5 p-6 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-accent border border-white/5">
+                <div class="erp-card !bg-surface/60 !backdrop-blur-xl relative overflow-hidden group" style="border-color: var(--border)">
+                    <div class="erp-card-header !bg-transparent p-6 flex items-center gap-3" style="border-color: var(--border)">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-accent border" style="background: var(--surface2); border-color: var(--border)">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" /><path d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" /></svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-white italic">Parámetros de Sistema</h2>
+                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] italic" style="color: var(--text)">Parámetros de Sistema</h2>
                             <p class="text-[0.55rem] text-muted-foreground font-bold uppercase tracking-widest mt-1">Configuración técnica de documentos y moneda</p>
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                     <div class="erp-card-body p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div class="space-y-2 lg:col-span-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Moneda Base de Operación</label>
-                            <select name="moneda_base" class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase">
+                            <select name="moneda_base" class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all uppercase" style="border-color: var(--border); color: var(--text)">
                                 <option value="USD" @selected(old('moneda_base', $empresa?->moneda_base) === 'USD')>USD — Dólar Americano</option>
                                 <option value="PYG" @selected(old('moneda_base', $empresa?->moneda_base) === 'PYG')>PYG — Guaraní Paraguayo</option>
                                 <option value="BRL" @selected(old('moneda_base', $empresa?->moneda_base) === 'BRL')>BRL — Real Brasileño</option>
@@ -146,13 +146,13 @@
                         <div class="space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Prefijo Venta</label>
                             <input type="text" name="prefijo_venta" value="{{ old('prefijo_venta', $empresa?->prefijo_venta ?? 'V') }}" maxlength="5"
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4">
+                                class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all uppercase px-4" style="border-color: var(--border); color: var(--text)">
                         </div>
 
                         <div class="space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Prefijo Factura</label>
                             <input type="text" name="prefijo_factura" value="{{ old('prefijo_factura', $empresa?->prefijo_factura ?? 'F') }}" maxlength="5"
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4">
+                                class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all uppercase px-4" style="border-color: var(--border); color: var(--text)">
                         </div>
 
                     </div>
@@ -164,7 +164,7 @@
             <div class="lg:col-span-4 space-y-8 sticky top-8">
                 
                 {{-- Logo Management --}}
-                <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden flex flex-col items-center p-8 text-center group">
+                <div class="erp-card !bg-surface/60 !backdrop-blur-xl relative overflow-hidden flex flex-col items-center p-8 text-center group" style="border-color: var(--border)">
                     <span class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-6 block">Sello Institucional</span>
                     
                     <div class="relative w-full aspect-square md:aspect-video rounded-2xl bg-black/40 border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden hover:border-primary/50 transition-all group/logo cursor-pointer mb-6" id="dropZoneContainer">
@@ -181,8 +181,8 @@
                     </div>
 
                     <p class="text-[0.55rem] text-muted-foreground font-bold uppercase tracking-widest leading-relaxed mb-6">
-                        Formatos: <span class="text-white">PNG, SVG o JPG</span><br>
-                        Resolución recomendada: <span class="text-white">512x512px o superior</span>
+                        Formatos: <span style="color: var(--text)">PNG, SVG o JPG</span><br>
+                        Resolución recomendada: <span style="color: var(--text)">512x512px o superior</span>
                     </p>
 
                     @if($empresa?->logo_path)
@@ -194,12 +194,12 @@
                 </div>
 
                 {{-- Action Panel --}}
-                <div class="erp-card !bg-primary/10 !border-primary/20 p-6 flex flex-col gap-4 shadow-2xl shadow-primary/10 relative overflow-hidden group">
+                <div class="erp-card !bg-primary/10 p-6 flex flex-col gap-4 shadow-2xl shadow-primary/10 relative overflow-hidden group" style="border-color: var(--primary)">
                     <div class="absolute -right-12 -top-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform"></div>
                     
                     <div class="flex flex-col">
                         <span class="text-[0.5rem] font-black text-primary uppercase tracking-widest mb-1 italic">Sincronización Masiva</span>
-                        <span class="text-[0.7rem] font-black text-white italic uppercase tracking-tighter">Guardar Parámetros</span>
+                        <span class="text-[0.7rem] font-black italic uppercase tracking-tighter" style="color: var(--text)">Guardar Parámetros</span>
                     </div>
 
                     <div class="grid grid-cols-1 gap-3">

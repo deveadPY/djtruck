@@ -114,8 +114,8 @@
                 <div class="section-title">REFERENCIA DE VENTA</div>
                 <table class="info-table">
                     <tr><td class="label">Venta N°:</td><td class="value">{{ $venta->numero_venta }}</td></tr>
-                    <tr><td class="label">Vehículo:</td><td class="value">{{ $vehiculo->marca }} {{ $vehiculo->modelo }}</td></tr>
-                    <tr><td class="label">Chasis:</td><td class="value">{{ $vehiculo->numero_chasis }}</td></tr>
+                    <tr><td class="label">Vehículo:</td><td class="value">{{ $vehiculo ? ($vehiculo->marca . ' ' . $vehiculo->modelo) : 'N/A' }}</td></tr>
+                    <tr><td class="label">Chasis:</td><td class="value">{{ $vehiculo?->numero_chasis ?? 'N/A' }}</td></tr>
                 </table>
             </td>
         </tr>

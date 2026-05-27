@@ -2,13 +2,22 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
-use Illuminate\Routing\Controller;
+use App\Application\Suppliers\CreateSupplierDTO;
+use App\Application\Suppliers\CreateSupplierUseCase;
+use App\Domain\Suppliers\Exceptions\DuplicateSupplierException;
+use App\Domain\Suppliers\Exceptions\InvalidSupplierDataException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ProveedorWebController extends Controller
 {
+    public function __construct(
+        private readonly CreateSupplierUseCase $createSupplierUseCase,
+    ) {}
+
     public function index(Request $request)
     {
         $q = $request->input('q');
@@ -45,19 +54,72 @@ class ProveedorWebController extends Controller
             'telefono' => 'nullable|string|max:50',
         ]);
 
-        $data['created_by'] = Auth::id();
-        $data['activo'] = true;
-
-        $id = DB::table('proveedores')->insertGetId($data + ['created_at' => now(), 'updated_at' => now()]);
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'proveedor' => ['id' => $id, 'razon_social' => $data['razon_social']]
-            ]);
+        try {
+            $supplier = $this->createSupplierUseCase->execute(CreateSupplierDTO::fromArray($data));
+        } catch (DuplicateSupplierException | InvalidSupplierDataException $e) {
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor registrado.');
+    }
+
+    /**
+     * Endpoint AJAX/JSON para crear proveedor inline desde otro formulario
+     * (ej: form de repuestos cuando el proveedor no existe).
+     *
+     * POST /proveedores/quick-create
+     * Sólo acepta JSON, devuelve {success, proveedor: {id, razon_social, ruc_rut_nit, tipo}}.
+     */
+    public function quickStore(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'razon_social'     => 'required|string|max:200',
+                'ruc_rut_nit'      => 'nullable|string|max:30',
+                'nombre_fantasia'  => 'nullable|string|max:200',
+                'pais'             => 'nullable|string|size:2',
+                'tipo'             => 'nullable|in:FABRICANTE,DISTRIBUIDOR,IMPORTADOR,SERVICIO,OTRO',
+                'moneda_principal' => 'nullable|string|size:3',
+                'email'            => 'nullable|email|max:150',
+                'telefono'         => 'nullable|string|max:50',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos inválidos.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        // Defaults sensatos para el quick-create (mínima fricción)
+        $data['pais']             = $data['pais']             ?? 'PY';
+        $data['tipo']             = $data['tipo']             ?? 'DISTRIBUIDOR';
+        $data['moneda_principal'] = $data['moneda_principal'] ?? 'USD';
+
+        try {
+            $supplier = $this->createSupplierUseCase->execute(CreateSupplierDTO::fromArray($data));
+        } catch (DuplicateSupplierException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors'  => ['ruc_rut_nit' => [$e->getMessage()]],
+            ], 409);
+        } catch (InvalidSupplierDataException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Proveedor creado correctamente.',
+            'proveedor' => [
+                'id'           => $supplier->getId()->value(),
+                'razon_social' => $supplier->getRazonSocial(),
+                'ruc_rut_nit'  => $supplier->getRucRutNit(),
+            ],
+        ], 201);
     }
 
     public function edit($id)

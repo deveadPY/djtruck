@@ -6,7 +6,9 @@ namespace App\Infrastructure\Http\Controllers\Web;
 
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -14,14 +16,30 @@ class NotificacionesWebController extends Controller
 {
     /**
      * GET /api/notificaciones
-     * Returns JSON payload for the notification bell dropdown.
+     * Returns JSON payload — pre-filtered by server-side dismissals.
      */
     public function apiIndex(): JsonResponse
     {
-        $hoy = Carbon::today()->toDateString();
+        $userId  = Auth::id();
+        $hoy     = Carbon::today()->toDateString();
         $en7dias = Carbon::today()->addDays(7)->toDateString();
         $mesInic = Carbon::today()->startOfMonth()->toDateString();
-        $mesFin = Carbon::today()->endOfMonth()->toDateString();
+        $mesFin  = Carbon::today()->endOfMonth()->toDateString();
+
+        // ── IDs descartados por este usuario ─────────────────────────────────
+        $descartados = DB::table('notificaciones_descartadas')
+            ->where('user_id', $userId)
+            ->select('tipo', 'referencia_id')
+            ->get()
+            ->groupBy('tipo')
+            ->map(fn($rows) => $rows->pluck('referencia_id')->toArray());
+
+        $excluirCuotasMora  = $descartados->get('mora',     []);
+        $excluirCuotasHoy   = $descartados->get('hoy',      []);
+        $excluirCuotasProx  = $descartados->get('prox',     []);
+        $excluirPagar       = $descartados->get('pagar',    []);
+        $excluirDeclarar    = $descartados->get('declarar', []);
+        $excluirStock       = $descartados->get('stock',    []);
 
         $baseCuotas = DB::table('cuotas as c')
             ->join('planes_cuotas as p', 'c.plan_cuotas_id', '=', 'p.id')
@@ -29,90 +47,127 @@ class NotificacionesWebController extends Controller
             ->join('clientes as cl', 'p.cliente_id', '=', 'cl.id')
             ->whereNull('c.deleted_at')
             ->select([
-                'c.id as cuota_id',
-                'c.numero_cuota',
-                'c.total_cuotas',
-                'c.capital',
-                'c.interes',
-                'c.moneda',
-                'c.fecha_vencimiento',
-                'p.id as plan_id',
-                'v.numero_venta',
+                'c.id as cuota_id', 'c.numero_cuota', 'c.total_cuotas',
+                'c.capital', 'c.interes', 'c.moneda', 'c.fecha_vencimiento',
+                'p.id as plan_id', 'v.numero_venta',
                 DB::raw('COALESCE(cl.razon_social, cl.nombre_fantasia) as cliente_nombre'),
             ]);
 
-        // ── Cuotas a cobrar en el dia (hoy) ──────────────────────────────────
-        $cuotasHoy = (clone $baseCuotas)->where('c.estado', 'PENDIENTE')
+        $cuotasHoy = (clone $baseCuotas)
+            ->where('c.estado', 'PENDIENTE')
             ->where('c.fecha_vencimiento', '=', $hoy)
+            ->when($excluirCuotasHoy, fn($q) => $q->whereNotIn('c.id', $excluirCuotasHoy))
             ->orderBy('c.fecha_vencimiento')->limit(20)->get();
 
-        // ── Cuotas apunto de cobrar (proximas 7 dias) ────────────────────────
-        $cuotasProximas = (clone $baseCuotas)->where('c.estado', 'PENDIENTE')
+        $cuotasProximas = (clone $baseCuotas)
+            ->where('c.estado', 'PENDIENTE')
             ->whereBetween('c.fecha_vencimiento', [Carbon::today()->addDay()->toDateString(), $en7dias])
+            ->when($excluirCuotasProx, fn($q) => $q->whereNotIn('c.id', $excluirCuotasProx))
             ->orderBy('c.fecha_vencimiento')->limit(20)->get();
 
-        // ── Cuotas en mora (encima de la fecha) ──────────────────────────────
         $cuotasMora = (clone $baseCuotas)
             ->where(function ($q) use ($hoy) {
                 $q->where('c.estado', 'EN_MORA')
-                    ->orWhere(function ($q2) use ($hoy) {
-                        $q2->where('c.estado', 'PENDIENTE')->where('c.fecha_vencimiento', '<', $hoy);
-                    });
+                    ->orWhere(fn($q2) => $q2->where('c.estado', 'PENDIENTE')->where('c.fecha_vencimiento', '<', $hoy));
             })
+            ->when($excluirCuotasMora, fn($q) => $q->whereNotIn('c.id', $excluirCuotasMora))
             ->orderBy('c.fecha_vencimiento')->limit(20)->get();
 
-        // ── Facturas a Pagar ─────────────────────────────────────────────────
         $facturasPagar = DB::table('facturas_proveedores as f')
             ->join('proveedores as p', 'f.proveedor_id', '=', 'p.id')
             ->whereIn('f.estado', ['PENDIENTE', 'APROBADA'])
             ->whereNull('f.deleted_at')
+            ->when($excluirPagar, fn($q) => $q->whereNotIn('f.id', $excluirPagar))
             ->select([
-                'f.id as factura_id',
-                'f.numero_factura',
-                'f.fecha_factura',
-                'f.total_usd',
-                'f.moneda',
+                'f.id as factura_id', 'f.numero_factura', 'f.fecha_factura',
+                'f.total_usd', 'f.moneda',
                 DB::raw('COALESCE(p.razon_social, p.nombre_fantasia) as proveedor_nombre'),
             ])
-            ->orderBy('f.fecha_factura', 'asc')
-            ->limit(20)->get();
+            ->orderBy('f.fecha_factura')->limit(20)->get();
 
-        // ── Facturas a Declarar (mes actual) ─────────────────────────────────
         $facturasDeclarar = DB::table('facturas_proveedores as f')
             ->join('proveedores as p', 'f.proveedor_id', '=', 'p.id')
             ->whereBetween('f.fecha_factura', [$mesInic, $mesFin])
             ->whereNull('f.deleted_at')
+            ->when($excluirDeclarar, fn($q) => $q->whereNotIn('f.id', $excluirDeclarar))
             ->select([
-                'f.id as factura_id',
-                'f.numero_factura',
-                'f.fecha_factura',
-                'f.total_usd',
-                'f.moneda',
+                'f.id as factura_id', 'f.numero_factura', 'f.fecha_factura',
+                'f.total_usd', 'f.moneda',
                 DB::raw('COALESCE(p.razon_social, p.nombre_fantasia) as proveedor_nombre'),
             ])
-            ->orderBy('f.fecha_factura', 'desc')
-            ->limit(20)->get();
+            ->orderBy('f.fecha_factura', 'desc')->limit(20)->get();
 
-        // ── Stock Bajo Mínimo ─────────────────────────────────────────────
         $repuestosBajos = DB::table('stock_repuestos')
-            ->whereNull('deleted_at')
-            ->where('activo', true)
-            ->where('stock_minimo', '>', 0)
-            ->whereRaw('stock_actual <= stock_minimo')
+            ->whereNull('deleted_at')->where('activo', true)
+            ->where('stock_minimo', '>', 0)->whereRaw('stock_actual <= stock_minimo')
+            ->when($excluirStock, fn($q) => $q->whereNotIn('id', $excluirStock))
             ->select(['id as repuesto_id', 'codigo', 'descripcion', 'stock_actual', 'stock_minimo'])
             ->limit(20)->get();
 
-        $total = $cuotasHoy->count() + $cuotasProximas->count() + $cuotasMora->count() + $facturasPagar->count() + $facturasDeclarar->count() + $repuestosBajos->count();
+        $total = $cuotasHoy->count() + $cuotasProximas->count() + $cuotasMora->count()
+               + $facturasPagar->count() + $facturasDeclarar->count() + $repuestosBajos->count();
 
         return response()->json([
-            'total' => $total,
-            'cuotas_hoy' => $cuotasHoy,
-            'cuotas_proximas' => $cuotasProximas,
-            'cuotas_mora' => $cuotasMora,
-            'facturas_pagar' => $facturasPagar,
-            'facturas_declarar' => $facturasDeclarar,
-            'repuestos_bajos' => $repuestosBajos,
+            'total'              => $total,
+            'cuotas_hoy'         => $cuotasHoy,
+            'cuotas_proximas'    => $cuotasProximas,
+            'cuotas_mora'        => $cuotasMora,
+            'facturas_pagar'     => $facturasPagar,
+            'facturas_declarar'  => $facturasDeclarar,
+            'repuestos_bajos'    => $repuestosBajos,
         ]);
+    }
+
+    /**
+     * POST /api/notificaciones/descartar
+     * Persiste un descarte individual en BD.
+     */
+    public function descartar(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tipo'          => 'required|string|in:mora,hoy,prox,pagar,declarar,stock',
+            'referencia_id' => 'required|integer|min:1',
+        ]);
+
+        DB::table('notificaciones_descartadas')->updateOrInsert(
+            ['user_id' => Auth::id(), 'tipo' => $data['tipo'], 'referencia_id' => $data['referencia_id']],
+            ['descartado_at' => now()]
+        );
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * POST /api/notificaciones/descartar-todas
+     * Persiste todos los ítems del payload actual como descartados.
+     */
+    public function descartarTodas(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'items'                => 'required|array',
+            'items.*.tipo'         => 'required|string|in:mora,hoy,prox,pagar,declarar,stock',
+            'items.*.referencia_id'=> 'required|integer|min:1',
+        ]);
+
+        $userId = Auth::id();
+        $now    = now();
+
+        $rows = array_map(fn($item) => [
+            'user_id'       => $userId,
+            'tipo'          => $item['tipo'],
+            'referencia_id' => $item['referencia_id'],
+            'descartado_at' => $now,
+        ], $data['items']);
+
+        foreach (array_chunk($rows, 50) as $chunk) {
+            DB::table('notificaciones_descartadas')->upsert(
+                $chunk,
+                ['user_id', 'tipo', 'referencia_id'],
+                ['descartado_at']
+            );
+        }
+
+        return response()->json(['ok' => true, 'descartadas' => count($rows)]);
     }
 
     /**

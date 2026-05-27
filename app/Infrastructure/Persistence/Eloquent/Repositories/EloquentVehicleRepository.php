@@ -13,7 +13,7 @@ class EloquentVehicleRepository implements VehicleRepositoryInterface
 {
     public function findById(int $id): ?VehicleModel
     {
-        return VehicleModel::find($id);
+        return VehicleModel::with(['proveedor', 'imagenes'])->find($id);
     }
 
     public function create(array $data): VehicleModel
@@ -67,9 +67,11 @@ class EloquentVehicleRepository implements VehicleRepositoryInterface
         return $query->latest('vehiculos.created_at')->paginate($limit);
     }
 
-    public function getAvailableForSale()
+    public function getAvailableForSale(): \Illuminate\Database\Eloquent\Collection
     {
-        return VehicleModel::whereIn('estado', ['DISPONIBLE', 'RESERVADO'])
+        return VehicleModel::select(['id', 'marca', 'modelo', 'anio', 'numero_chasis', 'estado', 'costo_origen_usd', 'total_gastos_usd'])
+            ->whereIn('estado', ['DISPONIBLE', 'RESERVADO'])
+            ->orderBy('marca')
             ->get();
     }
 }

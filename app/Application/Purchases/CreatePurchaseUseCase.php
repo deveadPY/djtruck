@@ -4,157 +4,149 @@ declare(strict_types=1);
 
 namespace App\Application\Purchases;
 
+use App\Domain\Purchases\Calculator\PurchaseCalculator;
+use App\Domain\Purchases\Processors\PurchaseDocumentProcessor;
+use App\Domain\Purchases\Processors\PurchaseItemProcessor;
 use App\Domain\Purchases\Repositories\PurchaseRepositoryInterface;
-use App\Infrastructure\Persistence\Eloquent\Models\PurchaseModel;
+use App\Domain\Purchases\Validators\PurchaseValidator;
 use App\Domain\Shared\ValueObjects\Currency;
-use Illuminate\Support\Facades\DB;
+use App\Infrastructure\Persistence\Eloquent\Models\PurchaseModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * Caso de uso: registrar una compra de repuestos a un proveedor.
+ *
+ * Orquesta validación, persistencia, actualización de stock,
+ * movimiento de caja y registro de factura/documentos.
+ */
 class CreatePurchaseUseCase
 {
     public function __construct(
-        private readonly PurchaseRepositoryInterface $purchaseRepository
+        private readonly PurchaseRepositoryInterface $purchaseRepository,
+        private readonly PurchaseValidator $validator,
+        private readonly PurchaseCalculator $calculator,
+        private readonly PurchaseItemProcessor $itemProcessor,
+        private readonly PurchaseDocumentProcessor $documentProcessor
     ) {}
 
-    public function execute(array $data, ?array $adjuntosFiles = null): PurchaseModel
+    public function execute(CreatePurchaseDTO $dto): PurchaseModel
     {
-        return DB::transaction(function () use ($data, $adjuntosFiles) {
-            $moneda = Currency::from($data['moneda_compra']);
-            $tasa = (float) $data['tasa_cambio'];
-            
-            $totalMoneda = 0;
-            $totalUsd = 0;
+        $this->validator->validate($dto->items, $dto->proveedorId, $dto->tasaCambio);
 
-            // Pre-calcular totales
-            foreach ($data['items'] as $item) {
-                $subtotalMoneda = $item['cantidad'] * $item['precio_compra'];
-                $totalMoneda += $subtotalMoneda;
-            }
+        $moneda = Currency::from($dto->monedaCompra);
+        $totalMoneda = $this->calculator->calculateTotalInMoney($dto->items);
+        $totalUsd = $this->calculator->convertToUsd($totalMoneda, $moneda, $dto->tasaCambio);
 
-            if ($moneda === Currency::USD) {
-                $totalUsd = $totalMoneda;
-            } else {
-                $totalUsd = $totalMoneda / $tasa;
-            }
+        return DB::transaction(function () use ($dto, $moneda, $totalMoneda, $totalUsd) {
+            $cajaCapitalId = $this->resolveCajaCapitalId();
 
-            // 1. Crear la Compra a través del Repositorio
-            $purchase = $this->purchaseRepository->create([
-                'proveedor_id'       => $data['proveedor_id'],
-                'numero_factura'     => $data['numero_factura'],
-                'fecha_compra'       => $data['fecha_compra'],
-                'moneda_compra'      => $data['moneda_compra'],
-                'monto_total_moneda' => $totalMoneda,
-                'monto_total_usd'    => round($totalUsd, 2),
-                'tasa_cambio'        => $tasa,
-                'observaciones'      => $data['observaciones'],
-                'caja_id'            => DB::table('cajas')->where('codigo', 'CAJA_CAPITAL')->value('id'),
-                'created_by'         => Auth::id(),
-                'created_at'         => now(),
-                'updated_at'         => now(),
-            ]);
+            $purchase = $this->createPurchase($dto, $totalMoneda, $totalUsd, $cajaCapitalId);
 
-            $compraId = $purchase->id;
+            $this->itemProcessor->process(
+                (int) $purchase->id,
+                $dto->items,
+                $moneda,
+                $dto->tasaCambio
+            );
 
-            // 2. Insertar Items y Actualizar Stock
-            foreach ($data['items'] as $itemData) {
-                $precioCompraUsd = ($moneda === Currency::USD) 
-                    ? $itemData['precio_compra'] 
-                    : ($itemData['precio_compra'] / $tasa);
-                
-                $subtotalItemUsd = $itemData['cantidad'] * $precioCompraUsd;
+            $this->registerCashMovement(
+                (int) $purchase->id,
+                $dto,
+                $totalMoneda,
+                $totalUsd,
+                $cajaCapitalId
+            );
 
-                DB::table('compra_items')->insert([
-                    'compra_id'           => $compraId,
-                    'repuesto_id'         => $itemData['repuesto_id'],
-                    'cantidad'            => $itemData['cantidad'],
-                    'precio_compra_moneda'=> $itemData['precio_compra'],
-                    'precio_compra_usd'   => round($precioCompraUsd, 2),
-                    'precio_venta_sugerido_usd' => $itemData['precio_venta_sugerido'] ?? null,
-                    'subtotal_usd'        => round($subtotalItemUsd, 2),
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
-                ]);
+            $facturaId = $this->createSupplierInvoice($dto, $purchase, $totalMoneda, $totalUsd);
 
-                // Actualizar Stock y Precios en el producto
-                $producto = DB::table('stock_repuestos')->where('id', $itemData['repuesto_id'])->first();
-                $nuevoStock = $producto->stock_actual + $itemData['cantidad'];
-                
-                $updateData = [
-                    'stock_actual'       => $nuevoStock,
-                    'costo_promedio_usd' => round($precioCompraUsd, 2),
-                    'updated_at'         => now(),
-                ];
-
-                if (!empty($itemData['precio_venta_sugerido'])) {
-                    $updateData['precio_venta_usd'] = $itemData['precio_venta_sugerido'];
-                }
-
-                DB::table('stock_repuestos')->where('id', $itemData['repuesto_id'])->update($updateData);
-            }
-
-            // 3. Registrar Movimiento en Caja Capital (EGRESO)
-            $proveedor = DB::table('proveedores')->where('id', $data['proveedor_id'])->first();
-            DB::table('movimientos_caja')->insert([
-                'caja_id'    => DB::table('cajas')->where('codigo', 'CAJA_CAPITAL')->value('id'),
-                'tipo'       => 'EGRESO',
-                'concepto'   => "Compra de productos - Fac. " . ($data['numero_factura'] ?? 'S/N') . " - Prov: " . $proveedor->razon_social,
-                'moneda'     => $data['moneda_compra'],
-                'monto'      => $totalMoneda,
-                'monto_usd'  => round($totalUsd, 2),
-                'ref_type'   => 'compra',
-                'referencia_id' => $compraId,
-                'created_by' => Auth::id(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // 4. Asociar con Facturas y Gastos para visualización
-            $facturaId = DB::table('facturas_proveedores')->insertGetId([
-                'proveedor_id'   => $data['proveedor_id'],
-                'numero_factura' => $data['numero_factura'] ?? ('COMP-' . $compraId),
-                'fecha_factura'  => $data['fecha_compra'],
-                'destino'        => 'REPOSICION',
-                'compra_id'      => $compraId,
-                'moneda'         => $data['moneda_compra'],
-                'subtotal'       => $totalMoneda,
-                'impuestos'      => 0,
-                'total_usd'      => round($totalUsd, 2),
-                'estado'         => 'PAGADA',
-                'descripcion'    => "Compra de repuestos vinculada. " . ($data['observaciones'] ?? ''),
-                'created_by'     => Auth::id(),
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ]);
-
-            // 5. Guardar documentos adjuntos y sincronizar con Factura
-            if ($adjuntosFiles && count($adjuntosFiles) > 0) {
-                $uploadDir = 'uploads/documentos/compras/' . $compraId;
-                $uploadDirFactura = 'uploads/documentos/facturas_proveedores/' . $facturaId;
-
-                if (!is_dir(public_path($uploadDir))) {
-                    mkdir(public_path($uploadDir), 0777, true);
-                }
-                if (!is_dir(public_path($uploadDirFactura))) {
-                    mkdir(public_path($uploadDirFactura), 0777, true);
-                }
-
-                foreach ($adjuntosFiles as $archivo) {
-                    $nombreOriginal = $archivo->getClientOriginalName();
-                    $mimeType = $archivo->getClientMimeType();
-                    $tamano = $archivo->getSize();
-                    $nombre = time() . '_' . uniqid() . '_' . $nombreOriginal;
-
-                    $archivo->move(public_path($uploadDir), $nombre);
-                    copy(public_path($uploadDir . '/' . $nombre), public_path($uploadDirFactura . '/' . $nombre));
-
-                    DB::table('documentos')->insert([
-                        ['documentable_type' => 'compras', 'documentable_id' => $compraId, 'ruta' => $uploadDir . '/' . $nombre, 'nombre_original' => $nombreOriginal, 'mime_type' => $mimeType, 'tamano_bytes' => $tamano, 'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()],
-                        ['documentable_type' => 'facturas_proveedores', 'documentable_id' => $facturaId, 'ruta' => $uploadDirFactura . '/' . $nombre, 'nombre_original' => $nombreOriginal, 'mime_type' => $mimeType, 'tamano_bytes' => $tamano, 'created_by' => Auth::id(), 'created_at' => now(), 'updated_at' => now()],
-                    ]);
-                }
-            }
+            $this->documentProcessor->process(
+                (int) $purchase->id,
+                $facturaId,
+                $dto->adjuntos ?? []
+            );
 
             return $purchase;
         });
+    }
+
+    private function resolveCajaCapitalId(): ?int
+    {
+        return DB::table('cajas')->where('codigo', 'CAJA_CAPITAL')->value('id');
+    }
+
+    private function createPurchase(
+        CreatePurchaseDTO $dto,
+        float $totalMoneda,
+        float $totalUsd,
+        ?int $cajaId
+    ): PurchaseModel {
+        return $this->purchaseRepository->create([
+            'proveedor_id'       => $dto->proveedorId,
+            'numero_factura'     => $dto->numeroFactura,
+            'fecha_compra'       => $dto->fechaCompra,
+            'moneda_compra'      => $dto->monedaCompra,
+            'monto_total_moneda' => $totalMoneda,
+            'monto_total_usd'    => $totalUsd,
+            'tasa_cambio'        => $dto->tasaCambio,
+            'observaciones'      => $dto->observaciones,
+            'caja_id'            => $cajaId,
+            'created_by'         => Auth::id(),
+            'created_at'         => now(),
+            'updated_at'         => now(),
+        ]);
+    }
+
+    private function registerCashMovement(
+        int $compraId,
+        CreatePurchaseDTO $dto,
+        float $totalMoneda,
+        float $totalUsd,
+        ?int $cajaId
+    ): void {
+        if ($cajaId === null) {
+            return;
+        }
+
+        $proveedor = DB::table('proveedores')->where('id', $dto->proveedorId)->first();
+        $razonSocial = $proveedor->razon_social ?? 'Desconocido';
+
+        DB::table('movimientos_caja')->insert([
+            'caja_id'       => $cajaId,
+            'tipo'          => 'EGRESO',
+            'concepto'      => "Compra de productos - Fac. " . ($dto->numeroFactura ?: 'S/N') . " - Prov: {$razonSocial}",
+            'moneda'        => $dto->monedaCompra,
+            'monto'         => $totalMoneda,
+            'monto_usd'     => $totalUsd,
+            'ref_type'      => 'compra',
+            'referencia_id' => $compraId,
+            'created_by'    => Auth::id(),
+            'created_at'    => now(),
+            'updated_at'    => now(),
+        ]);
+    }
+
+    private function createSupplierInvoice(
+        CreatePurchaseDTO $dto,
+        PurchaseModel $purchase,
+        float $totalMoneda,
+        float $totalUsd
+    ): int {
+        return DB::table('facturas_proveedores')->insertGetId([
+            'proveedor_id'   => $dto->proveedorId,
+            'numero_factura' => $dto->numeroFactura ?: ('COMP-' . $purchase->id),
+            'fecha_factura'  => $dto->fechaCompra,
+            'destino'        => 'REPOSICION',
+            'compra_id'      => $purchase->id,
+            'moneda'         => $dto->monedaCompra,
+            'subtotal'       => $totalMoneda,
+            'impuestos'      => 0,
+            'total_usd'      => $totalUsd,
+            'estado'         => 'PAGADA',
+            'descripcion'    => "Compra de repuestos vinculada. " . ($dto->observaciones ?? ''),
+            'created_by'     => Auth::id(),
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Application\Parts\DiscontinuePartUseCase;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,11 @@ use App\Exports\ReportExport;
 
 class RepuestoWebController extends Controller
 {
+    public function __construct(
+        private readonly DiscontinuePartUseCase $discontinuePartUseCase
+    ) {}
+
+
     public function index(Request $request)
     {
         $q = $request->input('q');
@@ -94,6 +100,28 @@ class RepuestoWebController extends Controller
     {
         DB::table('stock_repuestos')->where('id', $id)->update(['deleted_at' => now()]);
         return redirect()->route('repuestos.index')->with('success', 'Repuesto eliminado.');
+    }
+
+    /**
+     * Alterna el estado activo/descontinuado del repuesto.
+     * Un repuesto descontinuado no aparece en alertas de stock bajo ni en selectores de venta,
+     * pero conserva su historial.
+     */
+    public function toggleActive(Request $request, $id)
+    {
+        $discontinuar = $request->boolean('discontinuar', true);
+
+        try {
+            $this->discontinuePartUseCase->execute((int) $id, $discontinuar);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+
+        $mensaje = $discontinuar
+            ? 'Repuesto descontinuado. Ya no aparecerá en alertas de stock ni en ventas.'
+            : 'Repuesto reactivado.';
+
+        return back()->with('success', $mensaje);
     }
 
     public function importExcel(Request $request)

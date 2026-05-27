@@ -4,47 +4,52 @@ declare(strict_types=1);
 
 namespace App\Application\Vehicle;
 
+use App\Domain\Vehicle\Calculator\VehicleBookValueCalculator;
+use App\Domain\Vehicle\Events\VehicleRegistered;
+use App\Domain\Vehicle\Processors\VehicleImageProcessor;
 use App\Domain\Vehicle\Repositories\VehicleRepositoryInterface;
+use App\Domain\Vehicle\Validators\VehicleIntegrityValidator;
 use App\Infrastructure\Persistence\Eloquent\Models\VehicleModel;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 class CreateVehicleUseCase
 {
     public function __construct(
-        private readonly VehicleRepositoryInterface $vehicleRepository
+        private readonly VehicleRepositoryInterface $vehicleRepository,
+        private readonly VehicleIntegrityValidator $validator,
+        private readonly VehicleImageProcessor $imageProcessor,
+        private readonly VehicleBookValueCalculator $bookValueCalculator
     ) {}
 
-    public function execute(array $data, ?array $imagenes = null): VehicleModel
+    public function execute(CreateVehicleDTO $dto): VehicleModel
     {
-        $data['created_by'] = Auth::id();
-        $data['kilometraje'] = $data['kilometraje'] ?? 0;
-        $data['total_gastos_usd'] = 0;
+        $data = $this->buildVehicleData($dto);
 
-        return DB::transaction(function () use ($data, $imagenes) {
+        $this->validator->validateForCreate($data);
+
+        $vehicle = DB::transaction(function () use ($data, $dto) {
             $vehicle = $this->vehicleRepository->create($data);
-
-            if ($imagenes && count($imagenes) > 0) {
-                $orden = 0;
-                foreach ($imagenes as $imagen) {
-                    $nombre = time() . '_' . $orden . '_' . $imagen->getClientOriginalName();
-                    $imagen->move(public_path('uploads/vehiculos'), $nombre);
-
-                    DB::table('vehiculo_imagenes')->insert([
-                        'vehiculo_id' => $vehicle->id,
-                        'ruta' => 'uploads/vehiculos/' . $nombre,
-                        'nombre_original' => $imagen->getClientOriginalName(),
-                        'orden' => $orden,
-                        'es_portada' => $orden === 0,
-                        'created_by' => Auth::id(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                    $orden++;
-                }
-            }
-
+            $this->imageProcessor->process((int) $vehicle->id, $dto->imagenes ?? []);
             return $vehicle;
         });
+
+        Event::dispatch(new VehicleRegistered(
+            vehicleId:     (int) $vehicle->id,
+            chasis:        (string) $vehicle->numero_chasis,
+            costOriginUsd: (float) ($vehicle->costo_origen_usd ?? 0),
+        ));
+
+        return $vehicle;
+    }
+
+    private function buildVehicleData(CreateVehicleDTO $dto): array
+    {
+        $data = $dto->toArray();
+        $data['created_by'] = Auth::id();
+        $data['total_gastos_usd'] = 0;
+
+        return $data;
     }
 }

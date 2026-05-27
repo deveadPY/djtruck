@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        (function() {
+            const saved = localStorage.getItem('erp_theme');
+            const dark = saved ? saved === 'dark' : true;
+            if (dark) document.documentElement.classList.add('dark');
+        })();
+    </script>
     <title>@yield('title') — {{ $empresa?->nombre_empresa ?? 'ERP Camiones & Repuestos' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,10 +24,24 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: { DEFAULT: '#6c63ff', hover: '#5a52d5', light: '#8b83ff' },
-                        accent: { DEFAULT: '#00d4aa', light: '#33e0be' },
-                        surface: { DEFAULT: '#1a1d27', 2: '#242736', 3: '#2d3148' },
-                        body: '#0f1117',
+                        primary: { 
+                            DEFAULT: 'var(--primary)', 
+                            hover: 'var(--primary-hover)', 
+                            light: 'var(--primary-light)' 
+                        },
+                        accent: { 
+                            DEFAULT: 'var(--accent)', 
+                            light: 'var(--accent-light)' 
+                        },
+                        surface: { 
+                            DEFAULT: 'var(--surface)', 
+                            2: 'var(--surface2)', 
+                            3: 'var(--surface3)' 
+                        },
+                        body: 'var(--bg)',
+                        border: 'var(--border)',
+                        foreground: 'var(--text)',
+                        muted: { foreground: 'var(--text-muted)' },
                     }
                 }
             }
@@ -29,33 +50,58 @@
     <style type="text/tailwindcss">
         @layer base {
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Inter', sans-serif; }
-            /* Light mode defaults */
+            body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
+            
+            /* Material Design 2 Color System */
             :root {
-                --bg:         #f4f6f9;
-                --surface:    #ffffff;
-                --surface2:   #f0f2f5;
-                --surface3:   #e5e7eb;
-                --border:     #e2e5ea;
-                --text:       #1e293b;
-                --text-muted: #64748b;
+                /* Light Mode - Enhanced Contrast */
+                --bg:             #f8fafc;
+                --surface:        #ffffff;
+                --surface2:       #f1f5f9;
+                --surface3:       #e2e8f0;
+                --border:         #cbd5e1;
+                --text:           #0f172a;
+                --text-muted:     #475569;
+                
+                --primary:        #6c63ff;
+                --primary-hover:  #5a52d5;
+                --primary-light:  #8b83ff;
+                --accent:         #059669;
+                --accent-light:   #34d399;
+
+                --shadow:         0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+                --shadow-lg:      0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
             }
             .dark {
-                --bg:         #0f1117;
-                --surface:    #1a1d27;
-                --surface2:   #242736;
-                --surface3:   #2d3148;
-                --border:     #2d3148;
-                --text:       #e2e8f0;
-                --text-muted: #94a3b8;
+                /* Dark Mode (Material Design 2) */
+                --bg:             #121212;
+                --surface:        #1e1e1e;
+                --surface2:       #2c2c2c;
+                --surface3:       #383838;
+                --border:         #2d2d2d;
+                --text:           #e2e8f0;
+                --text-muted:     #94a3b8;
+
+                --primary:        #bb86fc;
+                --primary-hover:  #a370f7;
+                --primary-light:  #d7b7fd;
+                --accent:         #03dac6;
+                --accent-light:   #66fff9;
+
+                --shadow:         0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+                --shadow-lg:      0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
             }
         }
+
         @layer components {
-            /* ── Cards ─────────────────────────────────────── */
             .erp-card {
-                @apply rounded-2xl border overflow-hidden transition-all duration-200;
+                @apply rounded-2xl border overflow-hidden transition-all duration-300;
                 background: var(--surface);
                 border-color: var(--border);
+                box-shadow: var(--shadow);
+            }
+            .erp-card:hover {
+                box-shadow: var(--shadow-lg);
             }
             .erp-card-header {
                 @apply px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between border-b;
@@ -69,19 +115,48 @@
                 @apply p-4 sm:p-6;
             }
 
-            /* ── Stats ─────────────────────────────────────── */
+            /* Page headers */
+            .erp-page-title {
+                @apply text-xl md:text-2xl font-bold tracking-tight;
+                color: var(--text);
+            }
+            .erp-page-subtitle {
+                @apply text-[0.72rem] font-medium uppercase tracking-widest hidden md:block mt-0.5;
+                color: var(--text-muted);
+            }
+
+            /* Empty states */
+            .erp-empty {
+                @apply flex flex-col items-center gap-3 py-16 px-6 text-center;
+            }
+            .erp-empty svg {
+                @apply w-14 h-14 opacity-20;
+                color: var(--text-muted);
+            }
+            .erp-empty p {
+                @apply text-sm font-medium;
+                color: var(--text-muted);
+            }
+
+            /* Skeleton loader */
+            .skeleton {
+                @apply rounded animate-pulse;
+                background: var(--surface2);
+            }
+
+            /* Stats */
             .stat-card {
-                @apply rounded-2xl border p-4 sm:p-5 relative overflow-hidden transition-transform duration-200 hover:-translate-y-0.5;
+                @apply rounded-2xl border p-4 sm:p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer;
                 background: var(--surface);
                 border-color: var(--border);
             }
             .stat-card::before {
                 content: '';
                 @apply absolute top-0 left-0 right-0 h-[3px];
-                background: #00d4aa;
+                background: var(--accent);
             }
             .stat-card.danger::before  { background: #ef4444; }
-            .stat-card.primary::before { background: #6c63ff; }
+            .stat-card.primary::before { background: var(--primary); }
             .stat-card.warning::before { background: #f59e0b; }
             .stat-label {
                 @apply text-[0.73rem] font-medium uppercase tracking-wider mb-2;
@@ -96,32 +171,32 @@
                 color: var(--text);
             }
 
-            /* ── Tables ────────────────────────────────────── */
+            /* Tables */
             .erp-table {
                 @apply w-full text-sm;
                 border-collapse: collapse;
             }
             .erp-table th {
-                @apply text-left px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-wider border-b;
+                @apply text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider border-b;
                 color: var(--text-muted);
                 border-color: var(--border);
             }
             .erp-table td {
-                @apply px-4 py-3 border-b;
+                @apply px-4 py-3.5 border-b text-sm;
                 color: var(--text);
                 border-color: var(--border);
             }
             .erp-table tr:last-child td { border-bottom: none; }
             .erp-table tbody tr:hover td { background: var(--surface2); }
 
-            /* ── Badges ────────────────────────────────────── */
-            .badge-status      { @apply inline-block px-2.5 py-0.5 rounded-full text-[0.68rem] font-semibold; }
+            /* Badges */
+            .badge-status      { @apply inline-block px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide; }
             .badge-disponible  { @apply bg-green-500/15 text-green-500; }
             .badge-preparacion { @apply bg-amber-500/15 text-amber-500; }
             .badge-toma        { @apply bg-slate-500/15 text-slate-400; }
             .badge-vendido     { @apply bg-red-500/15 text-red-500; }
 
-            /* ── Buttons ───────────────────────────────────── */
+            /* Buttons */
             .btn {
                 @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[0.8rem] font-semibold no-underline border-none cursor-pointer transition-all duration-200;
             }
@@ -144,7 +219,7 @@
                 @apply bg-green-500/10 text-green-500 hover:bg-green-500/20;
             }
 
-            /* ── Form fields ───────────────────────────────── */
+            /* Form fields */
             .form-grid { @apply grid grid-cols-1 md:grid-cols-2 gap-5; }
             .form-group { @apply flex flex-col gap-1.5; }
             .form-group.full { @apply md:col-span-2; }
@@ -159,11 +234,14 @@
                 color: var(--text);
                 font-family: inherit;
             }
-            .form-input:focus { @apply border-primary ring-1 ring-primary/30; }
+            .form-input:focus {
+                @apply border-primary outline-none;
+                box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+            }
             .form-input[type="file"] { @apply py-2 px-3 cursor-pointer; }
             select.form-input option { background: var(--surface2); color: var(--text); }
 
-            /* ── Flash messages ────────────────────────────── */
+            /* Flash messages */
             .flash-success {
                 @apply bg-green-500/10 border border-green-500/30 text-green-500 px-4 py-3 rounded-xl text-sm mb-4;
             }
@@ -172,9 +250,9 @@
             }
             .flash-error ul { @apply ml-5 list-disc; }
 
-            /* ── Sidebar nav link ──────────────────────────── */
+            /* Sidebar nav link */
             .nav-link {
-                @apply flex items-center gap-3 px-4 py-2.5 rounded-lg mx-2.5 my-0.5 text-[0.855rem] font-medium no-underline whitespace-nowrap overflow-hidden relative transition-all duration-150;
+                @apply flex items-center gap-3 px-4 py-2.5 rounded-lg mx-2.5 my-0.5 text-[0.855rem] font-semibold no-underline whitespace-nowrap overflow-hidden relative transition-all duration-150;
                 color: var(--text-muted);
             }
             .nav-link:hover {
@@ -193,8 +271,21 @@
             }
             .nav-link .ltext { @apply overflow-hidden; }
 
-            /* ── Notification bell styles ──────────────────── */
-            .notif-row { display:flex; align-items:stretch; border-bottom:1px solid var(--border); }
+            /* Dropdown animation */
+            @keyframes erp-dropdown-in {
+                from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+                to   { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            .erp-dropdown-animate {
+                animation: erp-dropdown-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+
+            /* Notification bell styles */
+            .notif-row {
+                display:flex; align-items:stretch;
+                border-bottom:1px solid var(--border);
+                overflow:hidden;
+            }
             .notif-row:last-child { border-bottom:0; }
             .notif-row .notif-item { flex:1; min-width:0; border-bottom:0 !important; }
             .notif-dismiss-btn {
@@ -213,10 +304,23 @@
             .notif-client { @apply block text-[0.82rem] font-semibold; color: var(--text); }
             .notif-meta { @apply block text-[0.72rem] mt-0.5; color: var(--text-muted); }
             .notif-amount { @apply block text-[0.72rem] font-semibold mt-0.5; }
-            .notif-section-header { @apply px-4 py-2 text-[0.72rem] font-bold uppercase tracking-wider; }
-            .notif-empty { @apply text-center py-6 text-[0.82rem]; color: var(--text-muted); }
+            .notif-section-header {
+                @apply px-4 py-2 text-[0.7rem] font-bold uppercase tracking-wider;
+                display:flex; align-items:center; justify-content:space-between;
+                background: var(--surface2);
+                border-bottom:1px solid var(--border);
+            }
+            .notif-empty {
+                display:flex; flex-direction:column; align-items:center; justify-content:center;
+                padding: 2rem 1rem; color: var(--text-muted); font-size:.82rem;
+            }
+            @keyframes notif-pulse {
+                0%, 100% { transform: scale(1);   opacity: 1; }
+                50%       { transform: scale(1.25); opacity: .8; }
+            }
+            .notif-badge-urgent { animation: notif-pulse 1.6s ease-in-out infinite; }
 
-            /* ── Mobile sidebar ───────────────────────────────────── */
+            /* Mobile sidebar */
             @media (max-width: 767px) {
                 #sidebarToggle  { display: none !important; }
                 #sidebar        { transform: translateX(-100%); }
@@ -244,7 +348,7 @@
 
     {{-- ═══ SIDEBAR ══════════════════════════════════════════════════════════════ --}}
     <aside id="sidebar"
-        class="fixed top-0 left-0 h-screen flex flex-col z-[100] overflow-hidden transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] border-r"
+        class="fixed top-0 left-0 h-screen flex flex-col z-[100] transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)] border-r"
         style="width: 250px; background: var(--surface); border-color: var(--border);">
 
         {{-- Logo + nombre empresa --}}
@@ -269,8 +373,8 @@
                     {{ $empresa?->ciudad ?: 'Sistema ERP' }}</div>
             </div>
             <button id="sidebarToggle"
-                class="absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border flex items-center justify-center text-[0.72rem] cursor-pointer z-[110] transition-all duration-200 hover:bg-primary hover:text-white hover:border-primary"
-                style="background: var(--surface2); border-color: var(--border); color: var(--text-muted);"
+                class="absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border flex items-center justify-center text-[0.72rem] cursor-pointer z-[110] transition-all duration-300 hover:bg-primary hover:text-white hover:border-primary shadow-sm"
+                style="background: var(--surface); border-color: var(--border); color: var(--text-muted);"
                 title="Colapsar menú">
                 <svg class="w-3.5 h-3.5 transition-transform duration-300" id="sidebarArrow" fill="none"
                     viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -598,6 +702,7 @@
     </div>
 
     @include('partials.confirm-modal')
+    @include('partials.danger-confirm-modal')
 
     <script>
             /* ── Theme toggle ──────────────────────────────────────────────── */
@@ -649,6 +754,13 @@
                 sidebar.style.width      = collapsed ? W_CLOSED : W_OPEN;
                 main.style.marginLeft    = collapsed ? W_CLOSED : W_OPEN;
                 if (arrow) arrow.style.transform = collapsed ? 'rotate(180deg)' : '';
+                
+                // Toggle overflow-hidden during transition to prevent text spill
+                sidebar.style.overflow = 'hidden';
+                setTimeout(() => {
+                    if (!collapsed) sidebar.style.overflow = 'visible';
+                }, 300);
+
                 sidebar.querySelectorAll('.sidebar-text, .ltext, .nav-section-label').forEach(function (el) {
                     el.style.display = collapsed ? 'none' : '';
                 });
@@ -740,6 +852,18 @@
                 }
             });
         })();
+
+        /* ── Dropdown helpers ───────────────────────────────────────── */
+        function erpShowDropdown(el) {
+            el.style.display = 'block';
+            el.classList.remove('erp-dropdown-animate');
+            void el.offsetWidth; // reflow para reiniciar animación
+            el.classList.add('erp-dropdown-animate');
+        }
+        function erpHideDropdown(el) {
+            el.style.display = 'none';
+            el.classList.remove('erp-dropdown-animate');
+        }
 
         /* ── Tooltip for collapsed sidebar ─────────────────────────── */
         (function () {
