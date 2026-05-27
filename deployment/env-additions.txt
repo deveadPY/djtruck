@@ -1,0 +1,47 @@
+═══════════════════════════════════════════════════════════════════════════════
+ VARIABLES NUEVAS PARA .env DE PRODUCCIÓN
+═══════════════════════════════════════════════════════════════════════════════
+ NO sobrescribir el .env actual. Solo AGREGAR las líneas que NO existan.
+═══════════════════════════════════════════════════════════════════════════════
+
+# ── Billing / Facturación electrónica (placeholder, sin proveedor activo) ──
+BILLING_PROVIDER=null
+BILLING_API_URL=
+BILLING_API_KEY=
+BILLING_API_SECRET=
+
+# ── Two-Factor Authentication (2FA) ──
+TWO_FACTOR_ISSUER="DJ Trucks ERP"
+TWO_FACTOR_ENABLED=false
+
+# ── Rate Limiting (opcional, valores por defecto) ──
+# RATE_LIMIT_LOGIN=5
+# RATE_LIMIT_API=60
+
+# ── Mail (verificar que coincide con configuración SiteGround) ──
+# MAIL_MAILER=smtp
+# MAIL_HOST=tlsv1.siteground.biz
+# MAIL_PORT=465
+# MAIL_USERNAME=
+# MAIL_PASSWORD=
+# MAIL_ENCRYPTION=ssl
+# MAIL_FROM_ADDRESS=
+# MAIL_FROM_NAME="${APP_NAME}"
+
+═══════════════════════════════════════════════════════════════════════════════
+ VARIABLES OBSOLETAS PARA ELIMINAR (eran del módulo SIFEN)
+═══════════════════════════════════════════════════════════════════════════════
+ Si tu .env actual tiene alguna de estas, comentarlas con #:
+
+# SIFEN_BASE_URL=...
+# SIFEN_CERT_PATH=...
+# SIFEN_CERT_PASS=...
+# SIFEN_RUC=...
+
+═══════════════════════════════════════════════════════════════════════════════
+ VERIFICAR que estas variables sigan correctas en producción
+═══════════════════════════════════════════════════════════════════════════════
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://erp.djtrucks.com.py
+SESSION_SECURE_COOKIE=true
