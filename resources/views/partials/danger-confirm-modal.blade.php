@@ -16,8 +16,8 @@
       </form>
 --}}
 <div id="dangerConfirmModal"
-     class="fixed inset-0 items-center justify-center z-[99999] hidden"
-     style="background:rgba(0,0,0,.65); backdrop-filter: blur(2px);">
+     class="hidden"
+     style="position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:2147483647 !important; background:rgba(0,0,0,.65) !important; backdrop-filter:blur(2px); align-items:center; justify-content:center;">
     <div class="w-[92%] max-w-[480px] rounded-2xl shadow-2xl overflow-hidden"
          style="background: var(--surface); border: 1px solid var(--border);">
 
@@ -137,7 +137,7 @@
 
         const modal = document.getElementById('dangerConfirmModal');
         modal.classList.remove('hidden');
-        modal.style.display = 'flex';
+        modal.style.setProperty('display', 'flex', 'important');
     });
 })();
 </script>

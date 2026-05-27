@@ -1,132 +1,147 @@
-{{-- Global Confirmation Modal --}}
-<div id="confirmModal" class="fixed inset-0 items-center justify-center z-[99999] hidden"
-    style="background:rgba(0,0,0,.55);">
-    <div class="w-[92%] max-w-[650px] rounded-2xl shadow-2xl overflow-hidden" style="background: var(--surface);">
-        <div class="px-6 py-4 border-b flex justify-between items-center" style="border-color: var(--border);">
-            <h3 class="text-base font-semibold" style="color: var(--text);" id="confirmModalTitle">Confirmar datos</h3>
-            <button type="button" onclick="cerrarConfirmModal()"
-                class="text-2xl cursor-pointer bg-transparent border-none hover:opacity-70 transition-opacity"
-                style="color: var(--text-muted);">&times;</button>
-        </div>
-        <div class="px-6 py-5 max-h-[60vh] overflow-y-auto">
-            <p class="text-[0.82rem] mb-4" style="color: var(--text-muted);">Revisa los datos antes de guardar:</p>
-            <div id="confirmModalBody" class="grid grid-cols-2 gap-2.5"></div>
-        </div>
-        <div class="px-6 py-4 border-t flex justify-end gap-2" style="border-color: var(--border);">
-            <button type="button" class="btn btn-ghost" onclick="cerrarConfirmModal()">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+{{--
+    Confirm Modal — versión simplificada y robusta.
+
+    USO:
+    Agregar a cualquier <form> el atributo:
+      data-confirm="Mensaje de confirmación"
+
+    Opcionalmente:
+      data-confirm-action-label="Texto del botón confirmar"  (default: "Confirmar y Guardar")
+      data-confirm-cancel-label="Texto del botón cancelar"   (default: "Cancelar")
+
+    Ejemplo:
+      <form method="POST" action="..." data-confirm="¿Actualizar este vehículo?">
+          ...
+      </form>
+--}}
+<div id="confirmModal"
+     class="hidden"
+     style="position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:2147483647 !important; background:rgba(0,0,0,.65) !important; backdrop-filter:blur(2px); align-items:center; justify-content:center;">
+    <div class="w-[92%] max-w-[480px] rounded-2xl shadow-2xl overflow-hidden"
+         style="background: var(--surface); border: 1px solid var(--border);">
+
+        {{-- Header --}}
+        <div class="px-6 py-5 border-b flex items-start gap-4" style="border-color: var(--border);">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                 style="background: rgba(99,102,241,0.12); color: #6366f1;">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                Editar
+            </div>
+            <div class="flex-1 min-w-0">
+                <h3 id="confirmModalTitle"
+                    class="text-base font-bold mb-1"
+                    style="color: var(--text);">Confirmar acción</h3>
+                <p id="confirmModalMessage"
+                   class="text-sm leading-relaxed"
+                   style="color: var(--text-muted);">¿Está seguro de continuar?</p>
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="px-6 py-4 flex justify-end gap-2" style="background: var(--surface2);">
+            <button type="button"
+                    class="btn btn-ghost"
+                    onclick="cerrarConfirmModal()">
+                <span id="confirmModalCancelLabel">Cancelar</span>
             </button>
-            <button type="button" class="btn btn-primary" id="confirmModalSubmit">
+            <button type="button"
+                    id="confirmModalSubmit"
+                    class="btn btn-primary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
-                Confirmar y Guardar
+                <span id="confirmModalActionLabel">Confirmar y Guardar</span>
             </button>
         </div>
     </div>
 </div>
 
 <script>
-    (function () {
-        let pendingForm = null;
+(function () {
+    'use strict';
 
-        window.cerrarConfirmModal = function () {
-            const modal = document.getElementById('confirmModal');
-            modal.style.display = 'none';
-            modal.classList.add('hidden');
-            pendingForm = null;
-        };
+    let pendingForm = null;
 
-        document.getElementById('confirmModalSubmit').addEventListener('click', function () {
-            if (pendingForm) {
-                const attr = pendingForm.getAttribute('data-confirm');
-                pendingForm.removeAttribute('data-confirm');
-                pendingForm.submit();
-                pendingForm.setAttribute('data-confirm', attr);
-            }
-        });
+    window.cerrarConfirmModal = function () {
+        const modal = document.getElementById('confirmModal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        pendingForm = null;
+    };
 
-        document.addEventListener('submit', function (e) {
+    // Cerrar con tecla ESC
+    document.addEventListener('keydown', function (e) {
+        const modal = document.getElementById('confirmModal');
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            cerrarConfirmModal();
+        }
+    });
+
+    // Click en backdrop cierra
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('confirmModal');
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === this) cerrarConfirmModal();
+            });
+        }
+
+        const submitBtn = document.getElementById('confirmModalSubmit');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function () {
+                if (!pendingForm) return;
+                const f = pendingForm;
+                pendingForm = null;
+                // Quitar el atributo para evitar interceptar de nuevo
+                f.removeAttribute('data-confirm');
+                f.submit();
+            });
+        }
+    });
+
+    // Interceptar submit de cualquier form con data-confirm
+    document.addEventListener('submit', function (e) {
+        try {
             const form = e.target;
-            if (!form.hasAttribute('data-confirm')) return;
+            if (!form || !form.hasAttribute || !form.hasAttribute('data-confirm')) return;
 
             e.preventDefault();
             pendingForm = form;
 
-            const title = form.getAttribute('data-confirm') || 'Confirmar datos';
-            document.getElementById('confirmModalTitle').textContent = title;
+            const message      = form.getAttribute('data-confirm') || '¿Está seguro de continuar?';
+            const actionLabel  = form.getAttribute('data-confirm-action-label') || 'Confirmar y Guardar';
+            const cancelLabel  = form.getAttribute('data-confirm-cancel-label') || 'Cancelar';
 
-            const body = document.getElementById('confirmModalBody');
-            body.innerHTML = '';
+            const titleEl  = document.getElementById('confirmModalTitle');
+            const msgEl    = document.getElementById('confirmModalMessage');
+            const actionEl = document.getElementById('confirmModalActionLabel');
+            const cancelEl = document.getElementById('confirmModalCancelLabel');
 
-            const fields = form.querySelectorAll('input, select, textarea');
-            fields.forEach(function (field) {
-                if (field.type === 'hidden' || field.type === 'submit' || field.name === '_token' || field.name === '_method') return;
-                if (field.offsetParent === null && field.type !== 'hidden') return;
-                if (!field.name) return;
-
-                const label = findLabel(field, form);
-                let value = '';
-
-                if (field.tagName === 'SELECT') {
-                    const opt = field.options[field.selectedIndex];
-                    value = opt ? opt.textContent.trim() : '';
-                } else if (field.type === 'checkbox') {
-                    value = field.checked ? 'Sí' : 'No';
-                } else {
-                    value = field.value;
-                }
-
-                if (!value && value !== '0') value = '—';
-
-                const item = document.createElement('div');
-                item.className = 'rounded-lg p-3 border';
-                item.style.background = 'var(--surface2)';
-                item.style.borderColor = 'var(--border)';
-                item.innerHTML = '<div class="text-[0.65rem] font-semibold uppercase tracking-wider mb-0.5" style="color:var(--text-muted)">'
-                    + escapeHtml(label) + '</div><div class="text-[0.85rem] font-medium break-words" style="color:var(--text)">'
-                    + escapeHtml(truncate(value, 80)) + '</div>';
-                body.appendChild(item);
-            });
-
-            if (body.children.length === 0) {
-                body.innerHTML = '<div class="col-span-2 text-center py-4" style="color:var(--text-muted)">No se detectaron campos visibles.</div>';
-            }
+            if (titleEl)  titleEl.textContent  = 'Confirmar acción';
+            if (msgEl)    msgEl.textContent    = message;
+            if (actionEl) actionEl.textContent = actionLabel;
+            if (cancelEl) cancelEl.textContent = cancelLabel;
 
             const modal = document.getElementById('confirmModal');
-            modal.classList.remove('hidden');
-            modal.style.display = 'flex';
-        });
-
-        function findLabel(field, form) {
-            if (field.id) {
-                const lbl = form.querySelector('label[for="' + field.id + '"]');
-                if (lbl) return lbl.textContent.trim().replace(/\*$/, '').trim();
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.setProperty('display', 'flex', 'important');
+            } else {
+                // Fallback: si no se encuentra el modal, enviar directamente
+                console.warn('confirmModal not found, submitting directly');
+                form.removeAttribute('data-confirm');
+                form.submit();
             }
-            const group = field.closest('.form-group');
-            if (group) {
-                const lbl = group.querySelector('label');
-                if (lbl) return lbl.textContent.trim().replace(/\*$/, '').trim();
+        } catch (err) {
+            // Si algo falla, no bloquear el form — enviar directamente
+            console.error('Error en confirm-modal:', err);
+            if (pendingForm) {
+                pendingForm.removeAttribute('data-confirm');
+                pendingForm.submit();
             }
-            return humanize(field.name);
         }
-
-        function humanize(str) {
-            return str.replace(/_/g, ' ').replace(/\[.*\]/g, '').replace(/\b\w/g, function (l) { return l.toUpperCase(); });
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        function truncate(str, max) {
-            return str.length > max ? str.substring(0, max) + '…' : str;
-        }
-    })();
+    });
+})();
 </script>

@@ -21,7 +21,7 @@
             <h2>{{ $vehiculo->marca }} {{ $vehiculo->modelo }} — Chasis: {{ $vehiculo->numero_chasis }}</h2>
         </div>
         <div class="erp-card-body">
-            <form method="POST" action="{{ route('vehicles.update', $vehiculo->id) }}"
+            <form id="vehicleEditForm" method="POST" action="{{ route('vehicles.update', $vehiculo->id) }}"
                 enctype="multipart/form-data"
                 data-confirm="Confirmar actualización de vehículo">
                 @csrf
@@ -240,6 +240,8 @@
                     </div>
                 </div>
 
+            </form>
+
                 {{-- ═══════════════════════ GESTIÓN DE IMÁGENES ═══════════════════════ --}}
                 <div class="mt-6 pt-5 border-t" style="border-color: var(--border);">
                     <h3 class="form-label mb-3 flex items-center gap-2 text-base font-semibold">
@@ -312,6 +314,7 @@
                         <label class="form-label">Agregar más imágenes</label>
                         <input type="file"
                                name="imagenes[]"
+                               form="vehicleEditForm"
                                multiple
                                accept="image/jpeg,image/jpg,image/png,image/webp"
                                class="form-input">
@@ -326,14 +329,13 @@
 
                 <div class="flex gap-3 justify-end pt-5 mt-4 border-t" style="border-color: var(--border);">
                     <a href="{{ route('vehicles.show', $vehiculo->id) }}" class="btn btn-ghost">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" form="vehicleEditForm" class="btn btn-primary">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                         </svg>
                         Actualizar
                     </button>
                 </div>
-            </form>
         </div>
     </div>
 
