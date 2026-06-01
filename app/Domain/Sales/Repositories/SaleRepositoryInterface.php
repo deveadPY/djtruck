@@ -11,6 +11,8 @@ interface SaleRepositoryInterface
 {
     public function findById(int $id): ?SaleModel;
 
+    public function findByIdWithTrashed(int $id): ?SaleModel;
+
     public function create(array $data): SaleModel;
 
     public function update(int $id, array $data): bool;

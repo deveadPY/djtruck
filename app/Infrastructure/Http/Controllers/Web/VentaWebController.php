@@ -45,7 +45,12 @@ class VentaWebController extends Controller
         $hasta  = $request->input('hasta', '');
 
         $ventas = DB::table('ventas')
-            ->whereNull('ventas.deleted_at')
+            // Oculta las canceladas salvo que se filtre explícitamente por estado CANCELADO.
+            // Se basa en el estado (indicador confiable) y también respeta soft-deletes.
+            ->when(
+                $estado !== 'CANCELADO',
+                fn($query) => $query->whereNull('ventas.deleted_at')->where('ventas.estado', '!=', 'CANCELADO')
+            )
             ->leftJoin('clientes', 'ventas.cliente_id', '=', 'clientes.id')
             ->leftJoin('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
             ->select(
@@ -136,9 +141,9 @@ class VentaWebController extends Controller
 
     public function show($id, \App\Application\Installments\InstallmentApplicationService $installmentService)
     {
-        // Una sola consulta con eager loading: cliente, vehiculo, vendedor
-        $venta = $this->saleService->findById((int) $id);
-        if (!$venta || $venta->deleted_at) {
+        // Incluye canceladas (soft-deleted) para poder ver su detalle y motivo de anulación
+        $venta = $this->saleService->findByIdWithTrashed((int) $id);
+        if (!$venta) {
             abort(404, 'Venta no encontrada');
         }
 
@@ -151,7 +156,12 @@ class VentaWebController extends Controller
 
         $rentabilidad = $this->saleService->calculateRentability($venta);
 
-        return view('ventas.show', compact('venta', 'pagos', 'plan', 'cuotas', 'rentabilidad', 'documentos', 'items'));
+        // Si la venta fue cancelada, recuperar el motivo de anulación desde audit_logs
+        $cancelacion = $venta->estado === 'CANCELADO'
+            ? $this->saleService->getCancellationInfo((int) $id)
+            : null;
+
+        return view('ventas.show', compact('venta', 'pagos', 'plan', 'cuotas', 'rentabilidad', 'documentos', 'items', 'cancelacion'));
     }
 
     public function edit($id)

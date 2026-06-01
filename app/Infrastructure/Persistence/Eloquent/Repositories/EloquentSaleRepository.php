@@ -21,6 +21,15 @@ class EloquentSaleRepository implements SaleRepositoryInterface
         ])->find($id);
     }
 
+    public function findByIdWithTrashed(int $id): ?SaleModel
+    {
+        return SaleModel::withTrashed()->with([
+            'cliente:id,razon_social,ruc,email,telefono,direccion',
+            'vehiculo',
+            'vendedor:id,name,email',
+        ])->find($id);
+    }
+
     public function create(array $data): SaleModel
     {
         return SaleModel::create($data);

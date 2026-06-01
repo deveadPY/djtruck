@@ -50,6 +50,37 @@
         </div>
     </div>
 
+    {{-- ── Banner de Anulación (solo si la venta está cancelada) ── --}}
+    @if($venta->estado === 'CANCELADO')
+    <div class="mb-8 rounded-2xl border border-red-500/30 bg-red-500/5 p-5">
+        <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 flex-shrink-0">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-black text-red-300 uppercase tracking-widest mb-1">Venta Anulada</h3>
+                @if($cancelacion && $cancelacion->motivo)
+                    <p class="text-sm text-white/90 mb-3">{{ $cancelacion->motivo }}</p>
+                @else
+                    <p class="text-sm text-muted-foreground italic mb-3">Sin motivo registrado.</p>
+                @endif
+                @if($cancelacion)
+                <div class="flex flex-wrap gap-x-6 gap-y-1 text-[0.65rem] text-muted-foreground uppercase tracking-wider font-bold">
+                    @if($cancelacion->fecha)
+                        <span>Fecha: <span class="text-white/70">{{ \Carbon\Carbon::parse($cancelacion->fecha)->format('d/m/Y H:i') }}</span></span>
+                    @endif
+                    @if($cancelacion->usuario)
+                        <span>Anulada por: <span class="text-white/70">{{ $cancelacion->usuario }}</span></span>
+                    @endif
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Vehículo y Cliente --}}
         <div class="lg:col-span-2 space-y-6">
