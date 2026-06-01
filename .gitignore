@@ -5,10 +5,9 @@
 /storage/logs/*.log
 /storage/debugbar
 /vendor
-.env
-.env.backup
-.env.production
-.env.local
+# Variables de entorno — ignorar TODO .env* salvo el ejemplo
+.env*
+!.env.example
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json

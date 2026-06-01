@@ -91,8 +91,9 @@ class CancelSaleUseCase
             if ($plan) {
                 DB::table('cuotas')
                     ->where('plan_cuotas_id', $plan->id)
+                    ->whereIn('estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA'])
                     ->update([
-                        'estado'     => 'CANCELADA',
+                        'estado'     => 'ANULADA',
                         'deleted_at' => now(),
                         'updated_at' => now(),
                     ]);

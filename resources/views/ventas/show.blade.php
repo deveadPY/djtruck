@@ -32,16 +32,13 @@
                 </svg>
                 Editar
             </a>
-            <form action="{{ route('ventas.destroy', $venta->id) }}" method="POST" onsubmit="return confirm('¿Está seguro de cancelar esta venta? Se revertirá el stock, vehículos, pagos y cuotas. Esta acción no se puede deshacer.')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-ghost flex-1 md:flex-none py-3 px-5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all text-xs font-black uppercase tracking-wider">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                    Cancelar Venta
-                </button>
-            </form>
+            <button type="button" onclick="document.getElementById('modal-cancelar-venta').classList.remove('hidden')"
+                class="btn btn-ghost flex-1 md:flex-none py-3 px-5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all text-xs font-black uppercase tracking-wider">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+                Cancelar Venta
+            </button>
             @endif
             <a href="{{ route('ventas.imprimir', $venta->id) }}" target="_blank" class="btn btn-primary flex-1 md:flex-none py-3 px-6 rounded-xl shadow-lg shadow-primary/25 border-b-2 border-primary-hover active:translate-y-0.5 transition-all text-xs font-black uppercase tracking-wider">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -324,4 +321,52 @@
             });
         </script>
     @endif
+{{-- ── Modal Cancelar Venta ── --}}
+<div id="modal-cancelar-venta" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="w-full max-w-md bg-surface2 border border-white/10 rounded-2xl shadow-2xl p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-black text-white uppercase tracking-widest">Cancelar Venta</h3>
+                <p class="text-[0.65rem] text-muted-foreground mt-0.5">Operación #{{ $venta->numero_venta }}</p>
+            </div>
+        </div>
+
+        <div class="bg-red-500/5 border border-red-500/20 rounded-xl p-4 mb-5 space-y-1.5">
+            <p class="text-xs text-red-300 font-semibold">Esta acción realizará lo siguiente:</p>
+            <ul class="text-[0.65rem] text-muted-foreground space-y-1 list-disc list-inside">
+                <li>Devuelve el vehículo a estado DISPONIBLE</li>
+                <li>Revierte los movimientos de caja</li>
+                <li>Anula los detalles de pago</li>
+                @if($plan)
+                <li>Anula el plan de cuotas y sus {{ $cuotas->count() }} cuota(s) pendientes</li>
+                @endif
+            </ul>
+        </div>
+
+        <form action="{{ route('ventas.destroy', $venta->id) }}" method="POST">
+            @csrf
+            @method('DELETE')
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Motivo de cancelación <span class="text-red-400">*</span></label>
+                <textarea name="motivo" required rows="3" placeholder="Describe brevemente el motivo de la cancelación..."
+                    class="w-full bg-surface border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary/50 resize-none"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="document.getElementById('modal-cancelar-venta').classList.add('hidden')"
+                    class="flex-1 py-2.5 rounded-xl border border-white/10 text-muted-foreground hover:text-white hover:border-white/20 transition-all text-xs font-black uppercase tracking-wider">
+                    Volver
+                </button>
+                <button type="submit"
+                    class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/30">
+                    Confirmar cancelación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
