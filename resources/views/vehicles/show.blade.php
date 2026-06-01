@@ -72,6 +72,77 @@
         </div>
     </div>
 
+    {{-- Historial de Gastos --}}
+    <div class="erp-card mt-5">
+        <div class="erp-card-header flex items-center justify-between">
+            <h2 class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>
+                Historial de Gastos ({{ $gastos->count() }})
+            </h2>
+            <a href="{{ route('gastos.create', $vehiculo->id) }}" class="btn btn-ghost text-accent !py-1.5 !px-3 text-xs">+ Registrar Gasto</a>
+        </div>
+        <div class="erp-card-body">
+            @if($gastos->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left" style="color: var(--text-muted);">
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider">Fecha</th>
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider">Concepto</th>
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider">Categoría</th>
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider">Origen</th>
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider text-right">Monto</th>
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider text-center">Aplicado</th>
+                                <th class="pb-3 font-semibold text-xs uppercase tracking-wider">Registrado por</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($gastos as $g)
+                            <tr class="border-t" style="border-color: var(--border);">
+                                <td class="py-3 whitespace-nowrap">{{ \Carbon\Carbon::parse($g->fecha_gasto)->format('d/m/Y') }}</td>
+                                <td class="py-3">
+                                    <div class="font-medium">{{ $g->concepto }}</div>
+                                    @if($g->descripcion)<div class="text-xs" style="color: var(--text-muted);">{{ \Illuminate\Support\Str::limit($g->descripcion, 60) }}</div>@endif
+                                    @if($g->numero_remision)<div class="text-xs" style="color: var(--text-muted);">Rem.: {{ $g->numero_remision }}</div>@endif
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex px-2 py-0.5 rounded-full text-[0.65rem] font-semibold" style="background: var(--border); color: var(--text-muted);">{{ ucfirst(strtolower(str_replace('_', ' ', $g->categoria))) }}</span>
+                                </td>
+                                <td class="py-3"><span class="text-xs" style="color: var(--text-muted);">{{ ucfirst(strtolower(str_replace('_', ' ', $g->origen_tipo))) }}</span></td>
+                                <td class="py-3 text-right whitespace-nowrap">
+                                    <div class="font-semibold text-accent">$ {{ number_format($g->monto_usd, 2, ',', '.') }}</div>
+                                    @if($g->moneda !== 'USD')<div class="text-xs" style="color: var(--text-muted);">{{ $g->moneda }} {{ number_format($g->monto_moneda, 2, ',', '.') }}</div>@endif
+                                </td>
+                                <td class="py-3 text-center">
+                                    @if($g->aplicado_al_costo)
+                                        <span class="inline-flex px-2 py-0.5 rounded-full text-[0.65rem] font-semibold" style="background: rgba(34,197,94,.15); color: rgb(74,222,128);">Sí</span>
+                                    @else
+                                        <span class="inline-flex px-2 py-0.5 rounded-full text-[0.65rem] font-semibold" style="background: var(--border); color: var(--text-muted);">No</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 text-xs" style="color: var(--text-muted);">{{ $g->registrado_por ?? '—' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr class="border-t-2" style="border-color: var(--border);">
+                                <td colspan="4" class="pt-3 text-right font-semibold text-xs uppercase tracking-wider" style="color: var(--text-muted);">Total gastos</td>
+                                <td class="pt-3 text-right font-bold text-accent">$ {{ number_format($gastos->sum('monto_usd'), 2, ',', '.') }}</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            @else
+                <div class="text-center py-8" style="color: var(--text-muted);">
+                    <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15" /></svg>
+                    <p class="text-sm">No hay gastos registrados para este vehículo.</p>
+                    <a href="{{ route('gastos.create', $vehiculo->id) }}" class="text-accent text-xs hover:underline mt-2 inline-block">Registrar el primer gasto</a>
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- Galería de Imágenes --}}
     @if(isset($imagenes) && $imagenes->count() > 0)
     <div class="erp-card mt-5">

@@ -28,13 +28,13 @@
                 @csrf
                 <div class="form-grid">
                     <div class="form-group" style="grid-column:1/-1">
-                        <label>Concepto *</label>
+                        <label class="form-label">Concepto *</label>
                         <input type="text" name="concepto" value="{{ old('concepto') }}"
-                            placeholder="Ej: Reparación de frenos" required maxlength="255">
+                            placeholder="Ej: Reparación de frenos" required maxlength="255" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label>Categoría *</label>
-                        <select name="categoria" required>
+                        <label class="form-label">Categoría *</label>
+                        <select name="categoria" required class="form-input">
                             @foreach([
                                     'REPARACION_MECANICA' => 'Reparación Mecánica',
                                     'CHAPERIA_PINTURA' => 'Chapería y Pintura',
@@ -51,8 +51,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Origen *</label>
-                        <select name="origen_tipo" required>
+                        <label class="form-label">Origen *</label>
+                        <select name="origen_tipo" required class="form-input">
                             @foreach([
                                     'FACTURA_PROVEEDOR' => 'Factura Proveedor',
                                     'STOCK_REPUESTO' => 'Repuesto en Stock',
@@ -67,8 +67,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Repuesto (opcional)</label>
-                        <select name="repuesto_id">
+                        <label class="form-label">Repuesto (opcional)</label>
+                        <select name="repuesto_id" class="form-input">
                             <option value="">— Ninguno —</option>
                             @foreach($repuestos as $r)
                                 <option value="{{ $r->id }}" {{ old('repuesto_id') == $r->id ? 'selected' : '' }}>{{ $r->codigo }} — {{ Str::limit($r->descripcion, 40) }}</option>
@@ -76,40 +76,40 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Cantidad repuesto</label>
-                        <input type="number" name="repuesto_cantidad" value="{{ old('repuesto_cantidad') }}" step="0.001" min="0">
+                        <label class="form-label">Cantidad repuesto</label>
+                        <input type="number" name="repuesto_cantidad" value="{{ old('repuesto_cantidad') }}" step="0.001" min="0" class="form-input">
                     </div>
                     <div class="form-group" style="grid-column:1/-1; display:flex; gap:1.25rem;">
                         <div style="flex:1;">
-                            <label>Moneda *</label>
-                            <select name="moneda" required>
+                            <label class="form-label">Moneda *</label>
+                            <select name="moneda" required class="form-input">
                                 @foreach(['USD', 'PYG', 'BRL'] as $m)
                                     <option value="{{ $m }}" {{ old('moneda', 'USD') == $m ? 'selected' : '' }}>{{ $m }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div style="flex:1;">
-                            <label>Tasa de Cambio</label>
-                            <input type="number" name="tasa_cambio" value="1" step="0.0001" readonly style="background:var(--surface1); cursor:not-allowed;">
+                            <label class="form-label">Tasa de Cambio</label>
+                            <input type="number" name="tasa_cambio" value="1" step="0.0001" readonly class="form-input" style="cursor:not-allowed; opacity:.7;">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Monto en moneda *</label>
-                        <input type="number" name="monto_moneda" value="{{ old('monto_moneda') }}" step="0.01" min="0" required>
+                        <label class="form-label">Monto en moneda *</label>
+                        <input type="number" name="monto_moneda" value="{{ old('monto_moneda') }}" step="0.01" min="0" required class="form-input">
                     </div>
-                <div class="form-group">
-                    <label>Monto en USD *</label>
-                    <input type="number" name="monto_usd" value="{{ old('monto_usd') }}" step="0.01" min="0" required>
+                    <div class="form-group">
+                        <label class="form-label">Monto en USD *</label>
+                        <input type="number" name="monto_usd" value="{{ old('monto_usd') }}" step="0.01" min="0" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fecha del gasto *</label>
+                        <input type="date" name="fecha_gasto" value="{{ old('fecha_gasto', date('Y-m-d')) }}" required class="form-input">
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">Descripción / Observaciones</label>
+                        <textarea name="descripcion" rows="2" class="form-input">{{ old('descripcion') }}</textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Fecha del gasto *</label>
-                    <input type="date" name="fecha_gasto" value="{{ old('fecha_gasto', date('Y-m-d')) }}" required>
-                </div>
-                <div class="form-group" style="grid-column:1/-1">
-                    <label>Descripción / Observaciones</label>
-                    <textarea name="descripcion" rows="2">{{ old('descripcion') }}</textarea>
-                </div>
-            </div>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:1.25rem;margin-top:1rem;border-top:1px solid var(--border)">
                 <a href="{{ route('vehicles.show', $vehiculo->id) }}" class="btn btn-ghost">Cancelar</a>
                 <button type="submit" class="btn btn-primary">💾 Registrar gasto</button>

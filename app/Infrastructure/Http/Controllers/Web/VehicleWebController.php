@@ -39,7 +39,14 @@ class VehicleWebController extends Controller
         $vehiculo = $this->vehicleRepository->findById((int) $id);
         if (!$vehiculo) abort(404);
 
-        $gastos = DB::table('gastos_vehiculo')->where('vehiculo_id', $id)->whereNull('deleted_at')->latest()->get();
+        $gastos = DB::table('gastos_vehiculo as g')
+            ->leftJoin('users as u', 'g.created_by', '=', 'u.id')
+            ->where('g.vehiculo_id', $id)
+            ->whereNull('g.deleted_at')
+            ->orderByDesc('g.fecha_gasto')
+            ->orderByDesc('g.id')
+            ->select('g.*', 'u.name as registrado_por')
+            ->get();
         $proveedor = $vehiculo->proveedor_id ? DB::table('proveedores')->where('id', $vehiculo->proveedor_id)->first() : null;
         $imagenes = DB::table('vehiculo_imagenes')->where('vehiculo_id', $id)->whereNull('deleted_at')->orderBy('orden')->get();
 
