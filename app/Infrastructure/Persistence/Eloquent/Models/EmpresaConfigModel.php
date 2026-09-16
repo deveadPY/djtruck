@@ -16,7 +16,9 @@ class EmpresaConfigModel extends Model
         'prefijo_venta', 'prefijo_factura',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'two_factor_enabled' => 'boolean',
+    ];
 
     public function logoUrl(): ?string
     {

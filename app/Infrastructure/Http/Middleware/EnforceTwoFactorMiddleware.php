@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Middleware;
 
 use App\Domain\Auth\TwoFactor\Services\TwoFactorService;
+use App\Infrastructure\Settings\EmpresaSettings;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,7 +32,7 @@ class EnforceTwoFactorMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (!$user) {
+        if (!$user || !EmpresaSettings::twoFactorEnabled()) {
             return $next($request);
         }
 

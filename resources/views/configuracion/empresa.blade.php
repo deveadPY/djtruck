@@ -222,6 +222,55 @@
         </div>
     </form>
 
+    {{-- Card: Seguridad (form propio: requiere confirmar contraseña) --}}
+    @php($twoFactorOn = (bool) ($empresa?->two_factor_enabled ?? true))
+    @can('configuracion.editar')
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+        <div class="lg:col-span-8">
+            <div class="erp-card !bg-surface/60 !backdrop-blur-xl relative overflow-hidden" style="border-color: var(--border)" id="seguridad">
+                <div class="erp-card-header !bg-transparent p-6 flex items-center gap-3" style="border-color: var(--border)">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-primary border" style="background: var(--surface2); border-color: var(--border)">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" /></svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] italic" style="color: var(--text)">Seguridad</h2>
+                        <p class="text-[0.55rem] text-muted-foreground font-bold uppercase tracking-widest mt-1">Autenticación de 2 pasos (2FA)</p>
+                    </div>
+                    <span class="ml-auto px-3 py-1 rounded-full text-[0.55rem] font-black uppercase tracking-widest {{ $twoFactorOn ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500' }}">
+                        {{ $twoFactorOn ? 'Activa' : 'Desactivada' }}
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ route('config.security.update') }}" class="erp-card-body p-6 space-y-6">
+                    @csrf
+                    <input type="hidden" name="two_factor_enabled" value="0">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" name="two_factor_enabled" value="1" @checked($twoFactorOn) class="mt-1 w-4 h-4 accent-current text-primary">
+                        <span class="flex flex-col">
+                            <span class="text-[0.7rem] font-black uppercase tracking-wider" style="color: var(--text)">Exigir autenticación de 2 pasos</span>
+                            <span class="text-[0.6rem] text-muted-foreground font-bold mt-1">
+                                Si está activa, administradores y gerentes deben configurar 2FA y quienes lo tengan configurado deben ingresar su código al iniciar sesión.
+                                Si está desactivada, se inicia sesión solo con contraseña; la configuración de cada usuario se conserva para cuando se vuelva a activar.
+                            </span>
+                        </span>
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                        <div class="space-y-2">
+                            <label for="security_password" class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Tu contraseña actual <span class="text-primary">*</span></label>
+                            <input type="password" id="security_password" name="password" required autocomplete="current-password"
+                                class="form-input !bg-surface2 !h-12 !text-[0.7rem] !font-black rounded-xl transition-all px-4 w-full" style="border-color: var(--border); color: var(--text)">
+                        </div>
+                        <button type="submit" class="h-12 w-full bg-primary hover:bg-primary/90 text-[0.7rem] font-black uppercase tracking-[0.2em] text-white rounded-xl shadow-lg transition-all active:scale-95">
+                            Guardar seguridad
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endcan
+
     {{-- Hidden Form for Logo Destruction --}}
     @if($empresa?->logo_path)
         <form id="deleteLogoForm" method="POST" action="{{ route('config.logo.destroy') }}" class="hidden">

@@ -26,6 +26,11 @@ class EmpresaSettings
         });
     }
 
+    public static function twoFactorEnabled(): bool
+    {
+        return (bool) (static::get()->two_factor_enabled ?? true);
+    }
+
     public static function forget(): void
     {
         Cache::forget('empresa_config');

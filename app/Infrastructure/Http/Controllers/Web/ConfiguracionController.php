@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Application\Auth\TwoFactor\UpdateTwoFactorPolicyUseCase;
 use App\Infrastructure\Persistence\Eloquent\Models\EmpresaConfigModel;
 use App\Infrastructure\Settings\EmpresaSettings;
 use Illuminate\Http\Request;
@@ -60,6 +61,25 @@ class ConfiguracionController extends Controller
 
         return redirect()->route('config.index')
             ->with('success', 'Configuración guardada correctamente.');
+    }
+
+    public function updateSecurity(Request $request, UpdateTwoFactorPolicyUseCase $useCase)
+    {
+        $data = $request->validate([
+            'two_factor_enabled' => 'required|boolean',
+            'password'           => 'required|string',
+        ]);
+
+        try {
+            $useCase->execute($request->user(), (bool) $data['two_factor_enabled'], $data['password']);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['password' => $e->getMessage()]);
+        }
+
+        $estado = $data['two_factor_enabled'] ? 'activada' : 'desactivada';
+
+        return redirect()->route('config.index')
+            ->with('success', "Autenticación de 2 pasos {$estado}.");
     }
 
     public function destroyLogo()

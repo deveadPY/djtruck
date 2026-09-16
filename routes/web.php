@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Solo con la contraseña no basta: exponen o anulan el segundo factor.
-Route::middleware(['auth', '2fa.verify'])->group(function () {
+Route::middleware(['auth', '2fa.verify:always'])->group(function () {
     Route::get('/2fa/recovery-codes',    [TwoFactorController::class, 'showRecovery'])->name('2fa.recovery.show');
     Route::post('/2fa/disable',          [TwoFactorController::class, 'disable'])->name('2fa.disable');
     Route::post('/2fa/regenerate-codes', [TwoFactorController::class, 'regenerate'])->name('2fa.regenerate');
@@ -245,6 +245,7 @@ Route::middleware(['auth', '2fa.enforce', '2fa.verify'])->group(function () {
     });
     Route::middleware('permission:configuracion.editar')->group(function () {
         Route::post('/configuracion', [ConfiguracionController::class, 'update'])->name('config.update');
+        Route::post('/configuracion/seguridad', [ConfiguracionController::class, 'updateSecurity'])->name('config.security.update');
         Route::delete('/configuracion/logo', [ConfiguracionController::class, 'destroyLogo'])->name('config.logo.destroy');
     });
 

@@ -6,6 +6,7 @@ namespace App\Infrastructure\Http\Middleware;
 
 use App\Application\Auth\TwoFactor\VerifyTwoFactorUseCase;
 use App\Domain\Auth\TwoFactor\Services\TwoFactorService;
+use App\Infrastructure\Settings\EmpresaSettings;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,10 +26,17 @@ class VerifyTwoFactorMiddleware
 
     public function __construct(private readonly TwoFactorService $service) {}
 
-    public function handle(Request $request, Closure $next): Response
+    /**
+     * @param string|null $mode 'always' exige verificación aunque el 2FA esté desactivado en Configuración.
+     */
+    public function handle(Request $request, Closure $next, ?string $mode = null): Response
     {
         $user = $request->user();
         if (!$user) {
+            return $next($request);
+        }
+
+        if ($mode !== 'always' && !EmpresaSettings::twoFactorEnabled()) {
             return $next($request);
         }
 
