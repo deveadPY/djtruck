@@ -125,7 +125,7 @@ class TwoFactorController extends Controller
         try {
             $useCase->execute($request->user(), $data['password']);
             VerifyTwoFactorUseCase::forgetSession();
-            return redirect()->route('configuracion.index')->with('success', '2FA desactivado.');
+            return redirect()->route('dashboard')->with('success', '2FA desactivado.');
         } catch (\Throwable $e) {
             return back()->withErrors(['password' => $e->getMessage()]);
         }

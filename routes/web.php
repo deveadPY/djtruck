@@ -36,9 +36,13 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/2fa/setup',             [TwoFactorController::class, 'setup'])->name('2fa.setup');
     Route::post('/2fa/confirm',          [TwoFactorController::class, 'confirm'])->name('2fa.confirm');
-    Route::get('/2fa/recovery-codes',    [TwoFactorController::class, 'showRecovery'])->name('2fa.recovery.show');
     Route::get('/2fa/verify',            [TwoFactorController::class, 'verifyForm'])->name('2fa.verify');
     Route::post('/2fa/verify',           [TwoFactorController::class, 'verify'])->name('2fa.verify.submit');
+});
+
+// Solo con la contraseña no basta: exponen o anulan el segundo factor.
+Route::middleware(['auth', '2fa.verify'])->group(function () {
+    Route::get('/2fa/recovery-codes',    [TwoFactorController::class, 'showRecovery'])->name('2fa.recovery.show');
     Route::post('/2fa/disable',          [TwoFactorController::class, 'disable'])->name('2fa.disable');
     Route::post('/2fa/regenerate-codes', [TwoFactorController::class, 'regenerate'])->name('2fa.regenerate');
 });
