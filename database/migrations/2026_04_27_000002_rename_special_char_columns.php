@@ -7,6 +7,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Las tablas nuevas ya nacen con los nombres correctos; solo MySQL legacy necesita renombrar.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Rename columns that had ñ/special chars — stored as ?? in some environments
         // vehiculos: año -> anio, año_fabricacion -> anio_fabricacion
         // documentos: tamaño_bytes -> tamano_bytes
@@ -25,6 +30,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Las tablas nuevas ya nacen con los nombres correctos; solo MySQL legacy necesita renombrar.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         $renames = [
             ['vehiculos',  'anio',             "a\xC3\xB1o",             'smallint(6) NOT NULL'],
             ['vehiculos',  'anio_fabricacion',  "a\xC3\xB1o_fabricacion", 'smallint(6) NULL DEFAULT NULL'],

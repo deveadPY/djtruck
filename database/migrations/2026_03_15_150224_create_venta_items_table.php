@@ -30,7 +30,11 @@ return new class extends Migration
         });
 
         // Make vehiculo_id nullable in ventas table (raw SQL to avoid doctrine/dbal dependency)
-        DB::statement('ALTER TABLE ventas MODIFY COLUMN vehiculo_id BIGINT UNSIGNED NULL');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE ventas MODIFY COLUMN vehiculo_id BIGINT UNSIGNED NULL');
+        } else {
+            Schema::table('ventas', fn (Blueprint $table) => $table->unsignedBigInteger('vehiculo_id')->nullable()->change());
+        }
 
         // Data Migration: Move existing sales to venta_items (only if ventas has data)
         if (Schema::hasTable('ventas') && DB::table('ventas')->exists()) {
@@ -58,6 +62,10 @@ return new class extends Migration
     {
         Schema::dropIfExists('venta_items');
         // Revert nullable change (raw SQL to avoid doctrine/dbal dependency)
-        DB::statement('ALTER TABLE ventas MODIFY COLUMN vehiculo_id BIGINT UNSIGNED NOT NULL');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE ventas MODIFY COLUMN vehiculo_id BIGINT UNSIGNED NOT NULL');
+        } else {
+            Schema::table('ventas', fn (Blueprint $table) => $table->unsignedBigInteger('vehiculo_id')->nullable(false)->change());
+        }
     }
 };

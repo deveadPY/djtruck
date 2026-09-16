@@ -18,6 +18,11 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
+        // Las tablas nuevas ya nacen con los nombres correctos; solo MySQL legacy necesita renombrar.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         $columnasARenombrar = [
             // [tabla, posibles nombres origen, nombre destino, tipo]
             ['documentos', ['tamaño_bytes', 'tama??o_bytes'], 'tamano_bytes', 'BIGINT UNSIGNED NULL'],

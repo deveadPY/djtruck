@@ -21,7 +21,11 @@ return new class extends Migration
         });
 
         // Add 'REPOSICION' to the enum
-        DB::statement("ALTER TABLE facturas_proveedores MODIFY COLUMN destino ENUM('VEHICULO','GASTO_OPERATIVO','MIXTO','REPOSICION') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE facturas_proveedores MODIFY COLUMN destino ENUM('VEHICULO','GASTO_OPERATIVO','MIXTO','REPOSICION') NOT NULL");
+        } else {
+            Schema::table('facturas_proveedores', fn (Blueprint $table) => $table->enum('destino', ['VEHICULO', 'GASTO_OPERATIVO', 'MIXTO', 'REPOSICION'])->change());
+        }
     }
 
     /**
@@ -33,6 +37,10 @@ return new class extends Migration
             $table->dropColumn('compra_id');
         });
 
-        DB::statement("ALTER TABLE facturas_proveedores MODIFY COLUMN destino ENUM('VEHICULO','GASTO_OPERATIVO','MIXTO') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE facturas_proveedores MODIFY COLUMN destino ENUM('VEHICULO','GASTO_OPERATIVO','MIXTO') NOT NULL");
+        } else {
+            Schema::table('facturas_proveedores', fn (Blueprint $table) => $table->enum('destino', ['VEHICULO', 'GASTO_OPERATIVO', 'MIXTO'])->change());
+        }
     }
 };
