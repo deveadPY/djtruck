@@ -4,6 +4,10 @@
 # =============================================================================
 # Ejecutar EN EL SERVIDOR de SiteGround vía SSH antes de cualquier deploy.
 #
+#
+# Para que corra solo, agregar en Site Tools → Devs → Cron Jobs (3:30 AM):
+#   bash ~/www/erp.djtrucks.com.py/public_html/deployment/production-backup.sh
+#
 # Genera 3 backups con timestamp en ~/backups/:
 #   1. backup_db_YYYYMMDD_HHMMSS.sql.gz   (dump completo MySQL)
 #   2. backup_uploads_YYYYMMDD_HHMMSS.tar.gz (storage + public/uploads)
@@ -19,6 +23,8 @@ set -e
 APP_DIR="${HOME}/www/erp.djtrucks.com.py/public_html"
 BACKUP_DIR="${HOME}/backups"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+# Días que se conservan los backups. Con ~46MB por corrida, 14 días ≈ 650MB.
+RETENCION_DIAS="${RETENCION_DIAS:-14}"
 
 # Crear directorio de backups si no existe
 mkdir -p "${BACKUP_DIR}"
@@ -30,7 +36,7 @@ echo "════════════════════════�
 
 # ── 1. BACKUP DE BASE DE DATOS ───────────────────────────────────────────────
 echo ""
-echo "[1/3] Backup de base de datos..."
+echo "[1/4] Backup de base de datos..."
 
 if [ ! -f "${APP_DIR}/.env" ]; then
     echo "  ❌ ERROR: No se encontró .env en ${APP_DIR}"
@@ -60,17 +66,18 @@ mysqldump \
     --no-tablespaces \
     "${DB_NAME}" 2>/dev/null | gzip > "${DB_BACKUP}"
 
-if [ -s "${DB_BACKUP}" ]; then
+if [ -s "${DB_BACKUP}" ] && gzip -t "${DB_BACKUP}" 2>/dev/null; then
+    chmod 600 "${DB_BACKUP}"
     SIZE=$(du -h "${DB_BACKUP}" | cut -f1)
     echo "  ✓ DB respaldada: ${DB_BACKUP} (${SIZE})"
 else
-    echo "  ❌ ERROR: El backup de DB está vacío"
+    echo "  ❌ ERROR: El backup de DB está vacío o corrupto"
     exit 1
 fi
 
 # ── 2. BACKUP DE ARCHIVOS SUBIDOS POR USUARIOS ───────────────────────────────
 echo ""
-echo "[2/3] Backup de archivos (storage + uploads)..."
+echo "[2/4] Backup de archivos (storage + uploads)..."
 
 UPLOADS_BACKUP="${BACKUP_DIR}/backup_uploads_${TIMESTAMP}.tar.gz"
 
@@ -84,6 +91,7 @@ tar -czf "${UPLOADS_BACKUP}" \
     public/uploads 2>/dev/null || true
 
 if [ -s "${UPLOADS_BACKUP}" ]; then
+    chmod 600 "${UPLOADS_BACKUP}"
     SIZE=$(du -h "${UPLOADS_BACKUP}" | cut -f1)
     echo "  ✓ Uploads respaldados: ${UPLOADS_BACKUP} (${SIZE})"
 else
@@ -92,12 +100,19 @@ fi
 
 # ── 3. BACKUP DEL .env ────────────────────────────────────────────────────────
 echo ""
-echo "[3/3] Backup de .env..."
+echo "[3/4] Backup de .env..."
 
 ENV_BACKUP="${BACKUP_DIR}/backup_env_${TIMESTAMP}.txt"
 cp "${APP_DIR}/.env" "${ENV_BACKUP}"
 chmod 600 "${ENV_BACKUP}"
 echo "  ✓ .env respaldado: ${ENV_BACKUP}"
+
+# ── 4. RETENCIÓN ──────────────────────────────────────────────────────────────
+echo ""
+echo "[4/4] Borrando backups de más de ${RETENCION_DIAS} días..."
+
+BORRADOS=$(find "${BACKUP_DIR}" -maxdepth 1 -type f -name 'backup_*' -mtime "+${RETENCION_DIAS}" -print -delete | wc -l)
+echo "  ✓ ${BORRADOS} archivo(s) antiguo(s) eliminado(s)"
 
 # ── RESUMEN ───────────────────────────────────────────────────────────────────
 echo ""
