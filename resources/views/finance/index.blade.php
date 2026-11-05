@@ -130,7 +130,7 @@
             </div>
             <div class="text-xs mt-1" style="color:var(--text-muted)">
                 @if($cuotasVencidas > 0)
-                    <a href="{{ route('planes_cuotas.index') }}" style="color:#f59e0b">Ver cuotas →</a>
+                    <a href="{{ route('notificaciones.index') }}" style="color:#f59e0b">Ver cuotas →</a>
                 @else
                     Sin atrasos
                 @endif
