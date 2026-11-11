@@ -34,7 +34,7 @@
         </div>
 
         {{-- Filtros Avanzados Estilizados --}}
-        <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 p-4">
+        <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border p-4">
             <form method="GET" action="{{ route('ventas.index') }}" id="ventasSearchForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {{-- Buscador Texto --}}
                 <div class="relative">
@@ -83,12 +83,12 @@
     </div>
 
     {{-- Vista de Escritorio (Table Master) --}}
-    <div class="hidden md:block erp-card !border-white/5">
+    <div class="hidden md:block erp-card !border-border">
         <div class="erp-card-header overflow-hidden !bg-surface3/10">
             <div class="flex items-center gap-3 w-full">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Monitor de Transacciones</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent"></div>
-                <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-white/5 uppercase tracking-tighter">
+                <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-border uppercase tracking-tighter">
                     {{ $ventas->total() }} Operaciones
                 </span>
             </div>
@@ -207,7 +207,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-border">
                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                     <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />

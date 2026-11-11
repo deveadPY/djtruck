@@ -38,7 +38,7 @@
     @if(isset($entregas) && $entregas->count() > 0)
         <div class="erp-card" style="margin-bottom:1.25rem">
             <div class="erp-card-header">
-                <h2>💰 Entregas Iniciales</h2>
+                <h2>Entregas Iniciales</h2>
             </div>
             <div class="erp-card-body" style="padding:0">
                 <div class="overflow-x-auto">
@@ -70,7 +70,7 @@
     {{-- Grilla de cuotas --}}
     <div class="erp-card">
         <div class="erp-card-header">
-            <h2>📅 Detalle de Cuotas</h2>
+            <h2>Detalle de Cuotas</h2>
         </div>
         <div class="erp-card-body" style="padding:0">
             <div class="overflow-x-auto">
@@ -105,14 +105,14 @@
                                     <button type="button" class="btn btn-ghost"
                                         style="padding:.25rem .5rem;font-size:.7rem;color:var(--success)"
                                         onclick="openPayModal({{ $c->id }}, {{ $c->numero_cuota }}, {{ $c->total_cuotas }}, '{{ \Carbon\Carbon::parse($c->fecha_vencimiento)->format('d/m/Y') }}', {{ $c->capital }}, {{ $c->interes }}, {{ $c->capital + $c->interes }})">
-                                        ✔ Pagar
+                                        ✓ Pagar
                                     </button>
                                 @elseif($c->estado === 'PAGADA')
                                     <div style="display:inline-flex;align-items:center;gap:.5rem">
-                                        <span style="font-size:.75rem;color:var(--success)">{{ $c->fecha_pago_efectivo ? \Carbon\Carbon::parse($c->fecha_pago_efectivo)->format('d/m/Y') : '✔' }}</span>
+                                        <span style="font-size:.75rem;color:var(--success)">{{ $c->fecha_pago_efectivo ? \Carbon\Carbon::parse($c->fecha_pago_efectivo)->format('d/m/Y') : '✓' }}</span>
                                         <a href="{{ route('cuotas.recibo-pdf', $c->id) }}" target="_blank"
                                            class="btn btn-ghost" style="padding:.2rem .4rem;font-size:.65rem;color:var(--text-muted)"
-                                           title="Imprimir recibo PDF">🖨️</a>
+                                           title="Imprimir recibo PDF" aria-label="Imprimir recibo PDF"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z"/></svg></a>
                                     </div>
                                 @endif
                             </td>
@@ -127,7 +127,7 @@
     {{-- Link to Client Dashboard --}}
     @if($cliente)
         <div style="margin-top:1.5rem">
-            <a href="{{ route('clientes.show', $cliente->id) }}" class="btn btn-ghost">👤 Ver Estado de Cuenta del Cliente →</a>
+            <a href="{{ route('clientes.show', $cliente->id) }}" class="btn btn-ghost">Ver Estado de Cuenta del Cliente →</a>
         </div>
     @endif
 
@@ -135,7 +135,7 @@
     @if($plan->estado === 'ACTIVO' && $cuotas->whereIn('estado', ['PENDIENTE','VENCIDA','EN_MORA','PAGADA_PARCIAL'])->count() > 0)
         <div style="margin-bottom:1.5rem;padding:1rem;background:var(--surface2);border-radius:.75rem;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
             <div>
-                <strong style="color:var(--text)">💳 Liquidar Plan Completo</strong>
+                <strong style="color:var(--text)">Liquidar Plan Completo</strong>
                 <div style="font-size:.8rem;color:var(--text-muted)">Cancela todas las cuotas pendientes de una vez. Puede aplicar descuento sobre intereses futuros.</div>
             </div>
             <button type="button" class="btn btn-primary" onclick="openLiquidateModal({{ $plan->id }})" style="white-space:nowrap">
@@ -176,7 +176,7 @@
             <div style="margin-bottom:1rem">
                 <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text);cursor:pointer">
                     <input type="checkbox" id="chkDescuentoAnticipo" onchange="toggleDiscountFields()" style="accent-color:var(--accent)">
-                    🏷️ Aplicar descuento por pronto pago
+                    Aplicar descuento por pronto pago
                 </label>
                 <div id="discountFields" style="display:none;margin-top:.5rem;padding:.75rem;background:var(--surface2);border-radius:.5rem">
                     <label style="font-size:.8rem;color:var(--text-muted)">% Descuento sobre capital:</label>
@@ -209,7 +209,7 @@
     {{-- Modal de liquidación del plan ─────────────────────────────────────── --}}
     <div id="liquidateModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);align-items:center;justify-content:center">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">
-            <h3 style="margin:0 0 1rem;font-size:1.1rem;color:var(--text)">💳 Liquidar Plan de Cuotas</h3>
+            <h3 style="margin:0 0 1rem;font-size:1.1rem;color:var(--text)">Liquidar Plan de Cuotas</h3>
             <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">
                 Esta acción cancelará <strong>todas</strong> las cuotas pendientes del plan.
                 Se calculará el saldo total incluyendo capital, intereses y mora acumulada.
@@ -218,7 +218,7 @@
             <div style="margin-bottom:1rem">
                 <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text);cursor:pointer">
                     <input type="checkbox" id="chkLiquidacionDiscount" onchange="toggleLiquidationFields()" style="accent-color:var(--accent)">
-                    🏷️ Aplicar descuento por liquidación (sobre intereses no devengados)
+                    Aplicar descuento por liquidación (sobre intereses no devengados)
                 </label>
                 <div id="liquidationDiscountFields" style="display:none;margin-top:.5rem;padding:.75rem;background:var(--surface2);border-radius:.5rem">
                     <label style="font-size:.8rem;color:var(--text-muted)">% Descuento:</label>
@@ -232,7 +232,7 @@
             </div>
 
             <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem">
-                ⚠️ Esta acción es irreversible. Se generará un recibo de liquidación.
+                Esta acción es irreversible. Se generará un recibo de liquidación.
             </p>
             <div style="display:flex;gap:.5rem;justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closeLiquidateModal()">Cancelar</button>
@@ -340,14 +340,14 @@
 
     @if(session('show_print_cuota'))
         <div id="printReceiptToast" class="erp-toast-banner">
-            <div class="erp-toast-icon">🎉</div>
+            <div class="erp-toast-icon"><svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></div>
             <div class="erp-toast-content">
                 <strong>¡Pago registrado con éxito!</strong>
                 <span>El recibo de pago ya está listo para ser impreso.</span>
             </div>
             <div class="erp-toast-actions">
                 <a href="{{ route('cuotas.recibo-pdf', session('show_print_cuota')) }}" target="_blank" class="btn btn-primary btn-sm" onclick="closeReceiptToast()" style="white-space:nowrap;padding:.4rem .75rem;font-size:.8rem">
-                    🖨️ Imprimir Recibo
+                    Imprimir Recibo
                 </a>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="closeReceiptToast()" style="color:var(--text-muted);padding:.4rem .75rem;font-size:.8rem">
                     Descartar

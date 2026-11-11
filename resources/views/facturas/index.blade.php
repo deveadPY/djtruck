@@ -16,7 +16,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Libro de Egresos</h1>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Libro de Egresos</h1>
                     <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold hidden md:block">Gestión integral de facturas, gastos operativos y compras de stock</p>
                 </div>
             </div>
@@ -30,12 +30,12 @@
         </div>
 
         {{-- Filtros Avanzados Glassmorphism --}}
-        <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 p-4">
+        <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border p-4">
             <form method="GET" action="{{ route('facturas.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {{-- Proveedores --}}
                 <div class="relative">
                     <select name="proveedor_id" onchange="this.form.submit()" 
-                        class="form-input !bg-surface h-11 text-[0.65rem] rounded-xl border-white/5 focus:ring-primary/20 transition-all font-black uppercase tracking-widest w-full">
+                        class="form-input !bg-surface h-11 text-[0.65rem] rounded-xl border-border focus:ring-primary/20 transition-all font-black uppercase tracking-widest w-full">
                         <option value="">TODOS LOS PROVEEDORES</option>
                         @foreach($proveedores as $prov)
                             <option value="{{ $prov->id }}" @selected(request('proveedor_id') == $prov->id)>{{ $prov->razon_social }}</option>
@@ -47,13 +47,13 @@
                 {{-- Rango de Fechas --}}
                 <div class="relative flex-1">
                     <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}" onchange="this.form.submit()"
-                        class="form-input !bg-surface h-11 text-[0.65rem] rounded-xl border-white/5 focus:ring-primary/20 transition-all font-black uppercase tracking-tighter w-full">
+                        class="form-input !bg-surface h-11 text-[0.65rem] rounded-xl border-border focus:ring-primary/20 transition-all font-black uppercase tracking-tighter w-full">
                     <span class="absolute -top-2 left-3 px-1 bg-surface text-[0.5rem] font-black text-muted-foreground uppercase tracking-widest">Desde</span>
                 </div>
 
                 <div class="relative flex-1">
                     <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}" onchange="this.form.submit()"
-                        class="form-input !bg-surface h-11 text-[0.65rem] rounded-xl border-white/5 focus:ring-primary/20 transition-all font-black uppercase tracking-tighter w-full">
+                        class="form-input !bg-surface h-11 text-[0.65rem] rounded-xl border-border focus:ring-primary/20 transition-all font-black uppercase tracking-tighter w-full">
                     <span class="absolute -top-2 left-3 px-1 bg-surface text-[0.5rem] font-black text-muted-foreground uppercase tracking-widest">Hasta</span>
                 </div>
 
@@ -74,7 +74,7 @@
     </div>
 
     {{-- Vista Escritorio (Table Master) --}}
-    <div class="hidden md:block erp-card !border-white/5 relative overflow-hidden">
+    <div class="hidden md:block erp-card !border-border relative overflow-hidden">
         <div class="erp-card-header !bg-surface3/10">
             <div class="flex items-center gap-3 w-full">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Monitor de Egresos Proyectados</h2>
@@ -104,15 +104,15 @@
                     @forelse($facturas as $f)
                         <tr class="hover:bg-red-500/5 transition-all duration-200 group cursor-pointer" onclick="window.location='{{ route('facturas.show', $f->id) }}'">
                             <td class="!pl-6">
-                                <div class="text-xs font-bold text-white/80">{{ \Carbon\Carbon::parse($f->fecha_factura)->format('d/m/Y') }}</div>
+                                <div class="text-xs font-bold text-foreground">{{ \Carbon\Carbon::parse($f->fecha_factura)->format('d/m/Y') }}</div>
                             </td>
                             <td>
-                                <div class="font-mono text-[0.68rem] font-black text-accent bg-surface2 px-2 py-1 rounded border border-white/5 w-fit">
+                                <div class="font-mono text-[0.68rem] font-black text-accent bg-surface2 px-2 py-1 rounded border border-border w-fit">
                                     {{ $f->numero_factura }}
                                 </div>
                             </td>
                             <td>
-                                <a href="{{ route('proveedores.show', $f->proveedor_id) }}" onclick="event.stopPropagation()" class="text-sm font-bold text-white hover:text-primary transition-colors decoration-primary/30">{{ $f->razon_social }}</a>
+                                <a href="{{ route('proveedores.show', $f->proveedor_id) }}" onclick="event.stopPropagation()" class="text-sm font-bold text-foreground hover:text-primary transition-colors decoration-primary/30">{{ $f->razon_social }}</a>
                             </td>
                             <td>
                                 @if($f->destino === 'VEHICULO')
@@ -189,9 +189,9 @@
     {{-- Vista Móvil (Grid Cards) --}}
     <div class="md:hidden space-y-4">
         @forelse($facturas as $f)
-            <div class="relative overflow-hidden rounded-3xl border border-white/5 bg-surface2/40 backdrop-blur-md p-5 transition-all duration-300 active:scale-[0.98]" onclick="window.location='{{ route('facturas.show', $f->id) }}'">
+            <div class="relative overflow-hidden rounded-3xl border border-border bg-surface2/40 backdrop-blur-md p-5 transition-all duration-300 active:scale-[0.98]" onclick="window.location='{{ route('facturas.show', $f->id) }}'">
                 @php $cls = match ($f->estado) { 'APROBADA', 'PAGADA' => 'badge-disponible', 'ANULADA' => 'badge-vendido', default => 'badge-preparacion'}; @endphp
-                <div class="absolute top-0 right-0 px-3 py-1 bg-surface3 rounded-bl-xl border-l border-b border-white/5">
+                <div class="absolute top-0 right-0 px-3 py-1 bg-surface3 rounded-bl-xl border-l border-b border-border">
                     <span class="badge-status {{ $cls }} !text-[0.5rem] !px-1.5 !py-0 !font-black uppercase tracking-tighter">{{ $f->estado }}</span>
                 </div>
 
@@ -206,14 +206,14 @@
                             <span class="w-1.5 h-1.5 rounded-full {{ $f->destino === 'VEHICULO' ? 'bg-accent' : ($f->destino === 'REPOSICION' ? 'bg-amber-500' : 'bg-slate-500') }}"></span>
                             FACTURA #{{ $f->numero_factura }}
                         </div>
-                        <div class="font-black text-[0.95rem] leading-tight text-white mb-1 truncate">{{ $f->razon_social }}</div>
+                        <div class="font-black text-[0.95rem] leading-tight text-foreground mb-1 truncate">{{ $f->razon_social }}</div>
                         <div class="text-[0.6rem] text-muted-foreground font-bold uppercase tracking-widest">
                             @if($f->destino === 'VEHICULO') {{ $f->marca }} {{ $f->modelo }} @elseif($f->destino === 'REPOSICION') Reposición Stock @else {{ $f->cuenta_gasto ?? 'Gasto Local' }} @endif
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                <div class="flex items-center justify-between pt-4 border-t border-border">
                     <div>
                         <div class="text-[0.55rem] text-muted-foreground font-black uppercase tracking-widest mb-0.5">Egreso Confirmado</div>
                         <div class="flex items-baseline gap-1">
@@ -239,7 +239,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-16 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-16 px-6 rounded-3xl border border-dashed border-border">
                 <p class="font-black uppercase tracking-[0.2em] text-[0.6rem] text-muted-foreground/30">Sin Transacciones Recientes</p>
             </div>
         @endforelse
@@ -248,7 +248,7 @@
     {{-- ── Modal de Confirmación de Eliminación ── --}}
     <div id="modal-eliminar" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="cerrarModalEliminar()"></div>
-        <div class="relative w-full max-w-md bg-surface border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+        <div class="relative w-full max-w-md bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden">
             {{-- Header --}}
             <div class="p-6 bg-red-500/10 border-b border-red-500/20">
                 <div class="flex items-center gap-3">
@@ -258,21 +258,21 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-black text-white uppercase tracking-widest">Eliminar Factura</h3>
+                        <h3 class="text-sm font-black text-foreground uppercase tracking-widest">Eliminar Factura</h3>
                         <p class="text-[0.6rem] text-red-400 font-bold uppercase tracking-widest mt-0.5">Esta accion no se puede deshacer</p>
                     </div>
                 </div>
             </div>
             {{-- Body --}}
             <div class="p-6 space-y-4">
-                <div class="p-4 rounded-2xl bg-surface2 border border-white/5 space-y-2">
+                <div class="p-4 rounded-2xl bg-surface2 border border-border space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest">Documento</span>
-                        <span class="text-xs font-black text-white font-mono" id="del-numero"></span>
+                        <span class="text-xs font-black text-foreground font-mono" id="del-numero"></span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest">Proveedor</span>
-                        <span class="text-xs font-bold text-white" id="del-proveedor"></span>
+                        <span class="text-xs font-bold text-foreground" id="del-proveedor"></span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest">Monto USD</span>
@@ -284,7 +284,7 @@
                 </p>
             </div>
             {{-- Footer --}}
-            <div class="p-6 bg-surface3/30 border-t border-white/5 flex gap-3">
+            <div class="p-6 bg-surface3/30 border-t border-border flex gap-3">
                 <button type="button" onclick="cerrarModalEliminar()" class="btn btn-ghost flex-1 h-11 rounded-xl text-[0.65rem] font-black tracking-widest uppercase">Cancelar</button>
                 <form id="form-eliminar" method="POST" class="flex-1">
                     @csrf

@@ -15,7 +15,7 @@
         @endif
 
         <h2 style="text-align:center;font-size:1.4rem;margin-bottom:.5rem;color:var(--text);">
-            🔒 Verificación 2FA
+            Verificación 2FA
         </h2>
         <p class="auth-muted" style="text-align:center;margin-bottom:2rem;">
             Ingresá el código de tu app autenticadora.<br>

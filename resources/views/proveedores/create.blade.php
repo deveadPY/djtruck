@@ -6,13 +6,13 @@
     {{-- Cabecera --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-4">
-            <a href="{{ route('proveedores.index') }}" class="p-2.5 rounded-xl bg-surface2 border border-white/5 text-muted-foreground hover:text-primary transition-all">
+            <a href="{{ route('proveedores.index') }}" class="p-2.5 rounded-xl bg-surface2 border border-border text-muted-foreground hover:text-primary transition-all">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
             </a>
             <div class="flex flex-col">
-                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Alta de Proveedor</h1>
+                <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Alta de Proveedor</h1>
                 <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold">Vincular nuevo aliado comercial al sistema</p>
             </div>
         </div>
@@ -35,22 +35,22 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {{-- Sección Identidad --}}
-            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 relative overflow-hidden h-fit">
-                <div class="erp-card-header !bg-transparent border-b border-white/5">
+            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border relative overflow-hidden h-fit">
+                <div class="erp-card-header !bg-transparent border-b border-border">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Datos de Identidad</h2>
                 </div>
                 <div class="erp-card-body p-6 space-y-5">
                     <div class="flex flex-col gap-2">
                         <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">Razón Social Legal *</label>
                         <input type="text" name="razon_social" value="{{ old('razon_social') }}" 
-                            class="form-input !bg-surface !h-12 !text-sm !font-bold rounded-xl border-white/5 focus:ring-primary/20 transition-all shadow-inner" 
+                            class="form-input !bg-surface !h-12 !text-sm !font-bold rounded-xl border-border focus:ring-primary/20 transition-all shadow-inner" 
                             required maxlength="200" placeholder="Ej: Importadora Repuestos S.A.">
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">Nombre Comercial de Marca</label>
                         <input type="text" name="nombre_fantasia" value="{{ old('nombre_fantasia') }}" 
-                            class="form-input !bg-surface !h-12 !text-sm !font-bold rounded-xl border-white/5" 
+                            class="form-input !bg-surface !h-12 !text-sm !font-bold rounded-xl border-border" 
                             maxlength="200" placeholder="Ej: Repuestos Pro">
                     </div>
 
@@ -58,12 +58,12 @@
                         <div class="flex flex-col gap-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">RUC / Registro</label>
                             <input type="text" name="ruc_rut_nit" value="{{ old('ruc_rut_nit') }}" 
-                                class="form-input !bg-surface !h-12 !text-xs !font-black font-mono rounded-xl border-white/5" 
+                                class="form-input !bg-surface !h-12 !text-xs !font-black font-mono rounded-xl border-border" 
                                 maxlength="30" placeholder="000000-0">
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">Jurisdicción *</label>
-                            <select name="pais" class="form-input !bg-surface !h-12 !text-sm !font-black rounded-xl border-white/5" required>
+                            <select name="pais" class="form-input !bg-surface !h-12 !text-sm !font-black rounded-xl border-border" required>
                                 <option value="PY" {{ old('pais', 'PY') == 'PY' ? 'selected' : '' }}>Paraguay</option>
                                 <option value="BR" {{ old('pais') == 'BR' ? 'selected' : '' }}>Brasil</option>
                                 <option value="US" {{ old('pais') == 'US' ? 'selected' : '' }}>Estados Unidos</option>
@@ -76,14 +76,14 @@
             </div>
 
             {{-- Sección Operativa & Contacto --}}
-            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 relative overflow-hidden h-fit">
-                <div class="erp-card-header !bg-transparent border-b border-white/5">
+            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border relative overflow-hidden h-fit">
+                <div class="erp-card-header !bg-transparent border-b border-border">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Configuración Comercial</h2>
                 </div>
                 <div class="erp-card-body p-6 space-y-5">
                     <div class="flex flex-col gap-2">
                         <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">Perfil Operativo *</label>
-                        <select name="tipo" class="form-input !bg-surface !h-12 !text-sm !font-black rounded-xl border-white/5" required>
+                        <select name="tipo" class="form-input !bg-surface !h-12 !text-sm !font-black rounded-xl border-border" required>
                             @foreach(['DISTRIBUIDOR' => 'Distribuidor / Repuestos', 'FABRICANTE' => 'Fabricante / Origen', 'SERVICIO' => 'Servicios Técnicos', 'OTRO' => 'Gastos Operativos / Generales'] as $v => $l)
                                 <option value="{{ $v }}" {{ old('tipo') == $v ? 'selected' : '' }}>{{ $l }}</option>
                             @endforeach
@@ -92,7 +92,7 @@
 
                     <div class="flex flex-col gap-2">
                         <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">Moneda Base de Operación *</label>
-                        <select name="moneda_principal" class="form-input !bg-surface !h-12 !text-sm !font-black rounded-xl border-white/5" required>
+                        <select name="moneda_principal" class="form-input !bg-surface !h-12 !text-sm !font-black rounded-xl border-border" required>
                             <option value="USD" {{ old('moneda_principal', 'USD') == 'USD' ? 'selected' : '' }}>USD (Dólar Americano)</option>
                             <option value="PYG" {{ old('moneda_principal') == 'PYG' ? 'selected' : '' }}>PYG (Guaraní)</option>
                             <option value="BRL" {{ old('moneda_principal') == 'BRL' ? 'selected' : '' }}>BRL (Real)</option>
@@ -108,7 +108,7 @@
                                 </svg>
                             </span>
                             <input type="text" name="telefono" value="{{ old('telefono') }}" 
-                                class="form-input !bg-surface !h-12 !pl-11 !text-sm !font-bold rounded-xl border-white/5" 
+                                class="form-input !bg-surface !h-12 !pl-11 !text-sm !font-bold rounded-xl border-border" 
                                 maxlength="50" placeholder="+595 ...">
                         </div>
                     </div>
@@ -116,7 +116,7 @@
                      <div class="flex flex-col gap-2">
                         <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest px-1">Correo Electrónico</label>
                         <input type="email" name="email" value="{{ old('email') }}" 
-                            class="form-input !bg-surface !h-12 !text-sm !font-bold rounded-xl border-white/5" 
+                            class="form-input !bg-surface !h-12 !text-sm !font-bold rounded-xl border-border" 
                             placeholder="contacto@empresa.com">
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                <span class="text-xs font-black uppercase tracking-wider text-white">Vincular Proveedor</span>
+                <span class="text-xs font-black uppercase tracking-wider text-foreground">Vincular Proveedor</span>
             </button>
         </div>
     </form>

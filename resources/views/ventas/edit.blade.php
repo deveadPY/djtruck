@@ -110,7 +110,7 @@
                 </thead>
                 <tbody id="itemsBody">
                     @foreach($venta->items as $idx => $item)
-                    <tr class="item-row border-b border-white/5">
+                    <tr class="item-row border-b border-border">
                         <td><input type="text" name="items[{{ $idx }}][descripcion]" value="{{ $item->descripcion }}" class="form-input text-xs" required></td>
                         <td>
                             <select name="items[{{ $idx }}][itemable_type]" class="form-input text-xs">
@@ -294,7 +294,7 @@
     function addItemRow() {
         const tbody = document.getElementById('itemsBody');
         const idx = tbody.querySelectorAll('.item-row').length;
-        const html = `<tr class="item-row border-b border-white/5">
+        const html = `<tr class="item-row border-b border-border">
             <td><input type="text" name="items[${idx}][descripcion]" class="form-input text-xs" required></td>
             <td><select name="items[${idx}][itemable_type]" class="form-input text-xs">
                 <option value="App\\Models\\Vehicle">Vehículo</option>

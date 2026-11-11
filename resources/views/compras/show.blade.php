@@ -37,14 +37,14 @@
     {{-- Columna Principal: Resumen e Ítems --}}
     <div class="lg:col-span-2 space-y-6">
         {{-- Card de Resumen con Estética Premium --}}
-        <div class="relative overflow-hidden rounded-3xl border border-white/5 bg-surface2/40 backdrop-blur-md">
+        <div class="relative overflow-hidden rounded-3xl border border-border bg-surface2/40 backdrop-blur-md">
             <div class="absolute top-0 right-0 p-8 opacity-5">
                 <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                 </svg>
             </div>
             
-            <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10 border-b border-white/5">
+            <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10 border-b border-border">
                 <div class="flex items-center gap-4">
                     <div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                         <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -52,9 +52,9 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-black tracking-tight text-white mb-0.5">Orden de Compra</h2>
+                        <h2 class="text-xl font-black tracking-tight text-foreground mb-0.5">Orden de Compra</h2>
                         <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded-lg bg-surface font-mono text-xs font-bold text-accent border border-white/5 uppercase">#{{ $compra->numero_factura ?? 'S/N' }}</span>
+                            <span class="px-2 py-0.5 rounded-lg bg-surface font-mono text-xs font-bold text-accent border border-border uppercase">#{{ $compra->numero_factura ?? 'S/N' }}</span>
                             <span class="badge-status {{ $compra->estado == 'COMPLETADO' ? 'status-completado' : 'status-pendiente' }} !text-[0.6rem] !px-2 !py-0.5">
                                 {{ $compra->estado }}
                             </span>
@@ -64,7 +64,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-1 gap-4 w-full md:w-auto text-right">
                     <div>
                         <span class="text-[0.6rem] text-muted-foreground uppercase font-black tracking-widest block">Fecha Emisión</span>
-                        <span class="font-bold text-sm text-white">{{ \Carbon\Carbon::parse($compra->fecha_compra)->format('d/m/Y') }}</span>
+                        <span class="font-bold text-sm text-foreground">{{ \Carbon\Carbon::parse($compra->fecha_compra)->format('d/m/Y') }}</span>
                     </div>
                 </div>
             </div>
@@ -79,7 +79,7 @@
                         </div>
                         <div>
                             <span class="text-[0.6rem] text-muted-foreground uppercase font-black tracking-widest block mb-0.5">Proveedor Seleccionado</span>
-                            <span class="text-sm font-black text-white uppercase">{{ $compra->proveedor_nombre ?? 'N/A' }}</span>
+                            <span class="text-sm font-black text-foreground uppercase">{{ $compra->proveedor_nombre ?? 'N/A' }}</span>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
@@ -90,12 +90,12 @@
                         </div>
                         <div>
                             <span class="text-[0.6rem] text-muted-foreground uppercase font-black tracking-widest block mb-0.5">Registrado por</span>
-                            <span class="text-sm font-bold text-white uppercase tracking-tight">{{ $compra->usuario_nombre }}</span>
+                            <span class="text-sm font-bold text-foreground uppercase tracking-tight">{{ $compra->usuario_nombre }}</span>
                         </div>
                     </div>
                 </div>
                 <div class="space-y-4">
-                    <div class="p-4 rounded-2xl bg-surface/40 border border-white/5 flex items-center justify-between">
+                    <div class="p-4 rounded-2xl bg-surface/40 border border-border flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -104,7 +104,7 @@
                             </div>
                             <span class="text-[0.65rem] font-black uppercase tracking-widest text-muted-foreground">Fuente de Pago</span>
                         </div>
-                        <span class="text-xs font-black text-white bg-surface rounded-lg px-3 py-1.5 border border-white/5">CAJA CAPITAL</span>
+                        <span class="text-xs font-black text-foreground bg-surface rounded-lg px-3 py-1.5 border border-border">CAJA CAPITAL</span>
                     </div>
                 </div>
             </div>
@@ -130,7 +130,7 @@
                         @foreach($items as $item)
                         <tr class="hover:bg-primary/5 transition-colors group">
                             <td class="!pl-6"><span class="font-mono font-bold text-accent">{{ $item->codigo }}</span></td>
-                            <td class="font-bold text-white group-hover:text-primary transition-colors">{{ $item->descripcion }}</td>
+                            <td class="font-bold text-foreground group-hover:text-primary transition-colors">{{ $item->descripcion }}</td>
                             <td class="text-center font-black bg-surface2/30">{{ number_format($item->cantidad, 0, ',', '.') }}</td>
                             <td class="text-right font-mono font-bold">{{ number_format($item->precio_compra_usd, 2, ',', '.') }}</td>
                             <td class="text-right !pr-6 font-mono font-black text-accent-light">$ {{ number_format($item->subtotal_usd, 2, ',', '.') }}</td>
@@ -143,15 +143,15 @@
             {{-- Mobile Cards --}}
             <div class="md:hidden space-y-4">
                 @foreach($items as $item)
-                    <div class="rounded-2xl border border-white/5 bg-surface2/40 backdrop-blur-sm p-4 flex gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-surface/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0">
+                    <div class="rounded-2xl border border-border bg-surface2/40 backdrop-blur-sm p-4 flex gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-surface/50 border border-border flex flex-col items-center justify-center flex-shrink-0">
                             <span class="text-[0.45rem] font-black uppercase text-muted-foreground">Cant</span>
                             <span class="text-xs font-black text-accent">{{ number_format($item->cantidad, 0) }}</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="font-bold text-[0.85rem] text-white leading-tight mb-1 truncate">{{ $item->descripcion }}</div>
+                            <div class="font-bold text-[0.85rem] text-foreground leading-tight mb-1 truncate">{{ $item->descripcion }}</div>
                             <div class="flex justify-between items-end">
-                                <div class="font-mono text-[0.65rem] font-black text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ $item->codigo }}</div>
+                                <div class="font-mono text-[0.65rem] font-black text-muted-foreground bg-surface px-1.5 py-0.5 rounded border border-border uppercase">{{ $item->codigo }}</div>
                                 <div class="text-right">
                                     <div class="text-[0.55rem] font-bold text-muted-foreground/60 uppercase">Unit. $ {{ number_format($item->precio_compra_usd, 2) }}</div>
                                     <div class="text-[0.85rem] font-black text-accent-light leading-none">$ {{ number_format($item->subtotal_usd, 2) }}</div>
@@ -166,7 +166,7 @@
 
     {{-- Columna Lateral: Resumen Financiero --}}
     <div class="lg:col-span-1 space-y-6">
-        <div class="relative overflow-hidden rounded-3xl border border-white/5 bg-surface2/40 backdrop-blur-md p-6 md:p-8">
+        <div class="relative overflow-hidden rounded-3xl border border-border bg-surface2/40 backdrop-blur-md p-6 md:p-8">
             <h3 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground/80 mb-6 flex items-center gap-2">
                 <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -175,18 +175,18 @@
             </h3>
             
             <div class="space-y-4">
-                <div class="flex justify-between items-center py-2.5 border-b border-dashed border-white/5">
+                <div class="flex justify-between items-center py-2.5 border-b border-dashed border-border">
                     <span class="text-xs font-bold text-muted-foreground tracking-tight uppercase">Moneda Compra</span>
-                    <span class="px-2 py-0.5 rounded bg-surface font-mono text-xs font-black text-white border border-white/5">{{ $compra->moneda_compra }}</span>
+                    <span class="px-2 py-0.5 rounded bg-surface font-mono text-xs font-black text-foreground border border-border">{{ $compra->moneda_compra }}</span>
                 </div>
-                <div class="flex justify-between items-center py-2.5 border-b border-dashed border-white/5">
+                <div class="flex justify-between items-center py-2.5 border-b border-dashed border-border">
                     <span class="text-xs font-bold text-muted-foreground tracking-tight uppercase">Cotización</span>
-                    <span class="font-mono text-xs font-bold text-white">{{ number_format($compra->tasa_cambio, 2, ',', '.') }} <span class="text-[0.6rem] opacity-30 italic">v/USD</span></span>
+                    <span class="font-mono text-xs font-bold text-foreground">{{ number_format($compra->tasa_cambio, 2, ',', '.') }} <span class="text-[0.6rem] opacity-30 italic">v/USD</span></span>
                 </div>
-                <div class="flex justify-between items-center py-2.5 border-b border-dashed border-white/5">
+                <div class="flex justify-between items-center py-2.5 border-b border-dashed border-border">
                     <span class="text-xs font-bold text-muted-foreground tracking-tight uppercase">Carga Original</span>
                     <div class="text-right">
-                        <div class="font-mono text-[0.8rem] font-black text-white">{{ number_format($compra->monto_total_moneda, 2, ',', '.') }}</div>
+                        <div class="font-mono text-[0.8rem] font-black text-foreground">{{ number_format($compra->monto_total_moneda, 2, ',', '.') }}</div>
                         <div class="text-[0.55rem] font-black uppercase text-muted-foreground opacity-50 tracking-widest leading-none">{{ $compra->moneda_compra }}</div>
                     </div>
                 </div>
@@ -208,9 +208,9 @@
 
         {{-- Espacio para Observaciones o Notas si existieran --}}
         @isset($compra->observaciones)
-            <div class="rounded-2xl border border-white/5 bg-surface2/40 backdrop-blur-sm p-6">
+            <div class="rounded-2xl border border-border bg-surface2/40 backdrop-blur-sm p-6">
                 <h4 class="text-[0.6rem] font-black uppercase tracking-widest text-muted-foreground mb-2">Observaciones Internas</h4>
-                <p class="text-[0.75rem] text-white/70 italic leading-relaxed">"{{ $compra->observaciones }}"</p>
+                <p class="text-[0.75rem] text-muted-foreground italic leading-relaxed">"{{ $compra->observaciones }}"</p>
             </div>
         @endisset
     </div>
@@ -230,7 +230,7 @@
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all" x-show="showDeleteModal" x-cloak style="display: none;">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDeleteModal = false" x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
         
-        <div class="relative w-full max-w-md bg-surface border border-white/10 rounded-3xl shadow-2xl overflow-hidden" 
+        <div class="relative w-full max-w-md bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden" 
             x-show="showDeleteModal" 
             x-transition:enter="transition ease-out duration-300 transform" 
             x-transition:enter-start="opacity-0 translate-y-8 scale-95" 
@@ -247,7 +247,7 @@
                     </svg>
                 </div>
                 
-                <h3 class="text-sm font-black text-white uppercase tracking-wider mb-2">¿Confirmar Anulación de Compra?</h3>
+                <h3 class="text-sm font-black text-foreground uppercase tracking-wider mb-2">¿Confirmar Anulación de Compra?</h3>
                 <p class="text-xs text-muted-foreground leading-relaxed px-2">
                     Esta acción revertirá el stock de los productos ingresados, anulará los movimientos de caja y cancelará la factura del proveedor asociada. 
                 </p>
@@ -256,8 +256,8 @@
                 </div>
             </div>
             
-            <div class="p-6 bg-surface3/30 border-t border-white/5 flex gap-3">
-                <button type="button" @click="showDeleteModal = false" class="btn btn-ghost flex-1 h-11 rounded-xl text-[0.65rem] font-black tracking-widest uppercase border border-white/5">
+            <div class="p-6 bg-surface3/30 border-t border-border flex gap-3">
+                <button type="button" @click="showDeleteModal = false" class="btn btn-ghost flex-1 h-11 rounded-xl text-[0.65rem] font-black tracking-widest uppercase border border-border">
                     Cancelar
                 </button>
                 <form action="{{ route('compras.destroy', $compra->id) }}" method="POST" class="flex-1">

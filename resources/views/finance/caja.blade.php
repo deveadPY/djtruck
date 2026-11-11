@@ -274,12 +274,12 @@
                                 @if($m->ref_type)
                                     @php
                                         $origenLabel = match($m->ref_type) {
-                                            'venta'            => '🛒 Venta',
-                                            'cuota'            => '📅 Cuota',
-                                            'factura_gasto_op' => '🧾 Gasto local',
-                                            'factura_vehiculo' => '🚛 Gasto vehículo',
+                                            'venta'            => 'Venta',
+                                            'cuota'            => 'Cuota',
+                                            'factura_gasto_op' => 'Gasto local',
+                                            'factura_vehiculo' => 'Gasto vehículo',
                                             'transferencia'    => '↔ Transferencia',
-                                            'manual'           => '✏️ Manual',
+                                            'manual'           => 'Manual',
                                             default            => $m->ref_type,
                                         };
                                     @endphp

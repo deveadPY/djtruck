@@ -6,25 +6,25 @@
     {{-- ── Cabecera y Resumen Ejecutivo ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-1 md:px-0">
         <div class="flex flex-col">
-            <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Centro de Inteligencia</h1>
+            <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Centro de Inteligencia</h1>
             <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold italic">Análisis predictivo y rendimiento operativo en tiempo real</p>
         </div>
 
         <div class="flex items-center gap-3 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
-            <div class="flex items-center gap-2 p-1 bg-surface2/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-xl">
-                <a href="{{ route('reportes.export', ['tipo'=>'ventas','desde'=>$desde,'hasta'=>$hasta]) }}" class="px-3 py-2 rounded-xl text-[0.6rem] font-black text-muted-foreground hover:text-primary hover:bg-white/5 transition-all uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
+            <div class="flex items-center gap-2 p-1 bg-surface2/40 backdrop-blur-md rounded-2xl border border-border shadow-xl">
+                <a href="{{ route('reportes.export', ['tipo'=>'ventas','desde'=>$desde,'hasta'=>$hasta]) }}" class="px-3 py-2 rounded-xl text-[0.6rem] font-black text-muted-foreground hover:text-primary hover:bg-surface-3 transition-all uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     Ventas
                 </a>
-                <a href="{{ route('reportes.export', ['tipo'=>'stock','desde'=>$desde,'hasta'=>$hasta]) }}" class="px-3 py-2 rounded-xl text-[0.6rem] font-black text-muted-foreground hover:text-accent hover:bg-white/5 transition-all uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
+                <a href="{{ route('reportes.export', ['tipo'=>'stock','desde'=>$desde,'hasta'=>$hasta]) }}" class="px-3 py-2 rounded-xl text-[0.6rem] font-black text-muted-foreground hover:text-accent hover:bg-surface-3 transition-all uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m16.5 0-1.25-3.75a2.25 2.25 0 0 0-2.134-1.5H7.134a2.25 2.25 0 0 0-2.134 1.5L3.75 7.5m16.5 0h-16.5" />
                     </svg>
                     Stock
                 </a>
-                <a href="{{ route('reportes.export', ['tipo'=>'mora','desde'=>$desde,'hasta'=>$hasta]) }}" class="px-3 py-2 rounded-xl text-[0.6rem] font-black text-muted-foreground hover:text-red-500 hover:bg-white/5 transition-all uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
+                <a href="{{ route('reportes.export', ['tipo'=>'mora','desde'=>$desde,'hasta'=>$hasta]) }}" class="px-3 py-2 rounded-xl text-[0.6rem] font-black text-muted-foreground hover:text-red-500 hover:bg-surface-3 transition-all uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                     </svg>
@@ -35,24 +35,24 @@
     </div>
 
     {{-- ── Filtros y Control de Tiempo ── --}}
-    <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 mb-8 overflow-hidden shadow-2xl relative">
+    <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border mb-8 overflow-hidden shadow-2xl relative">
         <div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none"></div>
         <form method="GET" action="{{ route('reportes.index') }}" class="erp-card-body p-4 md:p-6 flex flex-col lg:flex-row items-stretch lg:items-end gap-6 relative z-10">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
                 <div class="space-y-2">
                     <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Génesis del Periodo</label>
                     <input type="date" name="desde" value="{{ $desde }}" 
-                        class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase text-center w-full" 
+                        class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-border focus:ring-primary/20 transition-all text-foreground uppercase text-center w-full" 
                         style="color-scheme: dark">
                 </div>
                 <div class="space-y-2">
                     <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Límite Temporal</label>
                     <input type="date" name="hasta" value="{{ $hasta }}" 
-                        class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase text-center w-full" 
+                        class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-border focus:ring-primary/20 transition-all text-foreground uppercase text-center w-full" 
                         style="color-scheme: dark">
                 </div>
             </div>
-            <button type="submit" class="h-12 px-6 lg:px-10 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 text-[0.65rem] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-3">
+            <button type="submit" class="h-12 px-6 lg:px-10 bg-surface-2 hover:bg-surface-3 text-foreground rounded-xl border border-border text-[0.65rem] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-3">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
@@ -66,7 +66,7 @@
         {{-- KPI 1: Operaciones --}}
         <x-kpi-link :href="route('ventas.index', ['desde' => $desde, 'hasta' => $hasta])" can="ventas.ver" class="relative group">
             <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
-            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5 relative">
+            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-border flex flex-col justify-between p-5 relative">
                 <div class="flex items-center justify-between">
                     <span class="text-[0.55rem] font-black text-muted-foreground uppercase tracking-widest">Contratos Cerrados</span>
                     <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -76,7 +76,7 @@
                     </div>
                 </div>
                 <div>
-                    <div class="text-2xl font-black text-white italic tracking-tight">{{ $resumenVentas->total_ventas ?? 0 }}</div>
+                    <div class="text-2xl font-black text-foreground italic tracking-tight">{{ $resumenVentas->total_ventas ?? 0 }}</div>
                     <div class="text-[0.5rem] mt-1 font-bold text-muted-foreground uppercase tracking-[0.2em]">Cierres verificados</div>
                 </div>
             </div>
@@ -85,7 +85,7 @@
         {{-- KPI 2: Facturación --}}
         <x-kpi-link :href="route('ventas.index', ['desde' => $desde, 'hasta' => $hasta])" can="ventas.ver" class="relative group">
             <div class="absolute -inset-0.5 bg-gradient-to-r from-accent to-primary rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
-            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5 relative">
+            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-border flex flex-col justify-between p-5 relative">
                 <div class="flex items-center justify-between">
                     <span class="text-[0.55rem] font-black text-muted-foreground uppercase tracking-widest">Facturación Bruta</span>
                     <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
@@ -95,7 +95,7 @@
                     </div>
                 </div>
                 <div>
-                    <div class="text-2xl font-black text-white italic tracking-tight">$ {{ number_format($resumenVentas->total_usd ?? 0, 0, ',', '.') }}</div>
+                    <div class="text-2xl font-black text-foreground italic tracking-tight">$ {{ number_format($resumenVentas->total_usd ?? 0, 0, ',', '.') }}</div>
                     <div class="text-[0.5rem] mt-1 font-bold text-muted-foreground uppercase tracking-[0.2em]">Acumulado USD</div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
 
         {{-- KPI 3: Margen --}}
         <div class="relative group">
-            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5">
+            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-border flex flex-col justify-between p-5">
                 <div class="flex items-center justify-between">
                     <span class="text-[0.55rem] font-black text-muted-foreground uppercase tracking-widest">Rentabilidad</span>
                     <div class="flex items-baseline gap-1">
@@ -120,7 +120,7 @@
 
         {{-- KPI 4: Mora --}}
         <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="relative group">
-            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5 relative overflow-hidden group">
+            <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-border flex flex-col justify-between p-5 relative overflow-hidden group">
                 <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-red-500 to-transparent opacity-50"></div>
                 <div class="flex items-center justify-between">
                     <span class="text-[0.55rem] font-black text-muted-foreground uppercase tracking-widest">Cartera en Riesgo</span>
@@ -141,8 +141,8 @@
     {{-- ── Visualización de Datos (Gráficos y Top) ── --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Gráfico Evolución --}}
-        <div class="lg:col-span-2 erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 shadow-2xl overflow-hidden relative group">
-            <div class="erp-card-header !bg-transparent border-b border-white/5 py-4">
+        <div class="lg:col-span-2 erp-card !bg-surface/30 !backdrop-blur-xl !border-border shadow-2xl overflow-hidden relative group">
+            <div class="erp-card-header !bg-transparent border-b border-border py-4">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground italic px-2">Flujo Comercial Multianual</h2>
             </div>
             <div class="erp-card-body p-2 md:p-6">
@@ -153,8 +153,8 @@
         </div>
 
         {{-- Liderazgo Comercial (Top Clientes) --}}
-        <div class="erp-card !bg-surface/20 !backdrop-blur-md !border-white/5 shadow-2xl">
-            <div class="erp-card-header !bg-transparent border-b border-white/5 py-4 flex items-center justify-between px-4">
+        <div class="erp-card !bg-surface/20 !backdrop-blur-md !border-border shadow-2xl">
+            <div class="erp-card-header !bg-transparent border-b border-border py-4 flex items-center justify-between px-4">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Top Performance</h2>
                 <div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary">
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -162,11 +162,11 @@
             </div>
             <div class="erp-card-body p-2 scrollbar-hide overflow-y-auto max-h-[350px]">
                 @foreach($topClientes as $i => $c)
-                    <div class="p-3 mb-1 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all group flex items-center justify-between gap-4 cursor-default">
+                    <div class="p-3 mb-1 rounded-2xl hover:bg-surface-3 border border-transparent hover:border-border transition-all group flex items-center justify-between gap-4 cursor-default">
                         <div class="flex items-center gap-3 min-w-0">
                             <span class="text-[0.6rem] font-black text-primary/40 group-hover:text-primary transition-colors italic w-4 text-center">0{{ $i+1 }}</span>
                             <div class="flex flex-col min-w-0">
-                                <span class="text-[0.7rem] font-black text-white italic truncate uppercase">{{ $c->razon_social }}</span>
+                                <span class="text-[0.7rem] font-black text-foreground italic truncate uppercase">{{ $c->razon_social }}</span>
                                 <span class="text-[0.5rem] font-bold text-muted-foreground uppercase tracking-widest">{{ $c->total_ventas }} Cierres</span>
                             </div>
                         </div>
@@ -185,8 +185,8 @@
     {{-- ── Auditoría Stock y Mora ── --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Valuación de Activos --}}
-        <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5">
-            <div class="erp-card-header !bg-transparent border-b border-white/5 flex items-center justify-between px-4">
+        <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border">
+            <div class="erp-card-header !bg-transparent border-b border-border flex items-center justify-between px-4">
                 <div class="flex items-center gap-2">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Inventario de Capital</h2>
                 </div>
@@ -204,14 +204,14 @@
                     </thead>
                     <tbody>
                         @foreach($stockValuacion as $s)
-                            <tr class="hover:bg-white/5 transition-colors group">
+                            <tr class="hover:bg-surface-3 transition-colors group">
                                 <td class="!pl-6">
                                     <span class="badge-status {{ $s->estado === 'DISPONIBLE' ? 'badge-disponible' : 'badge-preparacion' }} !text-[0.55rem] font-black uppercase tracking-widest">
                                         {{ $s->estado }}
                                     </span>
                                 </td>
-                                <td class="text-center font-black text-white italic">{{ $s->cantidad }}</td>
-                                <td class="text-right text-white/70 font-mono italic">$ {{ number_format($s->valor_libro_usd, 0, ',', '.') }}</td>
+                                <td class="text-center font-black text-foreground italic">{{ $s->cantidad }}</td>
+                                <td class="text-right text-muted-foreground font-mono italic">$ {{ number_format($s->valor_libro_usd, 0, ',', '.') }}</td>
                                 <td class="text-right !pr-6 text-accent font-black italic">$ {{ number_format($s->precio_sugerido_usd ?? 0, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
@@ -221,10 +221,10 @@
             {{-- Mobile Stock List --}}
             <div class="md:hidden p-4 space-y-3">
                 @foreach($stockValuacion as $s)
-                    <div class="p-4 rounded-xl bg-surface2/30 border border-white/5 flex items-center justify-between group">
+                    <div class="p-4 rounded-xl bg-surface2/30 border border-border flex items-center justify-between group">
                         <div class="flex flex-col gap-1">
                             <span class="text-[0.5rem] font-black text-muted-foreground uppercase opacity-50 tracking-widest">{{ $s->estado }}</span>
-                            <span class="text-lg font-black text-white italic tracking-tighter">{{ $s->cantidad }} <small class="text-[0.6rem] opacity-50 not-italic uppercase font-bold">Unidades</small></span>
+                            <span class="text-lg font-black text-foreground italic tracking-tighter">{{ $s->cantidad }} <small class="text-[0.6rem] opacity-50 not-italic uppercase font-bold">Unidades</small></span>
                         </div>
                         <div class="text-right">
                             <div class="text-[0.8rem] font-black text-accent italic">$ {{ number_format($s->precio_sugerido_usd ?? 0, 0, ',', '.') }}</div>
@@ -236,8 +236,8 @@
         </div>
 
         {{-- Clientes en Mora --}}
-        <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5">
-            <div class="erp-card-header !bg-transparent border-b border-white/5 flex items-center justify-between px-4">
+        <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border">
+            <div class="erp-card-header !bg-transparent border-b border-border flex items-center justify-between px-4">
                 <div class="flex items-center gap-2">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Alerta de Recaudación</h2>
                     <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
@@ -258,9 +258,9 @@
                         @forelse($cuotasMora as $m)
                             <tr class="hover:bg-red-500/5 transition-colors group cursor-pointer" onclick="window.location='{{ route('clientes.show', $m->cliente_id) }}'">
                                 <td class="!pl-6">
-                                    <span class="font-black text-white/80 group-hover:text-white uppercase italic truncate max-w-[150px] inline-block">{{ $m->cliente }}</span>
+                                    <span class="font-black text-foreground group-hover:text-foreground uppercase italic truncate max-w-[150px] inline-block">{{ $m->cliente }}</span>
                                 </td>
-                                <td class="text-center font-black text-white italic">{{ $m->cuotas_vencidas }}</td>
+                                <td class="text-center font-black text-foreground italic">{{ $m->cuotas_vencidas }}</td>
                                 <td class="text-right text-red-500 font-black italic">$ {{ number_format($m->monto_vencido_usd, 0, ',', '.') }}</td>
                                 <td class="text-center !pr-6">
                                     <span class="badge-status {{ $m->max_dias_mora > 60 ? 'badge-vendido' : 'badge-preparacion' }} !text-[0.55rem] font-black">
@@ -279,7 +279,7 @@
                 @forelse($cuotasMora as $m)
                     <div class="p-4 rounded-xl bg-red-500/5 border border-red-500/10 space-y-3 shadow-lg" onclick="window.location='{{ route('clientes.show', $m->cliente_id) }}'">
                         <div class="flex items-center justify-between">
-                            <span class="text-[0.7rem] font-black text-white italic uppercase truncate w-2/3 tracking-tighter">{{ $m->cliente }}</span>
+                            <span class="text-[0.7rem] font-black text-foreground italic uppercase truncate w-2/3 tracking-tighter">{{ $m->cliente }}</span>
                             <span class="badge-status {{ $m->max_dias_mora > 60 ? 'badge-vendido' : 'badge-preparacion' }} !text-[0.5rem]">{{ $m->max_dias_mora }}D MORA</span>
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-red-500/10">
@@ -298,20 +298,20 @@
     </div>
 
     {{-- ── Registro Detallado de Margen ── --}}
-    <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 shadow-2xl relative overflow-hidden">
+    <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border shadow-2xl relative overflow-hidden">
         <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl"></div>
-        <div class="erp-card-header !bg-transparent border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 py-4">
+        <div class="erp-card-header !bg-transparent border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 py-4">
             <div class="flex flex-col">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground italic leading-tight">Métricas de Rentabilidad Unitaria</h2>
                 <span class="text-[0.5rem] font-bold text-muted-foreground/40 uppercase tracking-widest italic">Auditoría Global de Operaciones</span>
             </div>
-            <a href="{{ route('reportes.export', ['tipo'=>'rentabilidad','desde'=>$desde,'hasta'=>$hasta]) }}" class="btn btn-ghost !text-[0.55rem] !font-black !uppercase !tracking-widest !px-4 border border-white/5 h-10 w-full md:w-auto flex items-center justify-center">↓ EXPORTAR DATA</a>
+            <a href="{{ route('reportes.export', ['tipo'=>'rentabilidad','desde'=>$desde,'hasta'=>$hasta]) }}" class="btn btn-ghost !text-[0.55rem] !font-black !uppercase !tracking-widest !px-4 border border-border h-10 w-full md:w-auto flex items-center justify-center">↓ EXPORTAR DATA</a>
         </div>
         
         <div class="overflow-x-auto hidden md:block">
             <table class="erp-table text-xs">
                 <thead>
-                    <tr class="text-[0.6rem] uppercase tracking-widest text-muted-foreground/60 border-b border-white/5">
+                    <tr class="text-[0.6rem] uppercase tracking-widest text-muted-foreground/60 border-b border-border">
                         <th class="!pl-6">Cierre</th>
                         <th>Aliado Comercial</th>
                         <th>Activo Vinculado</th>
@@ -326,14 +326,14 @@
                         <tr class="hover:bg-primary/5 group transition-all duration-200 cursor-pointer" onclick="window.location='{{ route('ventas.show', $r->id) }}'">
                             <td class="!pl-6">
                                 <div class="flex flex-col min-w-[100px]">
-                                    <span class="text-[0.65rem] font-black text-white italic uppercase">{{ $r->numero_venta }}</span>
+                                    <span class="text-[0.65rem] font-black text-foreground italic uppercase">{{ $r->numero_venta }}</span>
                                     <span class="text-[0.55rem] text-muted-foreground font-bold">{{ \Carbon\Carbon::parse($r->fecha_venta)->format('d.m.Y') }}</span>
                                 </div>
                             </td>
-                            <td><span class="font-black text-white/70 uppercase text-[0.65rem] truncate max-w-[120px] inline-block italic tracking-tighter">{{ $r->cliente }}</span></td>
+                            <td><span class="font-black text-muted-foreground uppercase text-[0.65rem] truncate max-w-[120px] inline-block italic tracking-tighter">{{ $r->cliente }}</span></td>
                             <td><span class="font-bold text-muted-foreground text-[0.65rem] uppercase italic tracking-tighter">{{ $r->marca }} {{ $r->modelo }}</span></td>
-                            <td class="text-right font-mono text-white/50">$ {{ number_format($r->valor_libro_snapshot, 0, ',', '.') }}</td>
-                            <td class="text-right font-black text-white italic tracking-tighter">$ {{ number_format($r->precio_venta_usd, 0, ',', '.') }}</td>
+                            <td class="text-right font-mono text-muted-foreground">$ {{ number_format($r->valor_libro_snapshot, 0, ',', '.') }}</td>
+                            <td class="text-right font-black text-foreground italic tracking-tighter">$ {{ number_format($r->precio_venta_usd, 0, ',', '.') }}</td>
                             <td class="text-right">
                                 <span class="font-black {{ ($r->margen_bruto_usd ?? 0) >= 0 ? 'text-primary' : 'text-red-500' }} italic">
                                     $ {{ number_format($r->margen_bruto_usd ?? 0, 0, ',', '.') }}
@@ -355,8 +355,8 @@
         {{-- Mobile Rentabilidad List --}}
         <div class="md:hidden p-4 space-y-4">
             @forelse($rentabilidad as $r)
-                <div class="p-4 rounded-xl bg-surface2/30 border border-white/5 space-y-4 shadow-xl" onclick="window.location='{{ route('ventas.show', $r->id) }}'">
-                    <div class="flex items-center justify-between border-b border-white/5 pb-2">
+                <div class="p-4 rounded-xl bg-surface2/30 border border-border space-y-4 shadow-xl" onclick="window.location='{{ route('ventas.show', $r->id) }}'">
+                    <div class="flex items-center justify-between border-b border-border pb-2">
                         <div class="flex flex-col">
                             <span class="text-[0.65rem] font-black text-primary italic uppercase tracking-widest">{{ $r->numero_venta }}</span>
                             <span class="text-[0.5rem] text-muted-foreground font-bold">{{ \Carbon\Carbon::parse($r->fecha_venta)->format('d.m.Y') }}</span>
@@ -365,13 +365,13 @@
                         <span class="badge-status {{ $pct >= 15 ? 'badge-disponible' : ($pct >= 8 ? 'badge-preparacion' : 'badge-vendido') }} !text-[0.5rem] !font-black !px-2 italic">{{ $pct }}% ROI</span>
                     </div>
                     <div class="space-y-1">
-                        <span class="block text-[0.7rem] font-black text-white uppercase italic truncate tracking-tighter">{{ $r->cliente }}</span>
+                        <span class="block text-[0.7rem] font-black text-foreground uppercase italic truncate tracking-tighter">{{ $r->cliente }}</span>
                         <span class="block text-[0.6rem] font-bold text-muted-foreground uppercase italic tracking-tighter opacity-60">{{ $r->marca }} {{ $r->modelo }}</span>
                     </div>
-                    <div class="flex items-center justify-between pt-2 border-t border-white/5">
+                    <div class="flex items-center justify-between pt-2 border-t border-border">
                         <div class="flex flex-col">
                             <span class="text-[0.5rem] font-black text-muted-foreground uppercase opacity-40">Precio Cierre</span>
-                            <span class="text-[0.85rem] font-black text-white italic tracking-tighter">$ {{ number_format($r->precio_venta_usd, 0, ',', '.') }}</span>
+                            <span class="text-[0.85rem] font-black text-foreground italic tracking-tighter">$ {{ number_format($r->precio_venta_usd, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex flex-col text-right">
                             <span class="text-[0.5rem] font-black text-muted-foreground uppercase opacity-40">Retorno Neto</span>
@@ -385,7 +385,7 @@
         </div>
 
         @if($rentabilidad->hasPages())
-            <div class="px-6 py-4 border-t border-white/5 overflow-x-auto scrollbar-hide">{{ $rentabilidad->links() }}</div>
+            <div class="px-6 py-4 border-t border-border overflow-x-auto scrollbar-hide">{{ $rentabilidad->links() }}</div>
         @endif
     </div>
 @endsection

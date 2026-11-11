@@ -40,7 +40,7 @@
                     </svg>
                 </span>
                 <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por factura o proveedor..." 
-                    class="form-input !pl-10 !bg-surface/40 !backdrop-blur-md border-white/5 h-11 text-sm rounded-xl">
+                    class="form-input !pl-10 !bg-surface/40 !backdrop-blur-md border-border h-11 text-sm rounded-xl">
             </div>
             
             <button type="submit" class="btn btn-ghost !bg-primary/10 !text-primary border-primary/20 px-6 rounded-xl hover:!bg-primary/20">
@@ -63,7 +63,7 @@
             <div class="flex items-center gap-3">
                 <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/80">Listado Maestro de Compras</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent"></div>
-                <span class="px-2 py-0.5 rounded-full bg-surface2 text-[0.6rem] font-black text-muted-foreground border border-white/5 uppercase">
+                <span class="px-2 py-0.5 rounded-full bg-surface2 text-[0.6rem] font-black text-muted-foreground border border-border uppercase">
                     {{ $compras->total() }} Registros
                 </span>
             </div>
@@ -89,7 +89,7 @@
                                 </span>
                             </td>
                             <td>
-                                <span class="px-2 py-1 rounded font-mono text-[0.7rem] font-bold bg-surface2 text-accent border border-white/5 uppercase">
+                                <span class="px-2 py-1 rounded font-mono text-[0.7rem] font-bold bg-surface2 text-accent border border-border uppercase">
                                     {{ $c->numero_factura ?? 'S/N' }}
                                 </span>
                             </td>
@@ -99,7 +99,7 @@
                             </td>
                             <td>
                                 <div class="flex items-center gap-2">
-                                    <span class="badge-status bg-surface2 text-muted-foreground text-[0.6rem] border-white/5">{{ $c->moneda_compra }}</span>
+                                    <span class="badge-status bg-surface2 text-muted-foreground text-[0.6rem] border-border">{{ $c->moneda_compra }}</span>
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                                 </div>
                             </td>
@@ -149,17 +149,17 @@
     {{-- Vista de Móvil (Cards) --}}
     <div class="md:hidden space-y-4">
         @forelse($compras as $c)
-            <div class="relative overflow-hidden rounded-2xl border border-white/5 bg-surface2/40 backdrop-blur-md p-4 transition-all duration-300 active:scale-[0.98]">
+            <div class="relative overflow-hidden rounded-2xl border border-border bg-surface2/40 backdrop-blur-md p-4 transition-all duration-300 active:scale-[0.98]">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-surface/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-surface/50 border border-border flex flex-col items-center justify-center flex-shrink-0">
                             <span class="text-[0.5rem] text-muted-foreground font-black uppercase tracking-tighter">Fecha</span>
                             <span class="text-[0.65rem] font-black text-accent">{{ \Carbon\Carbon::parse($c->fecha_compra)->format('d/m') }}</span>
                         </div>
                         <div class="min-w-0">
-                            <div class="font-black text-sm leading-tight text-white group-active:text-primary transition-colors truncate max-w-[180px]">{{ $c->proveedor_nombre }}</div>
+                            <div class="font-black text-sm leading-tight text-foreground group-active:text-primary transition-colors truncate max-w-[180px]">{{ $c->proveedor_nombre }}</div>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="px-1.5 py-0.5 rounded font-mono text-[0.6rem] font-black bg-surface text-accent/80 border border-white/10 uppercase tracking-tighter">{{ $c->numero_factura ?? 'SIN FACTURA' }}</span>
+                                <span class="px-1.5 py-0.5 rounded font-mono text-[0.6rem] font-black bg-surface text-accent/80 border border-border uppercase tracking-tighter">{{ $c->numero_factura ?? 'SIN FACTURA' }}</span>
                             </div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 pt-4 border-t border-white/5">
+                <div class="flex items-center gap-2 pt-4 border-t border-border">
                     <a href="{{ route('compras.show', $c->id) }}" class="flex-1 h-11 flex items-center justify-center gap-2 rounded-xl bg-primary/10 text-primary text-[0.65rem] font-black uppercase border border-primary/20 tracking-[0.15em] transition-all">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -190,7 +190,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-border">
                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                     <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -210,7 +210,7 @@
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all" x-show="showDeleteModal" x-cloak style="display: none;">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDeleteModal = false" x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
         
-        <div class="relative w-full max-w-md bg-surface border border-white/10 rounded-3xl shadow-2xl overflow-hidden" 
+        <div class="relative w-full max-w-md bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden" 
             x-show="showDeleteModal" 
             x-transition:enter="transition ease-out duration-300 transform" 
             x-transition:enter-start="opacity-0 translate-y-8 scale-95" 
@@ -227,7 +227,7 @@
                     </svg>
                 </div>
                 
-                <h3 class="text-sm font-black text-white uppercase tracking-wider mb-2">¿Confirmar Anulación de Compra?</h3>
+                <h3 class="text-sm font-black text-foreground uppercase tracking-wider mb-2">¿Confirmar Anulación de Compra?</h3>
                 <p class="text-xs text-muted-foreground leading-relaxed px-2">
                     Esta acción revertirá el stock de los productos ingresados, anulará los movimientos de caja y cancelará la factura del proveedor asociada. 
                 </p>
@@ -236,8 +236,8 @@
                 </div>
             </div>
             
-            <div class="p-6 bg-surface3/30 border-t border-white/5 flex gap-3">
-                <button type="button" @click="showDeleteModal = false" class="btn btn-ghost flex-1 h-11 rounded-xl text-[0.65rem] font-black tracking-widest uppercase border border-white/5">
+            <div class="p-6 bg-surface3/30 border-t border-border flex gap-3">
+                <button type="button" @click="showDeleteModal = false" class="btn btn-ghost flex-1 h-11 rounded-xl text-[0.65rem] font-black tracking-widest uppercase border border-border">
                     Cancelar
                 </button>
                 <form :action="deleteAction" method="POST" class="flex-1">

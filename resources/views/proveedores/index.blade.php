@@ -35,7 +35,7 @@
                     style="border-color: var(--border)"
                     autocomplete="off">
                 @if($q)
-                    <a href="{{ route('proveedores.index') }}" class="absolute inset-y-0 right-4 flex items-center text-muted-foreground hover:text-white transition-colors">
+                    <a href="{{ route('proveedores.index') }}" class="absolute inset-y-0 right-4 flex items-center text-muted-foreground hover:text-foreground transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
@@ -86,7 +86,7 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="font-mono text-[0.7rem] font-black text-muted-foreground bg-surface2 px-2 py-1 rounded border border-white/5 w-fit">
+                                <div class="font-mono text-[0.7rem] font-black text-muted-foreground bg-surface2 px-2 py-1 rounded border border-border w-fit">
                                     {{ $p->ruc_rut_nit ?: 'SIN REGISTRO' }}
                                 </div>
                             </td>
@@ -97,7 +97,7 @@
                             </td>
                             <td>
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-4 rounded overflow-hidden shadow-sm border border-white/5">
+                                    <div class="w-6 h-4 rounded overflow-hidden shadow-sm border border-border">
                                         @if($p->pais === 'PY')
                                             <img src="https://flagcdn.com/w40/py.png" class="w-full h-full object-cover">
                                         @elseif($p->pais === 'BR')
@@ -117,7 +117,7 @@
                             </td>
                             <td class="text-right !pr-6" onclick="event.stopPropagation()">
                                 <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href="{{ route('proveedores.edit', $p->id) }}" class="p-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-white transition-all">
+                                    <a href="{{ route('proveedores.edit', $p->id) }}" class="p-2 rounded-xl hover:bg-surface-3 text-muted-foreground hover:text-foreground transition-all">
                                         <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
                                         </svg>
@@ -180,7 +180,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-16 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-16 px-6 rounded-3xl border border-dashed border-border">
                 <p class="font-black uppercase tracking-[0.2em] text-[0.6rem] text-muted-foreground/30">Sin aliados comerciales</p>
             </div>
         @endforelse

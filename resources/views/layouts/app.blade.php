@@ -69,6 +69,14 @@
                 --accent:         #059669;
                 --accent-light:   #34d399;
 
+                /* Estados (usados por varias vistas; antes no estaban definidos) */
+                --success:        #16a34a;
+                --danger:         #dc2626;
+                --warning:        #d97706;
+                --bg-card:        var(--surface);
+                --surface1:       var(--surface);
+                --white:          #ffffff;
+
                 --shadow:         0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
                 --shadow-lg:      0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
             }
@@ -87,6 +95,10 @@
                 --primary-light:  #d7b7fd;
                 --accent:         #03dac6;
                 --accent-light:   #66fff9;
+
+                --success:        #4ade80;
+                --danger:         #f87171;
+                --warning:        #fbbf24;
 
                 --shadow:         0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
                 --shadow-lg:      0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);

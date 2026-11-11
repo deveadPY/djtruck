@@ -57,12 +57,12 @@
     </div>
 
     {{-- Vista de Escritorio (Table Master) --}}
-    <div class="hidden md:block erp-card !border-white/5">
+    <div class="hidden md:block erp-card !border-border">
         <div class="erp-card-header overflow-hidden !bg-surface3/10">
             <div class="flex items-center gap-3 w-full">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Monitor de Inventario Físico</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent"></div>
-                <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-white/5 uppercase tracking-tighter">
+                <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-border uppercase tracking-tighter">
                     {{ $vehiculos->total() }} Unidades Disponibles
                 </span>
             </div>
@@ -224,7 +224,7 @@
                     </div>
                     <div class="text-right">
                         <div class="text-[0.55rem] text-muted-foreground font-black uppercase tracking-widest mb-1">Costo Acumulado</div>
-                        <div class="text-[0.75rem] font-black text-white/80 leading-none">
+                        <div class="text-[0.75rem] font-black text-foreground leading-none">
                             $ {{ number_format($v->costo_origen_usd + ($v->total_gastos_usd ?? 0), 2, ',', '.') }}
                         </div>
                     </div>
@@ -240,7 +240,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-border">
                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                     <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.129-1.125v-10.5a1.125 1.125 0 0 0-1.125-1.125H3.375a1.125 1.125 0 0 0-1.125 1.125v4.5m17.25 2.25h-5.625c-.621 0-1.125.504-1.125 1.125v3.375m7.5-3.375h-7.5m7.5-1.125h-7.5" />

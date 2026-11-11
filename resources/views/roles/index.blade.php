@@ -7,7 +7,7 @@
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-1">
         <div class="flex flex-col">
-            <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Privilegios de Sistema</h1>
+            <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Privilegios de Sistema</h1>
             <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold italic">Definición de perfiles de acceso y matriz de permisos RBAC</p>
         </div>
         
@@ -38,7 +38,7 @@
     {{-- ── Grid de Roles ── --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($roles as $rol)
-            <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden group hover:!border-primary/40 transition-all duration-300 shadow-2xl">
+            <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border relative overflow-hidden group hover:!border-primary/40 transition-all duration-300 shadow-2xl">
                 {{-- Decoración --}}
                 <div class="absolute -right-8 -top-8 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
                 
@@ -46,21 +46,21 @@
                     {{-- Identity --}}
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col">
-                            <h3 class="text-[0.85rem] font-black text-white uppercase italic tracking-wider">{{ $rol->name }}</h3>
+                            <h3 class="text-[0.85rem] font-black text-foreground uppercase italic tracking-wider">{{ $rol->name }}</h3>
                             <span class="text-[0.5rem] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 italic">Web Security Guard</span>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-primary border border-white/5 group-hover:border-primary/30 transition-colors">
+                        <div class="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center text-primary border border-border group-hover:border-primary/30 transition-colors">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75L11.25 15 15 9.75m-3-10.457L17.5 1.5l5.25 3v10.5a10.5 10.5 0 01-5.25 9L12 25.5l-5.25-3a10.5 10.5 0 01-5.25-9V3.5l5.25-2 5.25 1.043z" /></svg>
                         </div>
                     </div>
 
                     {{-- Stats --}}
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 rounded-xl bg-black/20 border border-white/5">
+                        <div class="p-3 rounded-xl bg-black/20 border border-border">
                             <span class="text-[0.5rem] font-black text-muted-foreground uppercase block mb-1">Usuarios</span>
-                            <span class="text-xl font-black text-white italic tracking-tighter">{{ $rol->users_count }}</span>
+                            <span class="text-xl font-black text-foreground italic tracking-tighter">{{ $rol->users_count }}</span>
                         </div>
-                        <div class="p-3 rounded-xl bg-black/20 border border-white/5">
+                        <div class="p-3 rounded-xl bg-black/20 border border-border">
                             <span class="text-[0.5rem] font-black text-muted-foreground uppercase block mb-1">Permisos</span>
                             <span class="text-xl font-black text-accent italic tracking-tighter">{{ $rol->permissions_count }}</span>
                         </div>
@@ -69,7 +69,7 @@
                     {{-- Actions --}}
                     <div class="flex items-center gap-2 pt-2">
                         @can('roles.editar')
-                            <a href="{{ route('roles.edit', $rol) }}" class="flex-1 h-10 bg-white/5 hover:bg-primary/20 text-white rounded-xl border border-white/5 hover:border-primary/30 text-[0.55rem] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
+                            <a href="{{ route('roles.edit', $rol) }}" class="flex-1 h-10 bg-surface-2 hover:bg-primary/20 text-foreground rounded-xl border border-border hover:border-primary/30 text-[0.55rem] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                                 Matriz de Acceso
                             </a>

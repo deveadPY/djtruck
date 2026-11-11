@@ -266,7 +266,7 @@
                                     @if($img->es_portada)
                                         <div class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[0.6rem] font-black uppercase tracking-wider"
                                              style="background: var(--primary); color: white;">
-                                            ★ Portada
+                                            Portada
                                         </div>
                                     @endif
 
