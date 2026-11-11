@@ -11,15 +11,13 @@ class MovimientoCajaModel extends Model
 {
     protected $table    = 'movimientos_caja';
     protected $fillable = [
-        'caja_id', 'tipo', 'concepto', 'moneda', 'monto', 'monto_usd',
-        'tasa_cambio', 'referencia', 'venta_id', 'cuota_id',
-        'created_by', 'updated_by',
+        'caja_id', 'tipo', 'concepto', 'referencia_id', 'ref_type',
+        'moneda', 'monto', 'monto_usd', 'created_by', 'updated_by',
     ];
 
     protected $casts = [
         'monto'      => 'decimal:4',
         'monto_usd'  => 'decimal:4',
-        'tasa_cambio'=> 'decimal:8',
     ];
 
     public function caja(): BelongsTo
