@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSaleRequest extends FormRequest
 {
@@ -48,7 +49,15 @@ class StoreSaleRequest extends FormRequest
             'pagos'                       => 'nullable|array|max:20',
             'pagos.*.tipo'                => 'nullable|in:EFECTIVO,TRANSFERENCIA,CHEQUE,VEHICULO_CANJE,TARJETA',
             'pagos.*.monto_usd'           => 'nullable|numeric|min:0|max:99999999',
-            'pagos.*.vehiculo_canje_id'   => 'nullable|integer|exists:vehiculos,id',
+            // Al crear, el vehículo recibido se da de alta desde la venta; elegir uno existente solo al editar.
+            'pagos.*.vehiculo_canje_id'   => $this->route('id') ? 'nullable|integer|exists:vehiculos,id' : 'prohibited',
+            'pagos.*.canje'               => 'nullable|array',
+            'pagos.*.canje.marca'         => 'nullable|required_with:pagos.*.canje.numero_chasis|string|max:80',
+            'pagos.*.canje.modelo'        => 'nullable|required_with:pagos.*.canje.numero_chasis|string|max:80',
+            'pagos.*.canje.anio'          => 'nullable|required_with:pagos.*.canje.numero_chasis|integer|min:1950|max:' . (date('Y') + 1),
+            'pagos.*.canje.numero_chasis' => ['nullable', 'string', 'max:17', 'distinct',
+                Rule::unique('vehiculos', 'numero_chasis')->whereNull('deleted_at')],
+            'pagos.*.canje.kilometraje'   => 'nullable|integer|min:0|max:9999999',
             'pagos.*.referencia'          => 'nullable|string|max:100',
         ];
     }
@@ -65,6 +74,9 @@ class StoreSaleRequest extends FormRequest
             'fecha_primera_cuota.after'  => 'La primera cuota debe ser posterior a la fecha de venta.',
             'fecha_venta.before_or_equal'=> 'La fecha de venta no puede ser futura.',
             'items.max'                  => 'Una venta no puede tener más de 100 items.',
+            'pagos.*.canje.numero_chasis.unique'   => 'Ya existe un vehículo con ese número de chasis.',
+            'pagos.*.canje.numero_chasis.distinct' => 'El mismo chasis se cargó en dos pagos.',
+            'pagos.*.vehiculo_canje_id.prohibited' => 'El vehículo recibido debe cargarse con sus datos.',
         ];
     }
 
@@ -76,6 +88,16 @@ class StoreSaleRequest extends FormRequest
 
             if ($descuentoUsd > $precioUsd) {
                 $validator->errors()->add('descuento_usd', 'El descuento no puede superar el precio de venta.');
+            }
+
+            // Un pago "vehículo parte de pago" exige el vehículo recibido (nuevo, o al editar uno ya vinculado)
+            foreach ((array) $this->input('pagos', []) as $i => $pago) {
+                if (($pago['tipo'] ?? null) !== 'VEHICULO_CANJE' || floatval($pago['monto_usd'] ?? 0) <= 0) {
+                    continue;
+                }
+                if (empty($pago['vehiculo_canje_id']) && empty($pago['canje']['numero_chasis'])) {
+                    $validator->errors()->add("pagos.$i.canje.numero_chasis", 'Cargá los datos del vehículo recibido como parte de pago (marca, modelo, año y chasis).');
+                }
             }
         });
     }

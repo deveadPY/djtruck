@@ -344,14 +344,8 @@
                 <label class="form-label text-xs">Referencia</label>
                 <input type="text" name="pagos[${idx}][referencia]" class="form-input" placeholder="Nro. referencia...">
             </div>
-            <div class="form-group hidden" id="canje_container_${idx}">
-                <label class="form-label text-xs">Vehículo Canje</label>
-                <select name="pagos[${idx}][vehiculo_canje_id]" class="form-input">
-                    <option value="">— Seleccionar —</option>
-                    @foreach($vehiculos_canje ?? [] as $vc)
-                        <option value="{{ $vc->id }}">{{ $vc->marca }} {{ $vc->modelo }} — {{ $vc->numero_chasis }}</option>
-                    @endforeach
-                </select>
+            <div class="hidden" id="canje_container_${idx}" style="grid-column:1/-1">
+                @include('ventas.partials.canje-campos', ['idx' => '${idx}'])
             </div>
             <button type="button" onclick="document.getElementById('pago_row_${idx}').remove(); calcularTotalPagos();" class="text-red-500 text-xs">✕ Eliminar</button>
         </div>`;

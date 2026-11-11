@@ -194,7 +194,7 @@
             </span>
         </div>
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Vehículos en stock</div>
-        <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $totalVehiculos }}</div>
+        <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $enStock }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $enPreparacion }} en preparación</div>
     </div>
 

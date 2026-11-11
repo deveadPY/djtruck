@@ -15,6 +15,7 @@ class DashboardController extends Controller
         $totalVehiculos = DB::table('vehiculos')->whereNull('deleted_at')->count();
         $disponibles    = DB::table('vehiculos')->where('estado', 'DISPONIBLE')->whereNull('deleted_at')->count();
         $enPreparacion  = DB::table('vehiculos')->where('estado', 'EN_PREPARACION')->whereNull('deleted_at')->count();
+        $enStock        = DB::table('vehiculos')->whereNotIn('estado', ['VENDIDO', 'BAJA'])->whereNull('deleted_at')->count();
 
         // ── Ventas del mes ────────────────────────────────────────────────
         $ventasMes = DB::table('ventas')
@@ -161,6 +162,7 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboard.index', compact(
+            'enStock',
             'vehiculos',
             'totalVehiculos',
             'disponibles',

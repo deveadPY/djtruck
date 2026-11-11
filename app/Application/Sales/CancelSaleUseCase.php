@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Sales;
 
 use App\Domain\Sales\Repositories\SaleRepositoryInterface;
+use App\Domain\Vehicle\Services\TradeInVehicleRegistrar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use RuntimeException;
@@ -12,7 +13,8 @@ use RuntimeException;
 class CancelSaleUseCase
 {
     public function __construct(
-        private readonly SaleRepositoryInterface $saleRepository
+        private readonly SaleRepositoryInterface $saleRepository,
+        private readonly TradeInVehicleRegistrar $tradeInRegistrar
     ) {}
 
     public function execute(CancelSaleDTO $dto): bool
@@ -65,18 +67,14 @@ class CancelSaleUseCase
                     ]);
             }
 
-            // 3. Desmarcar vehículos de canje
+            // 3. Deshacer tomas de vehículo (baja si lo creó esta venta, si no vuelve a DISPONIBLE)
             DB::table('detalles_pago')
                 ->where('venta_id', $ventaId)
                 ->where('tipo_pago', 'VEHICULO_CANJE')
                 ->whereNotNull('vehiculo_canje_id')
+                ->whereNull('deleted_at')
                 ->pluck('vehiculo_canje_id')
-                ->each(fn($vehiculoId) =>
-                    DB::table('vehiculos')->where('id', $vehiculoId)->update([
-                        'estado'     => 'DISPONIBLE',
-                        'updated_at' => now(),
-                    ])
-                );
+                ->each(fn($vehiculoId) => $this->tradeInRegistrar->release((int) $vehiculoId, (int) $ventaId));
 
             // 4. Anular detalles de pago
             DB::table('detalles_pago')

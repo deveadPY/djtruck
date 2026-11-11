@@ -6,9 +6,9 @@ namespace App\Domain\Sales\Processors;
 
 use App\Domain\Finance\Services\CajaService;
 use App\Domain\Sales\Repositories\SaleRepositoryInterface;
+use App\Domain\Vehicle\Services\TradeInVehicleRegistrar;
 use App\Infrastructure\Persistence\Eloquent\Models\SaleModel;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -18,7 +18,8 @@ class PaymentProcessor
 
     public function __construct(
         private readonly CajaService $cajaService,
-        private readonly SaleRepositoryInterface $saleRepository
+        private readonly SaleRepositoryInterface $saleRepository,
+        private readonly TradeInVehicleRegistrar $tradeInRegistrar
     ) {}
 
     public function process(SaleModel $venta, array $pagos, string $modalidad): float
@@ -33,8 +34,8 @@ class PaymentProcessor
 
             $totalUsd += $montoUsd;
 
+            $pago = $this->registerTradeInVehicle($venta, $pago, $montoUsd);
             $this->insertPaymentDetail($venta, $pago, $montoUsd, $modalidad);
-            $this->processTradeInVehicle($pago);
             $this->registerInCashRegister($venta, $pago, $modalidad, $montoUsd);
         }
 
@@ -57,13 +58,23 @@ class PaymentProcessor
         ]);
     }
 
-    private function processTradeInVehicle(array $pago): void
+    /**
+     * Da de alta en el stock el vehículo recibido como parte de pago
+     * (valor de toma = monto del pago) y lo vincula al pago.
+     */
+    private function registerTradeInVehicle(SaleModel $venta, array $pago, float $montoUsd): array
     {
-        if ($this->isTradeIn($pago)) {
-            DB::table('vehiculos')
-                ->where('id', $pago['vehiculo_canje_id'])
-                ->update(['estado' => 'TOMA', 'updated_at' => now()]);
+        if (($pago['tipo'] ?? null) !== 'VEHICULO_CANJE' || empty($pago['canje'])) {
+            return $pago;
         }
+
+        $vehiculo = $this->tradeInRegistrar->register($venta->id, $pago['canje'] + [
+            'valor_toma'  => $montoUsd,
+            'moneda_toma' => 'USD',
+        ]);
+        $pago['vehiculo_canje_id'] = $vehiculo->id;
+
+        return $pago;
     }
 
     private function registerInCashRegister(SaleModel $venta, array $pago, string $modalidad, float $montoUsd): void
@@ -100,9 +111,7 @@ class PaymentProcessor
 
         foreach ($payments as $payment) {
             if ($payment->vehiculo_canje_id) {
-                DB::table('vehiculos')
-                    ->where('id', $payment->vehiculo_canje_id)
-                    ->update(['estado' => 'DISPONIBLE', 'updated_at' => now()]);
+                $this->tradeInRegistrar->release((int) $payment->vehiculo_canje_id, $ventaId);
             }
         }
 

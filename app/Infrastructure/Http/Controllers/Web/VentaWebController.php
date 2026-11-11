@@ -112,10 +112,6 @@ class VentaWebController extends Controller
 
         $cajas = DB::table('cajas')->where('activo', true)->get();
 
-        $vehiculos_canje = DB::table('vehiculos')
-            ->whereIn('estado', ['DISPONIBLE', 'EN_PREPARACION', 'TOMA'])
-            ->whereNull('deleted_at')
-            ->get();
 
         $repuestos = DB::table('stock_repuestos')
             ->where('activo', true)
@@ -123,7 +119,7 @@ class VentaWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'vehiculos_canje', 'repuestos'));
+        return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'repuestos'));
     }
 
     public function store(StoreSaleRequest $request)
@@ -194,9 +190,9 @@ class VentaWebController extends Controller
 
         $cajas = DB::table('cajas')->where('activo', true)->get();
 
+        // Solo los vehículos ya recibidos en esta venta (los nuevos se cargan con sus datos)
         $vehiculos_canje = DB::table('vehiculos')
-            ->whereIn('estado', ['DISPONIBLE', 'EN_PREPARACION', 'TOMA'])
-            ->whereNull('deleted_at')
+            ->whereIn('id', DB::table('detalles_pago')->where('venta_id', $id)->whereNull('deleted_at')->whereNotNull('vehiculo_canje_id')->select('vehiculo_canje_id'))
             ->get();
 
         $repuestos = DB::table('stock_repuestos')

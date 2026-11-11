@@ -470,18 +470,8 @@
                                     <input type="text" name="pagos[0][referencia]" class="form-input"
                                         placeholder="Nro. transferencia...">
                                 </div>
-                                <div class="form-group flex-col gap-1.5" id="canje_container_0" style="display:none">
-                                    <label
-                                        class="form-label text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Vehículo
-                                        en Canje</label>
-                                    <select name="pagos[0][vehiculo_canje_id]" class="form-input">
-                                        <option value="">— Seleccionar —</option>
-                                        @foreach($vehiculos_canje ?? [] as $vc)
-                                            <option value="{{ $vc->id }}">{{ $vc->marca }} {{ $vc->modelo }} —
-                                                {{ $vc->numero_chasis }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                <div class="md:col-span-4" id="canje_container_0" style="display:none">
+                                    @include('ventas.partials.canje-campos', ['idx' => 0])
                                 </div>
                             </div>
                         </div>
@@ -1032,14 +1022,8 @@
                                                 <label>Referencia / Banco</label>
                                                 <input type="text" name="pagos[${idx}][referencia]" placeholder="Nro. transferencia...">
                                             </div>
-                                            <div class="form-group" id="canje_container_${idx}" style="display:none">
-                                                <label>Vehículo en Canje</label>
-                                                <select name="pagos[${idx}][vehiculo_canje_id]">
-                                                    <option value="">— Seleccionar —</option>
-                                                    @foreach($vehiculos_canje ?? [] as $vc)
-                                                        <option value="{{ $vc->id }}">{{ $vc->marca }} {{ $vc->modelo }} — {{ $vc->numero_chasis }}</option>
-                                                    @endforeach
-                                                </select>
+                                            <div id="canje_container_${idx}" style="display:none;grid-column:1/-1">
+                                                @include('ventas.partials.canje-campos', ['idx' => '${idx}'])
                                             </div>
                                             <button type="button" class="btn btn-ghost" onclick="eliminarPago(${idx})" style="color:var(--danger);padding:.4rem .6rem" title="Eliminar">🗑️</button>
                                         </div>
@@ -1057,7 +1041,7 @@
                 const ref = document.getElementById('ref_container_' + idx);
                 const canje = document.getElementById('canje_container_' + idx);
                 if (ref) ref.style.display = (tipo === 'TRANSFERENCIA' || tipo === 'CHEQUE') ? 'flex' : 'none';
-                if (canje) canje.style.display = tipo === 'VEHICULO_CANJE' ? 'flex' : 'none';
+                if (canje) canje.style.display = tipo === 'VEHICULO_CANJE' ? 'block' : 'none';
             }
 
             function calcularTotalPagos() {
