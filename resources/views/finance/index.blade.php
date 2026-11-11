@@ -123,19 +123,19 @@
             <div class="stat-value text-red-500">$ {{ number_format($egresosMes, 2, ',', '.') }}</div>
             <div class="text-xs mt-1" style="color:var(--text-muted)">USD acumulado</div>
         </div>
-        <div class="stat-card {{ $cuotasVencidas > 0 ? 'warning' : '' }}">
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="stat-card {{ $cuotasVencidas > 0 ? 'warning' : '' }}"> 0 ? 'warning' : '' }}">
             <div class="stat-label">Cuotas vencidas</div>
             <div class="stat-value {{ $cuotasVencidas > 0 ? 'text-amber-500' : 'text-green-500' }}">
                 {{ $cuotasVencidas }}
             </div>
             <div class="text-xs mt-1" style="color:var(--text-muted)">
                 @if($cuotasVencidas > 0)
-                    <a href="{{ route('notificaciones.index') }}" style="color:#f59e0b">Ver cuotas →</a>
+                    <span style="color:#f59e0b">Ver cuotas →</span>
                 @else
                     Sin atrasos
                 @endif
             </div>
-        </div>
+        </x-kpi-link>
     </div>
 
     {{-- ── Dos cajas ────────────────────────────────────────────────────── --}}

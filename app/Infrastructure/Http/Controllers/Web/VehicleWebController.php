@@ -25,13 +25,27 @@ class VehicleWebController extends Controller
         private readonly VehicleImageRepositoryInterface $imageRepository
     ) {}
 
+    private const ESTADOS_FILTRO = [
+        'STOCK'          => 'En stock (no vendidos)',
+        'DISPONIBLE'     => 'Disponible',
+        'EN_PREPARACION' => 'En preparación',
+        'RESERVADO'      => 'Reservado',
+        'EN_TRANSITO'    => 'En tránsito',
+        'EN_ADUANA'      => 'En aduana',
+        'TOMA'           => 'Toma',
+        'VENDIDO'        => 'Vendido',
+        'BAJA'           => 'Baja',
+    ];
+
     public function index(Request $request)
     {
         $q = $request->input('q');
-        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15);
-        $vehiculos->appends(['q' => $q]); // Ensure pagination links keep the query
+        $estado = in_array($request->input('estado'), array_keys(self::ESTADOS_FILTRO), true) ? $request->input('estado') : null;
+        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15, $estado);
+        $vehiculos->appends(['q' => $q, 'estado' => $estado]); // Ensure pagination links keep the query
+        $estados = self::ESTADOS_FILTRO;
 
-        return view('vehicles.index', compact('vehiculos', 'q'));
+        return view('vehicles.index', compact('vehiculos', 'q', 'estado', 'estados'));
     }
 
     public function show($id)

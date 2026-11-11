@@ -6,7 +6,7 @@
 
     {{-- ── Stats resumen ──────────────────────────────────────────────────── --}}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#ef4444">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -14,8 +14,8 @@
                 En Mora
             </div>
             <div class="text-2xl font-bold" style="color:#ef4444">{{ $cuotasMora->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'hoy'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#f59e0b">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -23,8 +23,8 @@
                 Cobrar Hoy
             </div>
             <div class="text-2xl font-bold" style="color:#f59e0b">{{ $cuotasHoy->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'proximas'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#3b82f6">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -32,8 +32,8 @@
                 Próx. 7 días
             </div>
             <div class="text-2xl font-bold" style="color:#3b82f6">{{ $cuotasProximas->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'facturas_pagar'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#8b5cf6">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -41,8 +41,8 @@
                 Facturas Pagar
             </div>
             <div class="text-2xl font-bold" style="color:#8b5cf6">{{ $facturasPagar->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4 col-span-2 sm:col-span-1" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'facturas_declarar'])" class="rounded-xl border p-3 sm:p-4 col-span-2 sm:col-span-1 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#10b981">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
@@ -50,8 +50,8 @@
                 A Declarar
             </div>
             <div class="text-2xl font-bold" style="color:#10b981">{{ $facturasDeclarar->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'stock'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#f59e0b">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -59,7 +59,7 @@
                 Stock Bajo
             </div>
             <div class="text-2xl font-bold" style="color:#f59e0b">{{ $repuestosBajos->total() }}</div>
-        </div>
+        </x-kpi-link>
     </div>
 
     {{-- ── Tabs ────────────────────────────────────────────────────────────── --}}
@@ -483,21 +483,28 @@
             document.querySelectorAll('.notif-tab-btn').forEach(function (b) {
                 b.classList.remove('active');
                 b.style.background = 'transparent';
+                b.style.color = b.dataset.color; // la pestaña que deja de estar activa recupera su color
             });
 
             document.getElementById('panel-' + name).style.display = 'block';
             btn.classList.add('active');
-            btn.style.background = btn.style.color;
+            btn.style.background = btn.dataset.color;
             btn.style.color = 'white';
         }
 
         // Inicializar tab activa
         document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.notif-tab-btn').forEach(b => { b.dataset.color = b.style.color; });
             let activeBtn = document.querySelector('.notif-tab-btn.active');
             if (activeBtn) {
                 activeBtn.style.background = activeBtn.style.color;
                 activeBtn.style.color = 'white';
             }
+            // ?tab=mora|hoy|proximas|… abre esa pestaña (enlaces desde los KPI)
+            const tab = new URLSearchParams(location.search).get('tab');
+            const tabBtn = tab && document.getElementById('panel-' + tab)
+                && [...document.querySelectorAll('.notif-tab-btn')].find(b => (b.getAttribute('onclick') || '').includes(`'${tab}'`));
+            if (tabBtn) showTab(tab, tabBtn);
         });
     </script>
 

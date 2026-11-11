@@ -41,7 +41,7 @@ class EloquentVehicleRepository implements VehicleRepositoryInterface
         return $vehicle->delete();
     }
 
-    public function searchPaginated(?string $searchQuery, int $limit = 15): LengthAwarePaginator
+    public function searchPaginated(?string $searchQuery, int $limit = 15, ?string $estado = null): LengthAwarePaginator
     {
         // Equivalent to the raw DB query in index() but using Eloquent
         $query = VehicleModel::select([
@@ -62,6 +62,12 @@ class EloquentVehicleRepository implements VehicleRepositoryInterface
                   ->orWhere('vehiculos.numero_chasis', 'like', "%{$searchQuery}%")
                   ->orWhere('vehiculos.numero_motor', 'like', "%{$searchQuery}%");
             });
+        }
+
+        if ($estado === 'STOCK') {
+            $query->whereNotIn('vehiculos.estado', ['VENDIDO', 'BAJA']);
+        } elseif ($estado) {
+            $query->where('vehiculos.estado', $estado);
         }
 
         return $query->latest('vehiculos.created_at')->paginate($limit);

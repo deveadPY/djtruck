@@ -39,8 +39,14 @@
                 <input type="text" name="q" value="{{ $q }}" placeholder="Chasis, marca o modelo..."
                     class="form-input !pl-11 h-11 text-sm rounded-xl transition-all">
             </div>
-            
-            @if($q)
+            <select name="estado" class="form-input h-11 text-sm rounded-xl !w-auto" onchange="this.form.submit()" aria-label="Filtrar por estado">
+                <option value="">Todos los estados</option>
+                @foreach($estados as $valor => $etiqueta)
+                    <option value="{{ $valor }}" @selected($estado === $valor)>{{ $etiqueta }}</option>
+                @endforeach
+            </select>
+
+            @if($q || $estado)
                 <a href="{{ route('vehicles.index') }}" class="btn btn-ghost !bg-red-500/5 !text-red-400 border-red-500/10 px-4 rounded-2xl hover:!bg-red-500/20" title="Limpiar">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />

@@ -146,10 +146,12 @@
 
             /* Stats */
             .stat-card {
-                @apply rounded-2xl border p-4 sm:p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer;
+                @apply rounded-2xl border p-4 sm:p-5 relative overflow-hidden transition-all duration-200;
                 background: var(--surface);
                 border-color: var(--border);
             }
+            /* Solo las tarjetas que llevan a un módulo parecen clicables */
+            a.stat-card { @apply cursor-pointer hover:-translate-y-0.5; }
             .stat-card::before {
                 content: '';
                 @apply absolute top-0 left-0 right-0 h-[3px];

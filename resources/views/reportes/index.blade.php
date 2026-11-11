@@ -64,7 +64,7 @@
     {{-- ── KPIs de Alto Performance ── --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {{-- KPI 1: Operaciones --}}
-        <div class="relative group">
+        <x-kpi-link :href="route('ventas.index', ['desde' => $desde, 'hasta' => $hasta])" can="ventas.ver" class="relative group">
             <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
             <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5 relative">
                 <div class="flex items-center justify-between">
@@ -80,10 +80,10 @@
                     <div class="text-[0.5rem] mt-1 font-bold text-muted-foreground uppercase tracking-[0.2em]">Cierres verificados</div>
                 </div>
             </div>
-        </div>
+        </x-kpi-link>
 
         {{-- KPI 2: Facturación --}}
-        <div class="relative group">
+        <x-kpi-link :href="route('ventas.index', ['desde' => $desde, 'hasta' => $hasta])" can="ventas.ver" class="relative group">
             <div class="absolute -inset-0.5 bg-gradient-to-r from-accent to-primary rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
             <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5 relative">
                 <div class="flex items-center justify-between">
@@ -99,7 +99,7 @@
                     <div class="text-[0.5rem] mt-1 font-bold text-muted-foreground uppercase tracking-[0.2em]">Acumulado USD</div>
                 </div>
             </div>
-        </div>
+        </x-kpi-link>
 
         {{-- KPI 3: Margen --}}
         <div class="relative group">
@@ -119,7 +119,7 @@
         </div>
 
         {{-- KPI 4: Mora --}}
-        <div class="relative group">
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="relative group">
             <div class="stat-card !h-32 !bg-surface2/40 !backdrop-blur-md !border-white/5 flex flex-col justify-between p-5 relative overflow-hidden group">
                 <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-red-500 to-transparent opacity-50"></div>
                 <div class="flex items-center justify-between">
@@ -135,7 +135,7 @@
                     <div class="text-[0.5rem] mt-1 font-bold text-muted-foreground uppercase tracking-[0.2em]">{{ $cuotasMora->count() }} Casos críticos</div>
                 </div>
             </div>
-        </div>
+        </x-kpi-link>
     </div>
 
     {{-- ── Visualización de Datos (Gráficos y Top) ── --}}

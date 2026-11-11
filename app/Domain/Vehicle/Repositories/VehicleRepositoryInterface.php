@@ -17,7 +17,8 @@ interface VehicleRepositoryInterface
     
     public function delete(int $id, int $userId = null): bool;
     
-    public function searchPaginated(?string $searchQuery, int $limit = 15): LengthAwarePaginator;
+    /** $estado: un estado concreto, o 'STOCK' para todo lo que no está vendido ni dado de baja. */
+    public function searchPaginated(?string $searchQuery, int $limit = 15, ?string $estado = null): LengthAwarePaginator;
     
     public function getAvailableForSale();
 }

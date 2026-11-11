@@ -127,7 +127,7 @@
 <div class="grid grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
 
     {{-- Ingresos del mes --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('ventas.index', ['desde' => now()->startOfMonth()->toDateString(), 'hasta' => now()->toDateString()])" can="ventas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(0,212,170,.12);">
                 <svg class="w-5 h-5" style="color:var(--accent)" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -143,10 +143,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Ingresos del mes</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">${{ number_format($ingresosUsdMes, 0, ',', '.') }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $ventasMes }} venta{{ $ventasMes != 1 ? 's' : '' }} completadas</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Margen bruto --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('reportes.index', ['desde' => now()->startOfMonth()->toDateString(), 'hasta' => now()->toDateString()])" can="ventas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(108,99,255,.12);">
                 <svg class="w-5 h-5" style="color:var(--primary)" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -160,10 +160,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Margen bruto del mes</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">${{ number_format($margenUsdMes, 0, ',', '.') }}</div>
         <div class="text-xs" style="color:var(--text-muted)">sobre ${{ number_format($ingresosUsdMes, 0, ',', '.') }} ingresos</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Ventas del mes --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('ventas.index', ['desde' => now()->startOfMonth()->toDateString(), 'hasta' => now()->toDateString()])" can="ventas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(59,130,246,.12);">
                 <svg class="w-5 h-5" style="color:#3b82f6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -179,10 +179,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Operaciones del mes</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $ventasMes }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $ventasMesAnterior }} el mes anterior</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Vehículos en stock --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('vehicles.index', ['estado' => 'STOCK'])" can="vehiculos.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(139,83,255,.12);">
                 <svg class="w-5 h-5" style="color:#8b53ff" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -196,10 +196,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Vehículos en stock</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $enStock }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $enPreparacion }} en preparación</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Cuotas en mora --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(239,68,68,.12);">
                 <svg class="w-5 h-5" style="color:#ef4444" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -215,10 +215,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Cuotas en mora</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5 {{ $cuotasEnMora > 0 ? 'text-red-500' : '' }}" style="{{ $cuotasEnMora == 0 ? 'color:var(--text)' : '' }}">{{ $cuotasEnMora }}</div>
         <div class="text-xs" style="color:var(--text-muted)">${{ number_format($montoMoraUsd, 0, ',', '.') }} USD pendiente</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Cobros próximos 7d --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('notificaciones.index', ['tab' => 'proximas'])" can="cuotas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(245,158,11,.12);">
                 <svg class="w-5 h-5" style="color:#f59e0b" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -230,7 +230,7 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Cobros próximos</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">${{ number_format($cobrosProximos7dTotal, 0, ',', '.') }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $cuotasProximas->count() }} cuota{{ $cuotasProximas->count() != 1 ? 's' : '' }} por vencer</div>
-    </div>
+    </x-kpi-link>
 
 </div>
 
