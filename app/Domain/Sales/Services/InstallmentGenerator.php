@@ -30,11 +30,7 @@ final class InstallmentGenerator
         int             $refuerzoCada = 0,
         ?Money          $refuerzoMonto = null,
     ): array {
-        if ($numeroCuotas <= 0 || $numeroCuotas > 60) {
-            throw new InvalidInstallmentPlanException(
-                "Número de cuotas inválido: {$numeroCuotas}. Rango permitido: 1-60."
-            );
-        }
+        $this->assertNumeroCuotas($numeroCuotas);
 
         $cuotas = match ($tipo) {
             InstallmentPlan::FRANCESA => $this->generarFrancesa($capital, $numeroCuotas, $tasaMensual, $refuerzoCada, $refuerzoMonto),
@@ -244,6 +240,8 @@ final class InstallmentGenerator
         int             $refuerzoCada = 0,
         float           $refuerzoMonto = 0.0,
     ): array {
+        $this->assertNumeroCuotas($numeroCuotas);
+
         $moneda  = \App\Domain\Shared\ValueObjects\Currency::from($monedaCode);
         $capital = new Money($capitalMonto, $moneda);
         $moneyRefuerzo = new Money($refuerzoMonto, $moneda);
@@ -282,5 +280,14 @@ final class InstallmentGenerator
                 'moneda'         => $monedaCode,
             ],
         ];
+    }
+
+    private function assertNumeroCuotas(int $numeroCuotas): void
+    {
+        if ($numeroCuotas <= 0 || $numeroCuotas > 60) {
+            throw new InvalidInstallmentPlanException(
+                "Número de cuotas inválido: {$numeroCuotas}. Rango permitido: 1-60."
+            );
+        }
     }
 }
