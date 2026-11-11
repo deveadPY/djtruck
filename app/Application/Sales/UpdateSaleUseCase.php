@@ -217,10 +217,7 @@ class UpdateSaleUseCase
 
                 // Toma nueva cargada en la edición: alta del vehículo recibido en el stock
                 if (($pago['tipo'] ?? null) === 'VEHICULO_CANJE' && empty($pago['vehiculo_canje_id']) && !empty($pago['canje'])) {
-                    $pago['vehiculo_canje_id'] = $this->tradeInRegistrar->register((int) $ventaId, $pago['canje'] + [
-                        'valor_toma'  => $montoUsd,
-                        'moneda_toma' => 'USD',
-                    ])->id;
+                    $pago['vehiculo_canje_id'] = $this->tradeInRegistrar->registerFromPayment((int) $ventaId, (array) $pago['canje'], $montoUsd)->id;
                 }
 
                 DB::table('detalles_pago')->insert([

@@ -100,3 +100,27 @@ test('la pantalla de venta muestra los campos del vehículo recibido', function 
         ->assertSee('pagos[0][canje][numero_chasis]', false)
         ->assertSee('pagos[${idx}][canje][marca]', false);
 });
+
+test('el valor de toma no se puede alterar desde el formulario', function () {
+    $this->post(route('ventas.store'), ventaConToma($this->clienteId, $this->vehiculoId, [
+        'marca' => 'Volvo', 'modelo' => 'FH', 'anio' => 2018, 'numero_chasis' => 'TOMA-003',
+        'valor_toma' => 1, 'estado' => 'DISPONIBLE',
+    ]))->assertSessionHasNoErrors();
+
+    $toma = DB::table('vehiculos')->where('numero_chasis', 'TOMA-003')->first();
+    expect((float) $toma->valor_toma_usd)->toBe(80000.0)
+        ->and($toma->estado)->toBe('EN_PREPARACION');
+});
+
+test('no se anula una venta si el vehículo recibido ya se vendió en otra', function () {
+    $this->post(route('ventas.store'), ventaConToma($this->clienteId, $this->vehiculoId, [
+        'marca' => 'Volvo', 'modelo' => 'FH', 'anio' => 2018, 'numero_chasis' => 'TOMA-004',
+    ]))->assertSessionHasNoErrors();
+    $ventaId = DB::table('ventas')->latest('id')->value('id');
+    DB::table('vehiculos')->where('numero_chasis', 'TOMA-004')->update(['estado' => 'VENDIDO']);
+
+    $this->delete(route('ventas.destroy', $ventaId), ['motivo' => 'x'])->assertSessionHasErrors('error');
+
+    expect(DB::table('vehiculos')->where('numero_chasis', 'TOMA-004')->value('deleted_at'))->toBeNull()
+        ->and(DB::table('ventas')->where('id', $ventaId)->value('estado'))->not->toBe('CANCELADO');
+});

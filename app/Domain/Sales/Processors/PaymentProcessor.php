@@ -68,10 +68,7 @@ class PaymentProcessor
             return $pago;
         }
 
-        $vehiculo = $this->tradeInRegistrar->register($venta->id, $pago['canje'] + [
-            'valor_toma'  => $montoUsd,
-            'moneda_toma' => 'USD',
-        ]);
+        $vehiculo = $this->tradeInRegistrar->registerFromPayment($venta->id, (array) $pago['canje'], $montoUsd);
         $pago['vehiculo_canje_id'] = $vehiculo->id;
 
         return $pago;
