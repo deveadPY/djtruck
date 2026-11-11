@@ -94,21 +94,7 @@ class VentaWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        $clientes = DB::table('clientes')
-            ->where('activo', true)
-            ->whereNull('deleted_at')
-            ->get()
-            ->map(function ($cliente) {
-                $saldoDeudor = DB::table('cuotas')
-                    ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
-                    ->where('planes_cuotas.cliente_id', $cliente->id)
-                    ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
-                    ->whereNull('cuotas.deleted_at')
-                    ->sum(DB::raw('cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado'));
-
-                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) $saldoDeudor);
-                return $cliente;
-            });
+        $clientes = $this->clientesConCreditoDisponible();
 
         $cajas = DB::table('cajas')->where('activo', true)->get();
 
@@ -130,9 +116,37 @@ class VentaWebController extends Controller
             return redirect()->route('ventas.show', $venta->id)
                 ->with('success', 'Venta y pagos registrados correctamente.')
                 ->with('show_print_modal', true);
-        } catch (\Exception $e) {
-            return back()->withInput()->withErrors(['error' => 'Error al registrar la venta: ' . $e->getMessage()]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('ventas.store', ['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'No se pudo registrar la venta por un error de datos. Revisá la información e intentá de nuevo.']);
+        } catch (\RuntimeException | \DomainException | \InvalidArgumentException $e) {
+            // Reglas de negocio (stock, crédito, venta duplicada…): el mensaje es para el usuario
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            Log::error('ventas.store', ['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Ocurrió un error inesperado al registrar la venta.']);
         }
+    }
+
+    /** Clientes activos con su crédito disponible (una sola consulta para el saldo deudor). */
+    private function clientesConCreditoDisponible()
+    {
+        $deuda = DB::table('cuotas')
+            ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
+            ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('cuotas.deleted_at')
+            ->groupBy('planes_cuotas.cliente_id')
+            ->pluck(DB::raw('SUM(cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado)'), 'planes_cuotas.cliente_id');
+
+        return DB::table('clientes')
+            ->where('activo', true)
+            ->whereNull('deleted_at')
+            ->orderBy('razon_social')
+            ->get()
+            ->map(function ($cliente) use ($deuda) {
+                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) ($deuda[$cliente->id] ?? 0));
+                return $cliente;
+            });
     }
 
     public function show($id, \App\Application\Installments\InstallmentApplicationService $installmentService)
@@ -149,6 +163,10 @@ class VentaWebController extends Controller
         $plan       = $this->saleService->getInstallmentPlan((int) $id);
         $cuotas     = $plan ? $installmentService->getByPlan((int) $plan->id) : collect();
         $documentos = $this->saleService->getDocuments((int) $id);
+        $vehiculosCanje = DB::table('vehiculos')
+            ->whereIn('id', $pagos->pluck('vehiculo_canje_id')->filter())
+            ->get(['id', 'marca', 'modelo', 'anio', 'numero_chasis', 'estado', 'deleted_at'])
+            ->keyBy('id');
 
         $rentabilidad = $this->saleService->calculateRentability($venta);
 
@@ -157,7 +175,7 @@ class VentaWebController extends Controller
             ? $this->saleService->getCancellationInfo((int) $id)
             : null;
 
-        return view('ventas.show', compact('venta', 'pagos', 'plan', 'cuotas', 'rentabilidad', 'documentos', 'items', 'cancelacion'));
+        return view('ventas.show', compact('venta', 'pagos', 'plan', 'cuotas', 'rentabilidad', 'documentos', 'items', 'cancelacion', 'vehiculosCanje'));
     }
 
     public function edit($id)
@@ -173,20 +191,7 @@ class VentaWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        $clientes = DB::table('clientes')
-            ->where('activo', true)
-            ->whereNull('deleted_at')
-            ->get()
-            ->map(function ($cliente) {
-                $saldoDeudor = DB::table('cuotas')
-                    ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
-                    ->where('planes_cuotas.cliente_id', $cliente->id)
-                    ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
-                    ->whereNull('cuotas.deleted_at')
-                    ->sum(DB::raw('cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado'));
-                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) $saldoDeudor);
-                return $cliente;
-            });
+        $clientes = $this->clientesConCreditoDisponible();
 
         $cajas = DB::table('cajas')->where('activo', true)->get();
 

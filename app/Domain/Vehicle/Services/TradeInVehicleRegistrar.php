@@ -38,6 +38,7 @@ class TradeInVehicleRegistrar
     {
         return $this->register($ventaOrigenId, [
             ...Arr::only($canje, self::CAMPOS_VEHICULO),
+            'numero_chasis' => strtoupper(trim((string) ($canje['numero_chasis'] ?? ''))),
             'valor_toma'  => $montoUsd,
             'moneda_toma' => 'USD',
         ]);

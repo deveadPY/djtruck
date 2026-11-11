@@ -14,6 +14,19 @@ class StoreSaleRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $pagos = $this->input('pagos');
+        if (is_array($pagos)) {
+            foreach ($pagos as $i => $pago) {
+                if (isset($pago['canje']['numero_chasis']) && is_string($pago['canje']['numero_chasis'])) {
+                    $pagos[$i]['canje']['numero_chasis'] = strtoupper(trim($pago['canje']['numero_chasis']));
+                }
+            }
+            $this->merge(['pagos' => $pagos]);
+        }
+    }
+
     public function rules(): array
     {
         return [

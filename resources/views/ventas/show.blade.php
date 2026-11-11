@@ -325,7 +325,19 @@
                                 </td>
                                 <td><span class="text-xs font-black text-accent">${{ number_format($p->monto_usd, 2, ',', '.') }}</span></td>
                                 <td><span class="text-[0.7rem] font-bold text-muted-foreground">{{ \Carbon\Carbon::parse($p->fecha_pago)->format('d/m/Y') }}</span></td>
-                                <td class="!pr-6"><span class="text-[0.7rem] text-muted-foreground opacity-60 italic">{{ $p->referencia_bancaria ?: $p->observaciones ?: 'Sin referencias' }}</span></td>
+                                <td class="!pr-6">
+                                    @if($p->vehiculo_canje_id && ($vc = $vehiculosCanje[$p->vehiculo_canje_id] ?? null))
+                                        @if($vc->deleted_at)
+                                            <span class="text-[0.7rem] text-muted-foreground">Recibido: {{ $vc->marca }} {{ $vc->modelo }} {{ $vc->anio }} ({{ $vc->numero_chasis }}) — dado de baja</span>
+                                        @else
+                                            <a href="{{ route('vehicles.show', $vc->id) }}" class="text-[0.7rem] text-accent hover:underline">
+                                                Recibido: {{ $vc->marca }} {{ $vc->modelo }} {{ $vc->anio }} ({{ $vc->numero_chasis }}) · {{ ucfirst(strtolower(str_replace('_', ' ', $vc->estado))) }}
+                                            </a>
+                                        @endif
+                                    @else
+                                        <span class="text-[0.7rem] text-muted-foreground opacity-60 italic">{{ $p->referencia_bancaria ?: $p->observaciones ?: 'Sin referencias' }}</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

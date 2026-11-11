@@ -46,7 +46,7 @@ test('el vehículo recibido como parte de pago entra al stock en preparación', 
     $stockAntes = DB::table('vehiculos')->whereNotIn('estado', ['VENDIDO', 'BAJA'])->whereNull('deleted_at')->count();
 
     $this->post(route('ventas.store'), ventaConToma($this->clienteId, $this->vehiculoId, [
-        'marca' => 'Volvo', 'modelo' => 'FH', 'anio' => 2018, 'numero_chasis' => 'TOMA-001', 'kilometraje' => 450000,
+        'marca' => 'Volvo', 'modelo' => 'FH', 'anio' => 2018, 'numero_chasis' => ' toma-001 ', 'kilometraje' => 450000,
     ]))->assertSessionHasNoErrors()->assertRedirect();
 
     $toma = DB::table('vehiculos')->where('numero_chasis', 'TOMA-001')->first();
@@ -123,4 +123,14 @@ test('no se anula una venta si el vehículo recibido ya se vendió en otra', fun
 
     expect(DB::table('vehiculos')->where('numero_chasis', 'TOMA-004')->value('deleted_at'))->toBeNull()
         ->and(DB::table('ventas')->where('id', $ventaId)->value('estado'))->not->toBe('CANCELADO');
+});
+
+test('si la venta falla la validación se puede reconstruir lo cargado', function () {
+    $datos = ventaConToma($this->clienteId, $this->vehiculoId, []);
+    $this->from(route('ventas.create'))->post(route('ventas.store'), $datos)->assertRedirect(route('ventas.create'));
+
+    $this->get(route('ventas.create'))
+        ->assertOk()
+        ->assertSee('restaurarVentaAnterior({', false)
+        ->assertSee('"itemable_id":' . $this->vehiculoId, false);
 });

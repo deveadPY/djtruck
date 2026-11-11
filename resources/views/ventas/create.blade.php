@@ -477,14 +477,20 @@
                         </div>
                     </div>
 
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                    <button type="button" id="btnCobrarSaldo" class="btn btn-primary !py-1.5 !px-3 text-xs" onclick="cobrarSaldo()"
+                        title="Completa el monto del pago con el saldo pendiente">
+                        Cobrar saldo completo
+                    </button>
                     <button type="button"
-                        class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-4 flex items-center gap-1"
+                        class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors flex items-center gap-1"
                         onclick="agregarPago()">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                         Agregar otro pago / entrega
                     </button>
+                    </div>
 
                     <div
                         class="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl p-5 flex justify-between items-center mb-5 shadow-sm">
@@ -1194,7 +1200,7 @@
                     div.className = 'flex flex-col border-b border-slate-100 dark:border-slate-700/50 pb-2 last:border-0';
                     div.innerHTML = `
                         <div class="flex justify-between items-start">
-                            <span class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${item.descripcion}</span>
+                            <span class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${escHtml(item.descripcion)}</span>
                             <span class="text-xs font-mono text-slate-500">$ ${formatNumber(item.precio_unitario_usd * item.cantidad)}</span>
                         </div>
                         <div class="flex justify-between items-center mt-0.5">
@@ -1454,11 +1460,11 @@
                     row.className = 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors';
                     row.innerHTML = `
                         <td class="px-4 py-3 rounded-l-xl border-y border-l border-slate-100 dark:border-slate-700">
-                            <div class="font-bold text-slate-700 dark:text-slate-200">${item.descripcion}</div>
+                            <div class="font-bold text-slate-700 dark:text-slate-200">${escHtml(item.descripcion)}</div>
                             <div class="text-[0.6rem] text-slate-400 uppercase tracking-widest">${item.type === 'camion' ? 'CAMIÓN' : 'REPUESTO'}</div>
                             <input type="hidden" name="items[${index}][itemable_id]" value="${item.id}">
                             <input type="hidden" name="items[${index}][itemable_type]" value="${item.type === 'camion' ? 'App\\Models\\Vehicle' : 'App\\Models\\StockRepuesto'}">
-                            <input type="hidden" name="items[${index}][descripcion]" value="${item.descripcion}">
+                            <input type="hidden" name="items[${index}][descripcion]" value="${escHtml(item.descripcion)}">
                             <input type="hidden" name="items[${index}][precio_unitario_usd]" value="${item.precio_unitario_usd}">
                             <input type="hidden" name="items[${index}][costo_snapshot_usd]" value="${item.costo_usd}">
                         </td>
@@ -1658,6 +1664,17 @@
                 }
 
                 // ── Render checklist ──
+                // Vehículos recibidos como parte de pago
+                document.querySelectorAll('select[name$="[tipo]"]').forEach(sel => {
+                    if (sel.value !== 'VEHICULO_CANJE') return;
+                    const idx = sel.name.match(/pagos\[(\d+)\]/)?.[1];
+                    const v = n => (document.querySelector(`[name="pagos[${idx}][canje][${n}]"]`)?.value || '').trim();
+                    const ok = v('marca') && v('modelo') && v('anio') && v('numero_chasis');
+                    checks.push({ ok: !!ok, label: 'Vehículo recibido (entra en preparación)',
+                        detail: ok ? `${v('marca')} ${v('modelo')} ${v('anio')} — chasis ${v('numero_chasis').toUpperCase()}` : 'Faltan datos del vehículo recibido' });
+                    if (!ok) errors.push('Completá marca, modelo, año y chasis del vehículo recibido como parte de pago.');
+                });
+
                 checks.forEach(c => {
                     const icon = c.ok
                         ? '<svg class="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>'
@@ -1667,7 +1684,7 @@
                             ${icon}
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-bold uppercase tracking-wider ${c.ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}">${c.label}</div>
-                                <div class="text-sm text-slate-700 dark:text-slate-300 mt-0.5 truncate" title="${c.detail}">${c.detail}</div>
+                                <div class="text-sm text-slate-700 dark:text-slate-300 mt-0.5 truncate" title="${escHtml(c.detail)}">${escHtml(c.detail)}</div>
                             </div>
                         </div>`;
                 });
@@ -1711,10 +1728,69 @@
                 if (e.target === this) cerrarModalConfirmacion();
             });
 
+            // Completa el primer pago vacío (o el último) con el saldo pendiente de la venta al contado
+            function cobrarSaldo() {
+                if (document.getElementById('modalidad_pago').value !== 'CONTADO') {
+                    alert('En ventas a cuotas, cargá la entrega inicial a mano.'); return;
+                }
+                const precioFinal = Math.max(0, (parseFloat(document.getElementById('precio_usd').value) || 0)
+                    - (parseFloat(document.getElementById('descuento_usd').value) || 0));
+                const inputs = Array.from(document.querySelectorAll('.pago-monto'));
+                if (!inputs.length) return;
+                const destino = inputs.find(i => !(parseFloat(i.value) > 0)) || inputs[inputs.length - 1];
+                const otros = inputs.filter(i => i !== destino).reduce((t, i) => t + (parseFloat(i.value) || 0), 0);
+                destino.value = Math.max(0, precioFinal - otros).toFixed(2);
+                calcularTotalPagos();
+                destino.focus();
+            }
+
+            function escHtml(v) {
+                return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            }
+
+            // Si la validación falló, reconstruye carrito, cliente y pagos para no volver a cargar todo
+            function restaurarVentaAnterior(old) {
+                if (!old || !Array.isArray(old.items) || !old.items.length) return;
+                old.items.forEach(it => {
+                    const esCamion = (it.itemable_type || '').includes('Vehicle');
+                    const card = document.querySelector(`${esCamion ? '.vehicle-card' : '.repuesto-card'}[data-id="${it.itemable_id}"]`);
+                    if (!card) return;
+                    addItemToVenta(esCamion ? 'camion' : 'repuesto', card);
+                    const item = itemsVenta.find(i => String(i.id) === String(it.itemable_id) && i.type === (esCamion ? 'camion' : 'repuesto'));
+                    if (item) {
+                        item.cantidad = parseFloat(it.cantidad) || 1;
+                        item.precio_unitario_usd = parseFloat(it.precio_unitario_usd) || item.precio_unitario_usd;
+                    }
+                });
+                renderCart();
+
+                const cliente = old.cliente_id && document.querySelector(`.client-card[data-id="${old.cliente_id}"]`);
+                if (cliente) seleccionarCliente(cliente);
+
+                if (old.modalidad_pago) setPaymentMode(old.modalidad_pago);
+                ['precio_venta_moneda', 'precio_venta_usd', 'descuento_moneda', 'descuento_usd'].forEach(n => {
+                    const el = document.querySelector(`[name="${n}"]`);
+                    if (el && old[n] !== undefined && old[n] !== null) el.value = old[n];
+                });
+
+                const pagos = Object.values(old.pagos || {});
+                pagos.forEach((p, i) => {
+                    if (i > 0) agregarPago();
+                    const idx = i === 0 ? 0 : pagoCount - 1;
+                    const set = (n, v) => { const el = document.querySelector(`[name="pagos[${idx}]${n}"]`); if (el && v != null) el.value = v; };
+                    set('[tipo]', p.tipo); set('[monto_usd]', p.monto_usd); set('[referencia]', p.referencia);
+                    Object.entries(p.canje || {}).forEach(([k, v]) => set(`[canje][${k}]`, v));
+                    toggleCamposPago(idx, p.tipo);
+                });
+                calcularTotalPagos();
+                goToStep(cliente ? 3 : 2);
+            }
+
             // Init
             fetchRates();
             document.querySelector('input[name="fecha_venta"]').addEventListener('change', fetchRates);
             onTipoPlanChange();
+            restaurarVentaAnterior(@json(session()->getOldInput() ?: null));
         </script>
     @endpush
 @endsection
