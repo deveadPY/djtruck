@@ -104,13 +104,16 @@ final class FinanceWebController extends Controller
         $v = $request->validate([
             'tipo'     => 'required|in:INGRESO,EGRESO',
             'concepto' => 'required|string|max:300',
-            'moneda'   => 'required|in:USD,PYG,BRL',
             'monto'    => 'required|numeric|min:0.01',
         ]);
 
-        $caja     = DB::table('cajas')->where('codigo', strtoupper($codigo))->firstOrFail();
-        $moneda   = Currency::from($v['moneda']);
-        $montoUsd = $moneda === Currency::USD
+        $caja = DB::table('cajas')->where('codigo', strtoupper($codigo))->firstOrFail();
+
+        // El movimiento se registra en la moneda principal de la caja
+        // (Caja Chica → PYG, Caja Capital → USD). No se acepta otra moneda.
+        $monedaStr = strtoupper($caja->moneda_principal);
+        $moneda    = Currency::from($monedaStr);
+        $montoUsd  = $moneda === Currency::USD
             ? (float) $v['monto']
             : $this->currency->toBaseCurrency((float) $v['monto'], $moneda)->amount;
 
@@ -118,7 +121,7 @@ final class FinanceWebController extends Controller
             'caja_id'    => $caja->id,
             'tipo'       => $v['tipo'],
             'concepto'   => $v['concepto'],
-            'moneda'     => $v['moneda'],
+            'moneda'     => $monedaStr,
             'monto'      => $v['monto'],
             'monto_usd'  => round($montoUsd, 4),
             'ref_type'   => 'manual',
@@ -169,38 +172,30 @@ final class FinanceWebController extends Controller
         $v = $request->validate([
             'origen'   => 'required|in:CAJA_CHICA,CAJA_CAPITAL',
             'destino'  => 'required|in:CAJA_CHICA,CAJA_CAPITAL|different:origen',
-            'moneda'   => 'required|in:USD,PYG,BRL',
             'monto'    => 'required|numeric|min:0.01',
             'concepto' => 'nullable|string|max:255',
         ]);
 
-        $moneda   = Currency::from($v['moneda']);
-        $montoUsd = $moneda === Currency::USD
-            ? (float) $v['monto']
-            : $this->currency->toBaseCurrency((float) $v['monto'], $moneda)->amount;
+        try {
+            // El monto se ingresa en la moneda de la caja ORIGEN; el servicio
+            // convierte a la moneda de la caja DESTINO y registra ambos lados.
+            $r = $this->cajas->transferir(
+                $v['origen'],
+                $v['destino'],
+                (float) $v['monto'],
+                $v['concepto'] ?? null,
+            );
 
-        $concepto = $v['concepto'] ?? "Transferencia de {$v['origen']} a {$v['destino']}";
+            $msg = sprintf(
+                'Transferencia realizada: %s %s → %s %s.',
+                number_format($r['monto_origen'], 2, ',', '.'), $r['moneda_origen'],
+                number_format($r['monto_destino'], 2, ',', '.'), $r['moneda_destino'],
+            );
 
-        DB::transaction(function () use ($v, $montoUsd, $concepto) {
-            $origenId  = $this->cajas->cajaId($v['origen']);
-            $destinoId = $this->cajas->cajaId($v['destino']);
-            $base = [
-                'concepto'   => $concepto,
-                'moneda'     => $v['moneda'],
-                'monto'      => $v['monto'],
-                'monto_usd'  => round($montoUsd, 4),
-                'ref_type'   => 'transferencia',
-                'created_at' => now(),
-                'updated_at' => now(),
-                'created_by' => Auth::id(),
-            ];
-            DB::table('movimientos_caja')->insert([
-                array_merge($base, ['caja_id' => $origenId,  'tipo' => 'EGRESO']),
-                array_merge($base, ['caja_id' => $destinoId, 'tipo' => 'INGRESO']),
-            ]);
-        });
-
-        return redirect()->route('finance.index')->with('success', 'Transferencia realizada correctamente.');
+            return redirect()->route('finance.index')->with('success', $msg);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     // ── Reporte PDF de caja ──────────────────────────────────────────────────

@@ -130,12 +130,8 @@
                             <div class="space-y-4">
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="form-group">
-                                        <label class="form-label">Moneda *</label>
-                                        <select name="moneda" class="form-input" required>
-                                            @foreach(['USD','PYG','BRL'] as $m)
-                                                <option value="{{ $m }}" {{ $m === $caja->moneda_principal ? 'selected' : '' }}>{{ $m }}</option>
-                                            @endforeach
-                                        </select>
+                                        <label class="form-label">Moneda</label>
+                                        <div class="form-input" style="display:flex;align-items:center;opacity:.7;cursor:not-allowed;">{{ $caja->moneda_principal }}</div>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Monto *</label>
@@ -168,20 +164,26 @@
     </div>
 
     {{-- ── Stats ──────────────────────────────────────────────────────────── --}}
+    @php
+        $esPyg       = strtoupper($caja->moneda_principal) === 'PYG';
+        $saldoNativo = $esPyg ? ($saldo['saldo_pyg'] ?? 0) : $saldo['saldo_usd'];
+    @endphp
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-        <div class="stat-card {{ $saldo['saldo_usd'] < 0 ? 'danger' : '' }}">
-            <div class="stat-label">Saldo actual (USD)</div>
-            <div class="stat-value {{ $saldo['saldo_usd'] >= 0 ? 'text-green-500' : 'text-red-500' }}">
-                $ {{ number_format($saldo['saldo_usd'], 2, ',', '.') }}
+        <div class="stat-card {{ $saldoNativo < 0 ? 'danger' : '' }}">
+            <div class="stat-label">Saldo actual ({{ strtoupper($caja->moneda_principal) }})</div>
+            <div class="stat-value {{ $saldoNativo >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                {{ $esPyg
+                    ? 'Gs ' . number_format($saldo['saldo_pyg'] ?? 0, 0, ',', '.')
+                    : '$ ' . number_format($saldo['saldo_usd'], 2, ',', '.') }}
             </div>
-            <div class="text-xs mt-1" style="color:var(--text-muted)">Equivalente USD</div>
+            <div class="text-xs mt-1" style="color:var(--text-muted)">Moneda de la caja</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Saldo actual (PYG)</div>
+            <div class="stat-label">Equivalente USD</div>
             <div class="stat-value text-blue-500">
-                Gs {{ number_format($saldo['saldo_pyg'] ?? 0, 0, ',', '.') }}
+                $ {{ number_format($saldo['saldo_usd'], 2, ',', '.') }}
             </div>
-            <div class="text-xs mt-1" style="color:var(--text-muted)">Solo movimientos en PYG</div>
+            <div class="text-xs mt-1" style="color:var(--text-muted)">Valor económico</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total ingresos (período)</div>

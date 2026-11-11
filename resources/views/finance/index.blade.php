@@ -162,10 +162,11 @@
             <div class="p-5">
                 <div class="mb-4">
                     <div class="text-xs mb-1" style="color:var(--text-muted)">Saldo actual</div>
-                    <div class="saldo-usd {{ $chica->saldo_usd >= 0 ? 'saldo-positivo' : 'saldo-negativo' }}">
-                        $ {{ number_format($chica->saldo_usd, 2, ',', '.') }}
-                        <span style="font-size:.9rem;font-weight:500">USD</span>
+                    <div class="saldo-usd {{ ($chica->saldo_pyg ?? 0) >= 0 ? 'saldo-positivo' : 'saldo-negativo' }}">
+                        Gs {{ number_format($chica->saldo_pyg ?? 0, 0, ',', '.') }}
+                        <span style="font-size:.9rem;font-weight:500">PYG</span>
                     </div>
+                    <div class="text-xs mt-1" style="color:var(--text-muted)">Equivale a $ {{ number_format($chica->saldo_usd, 2, ',', '.') }} USD</div>
                 </div>
                 <div class="kpi-row rounded-xl overflow-hidden mb-4">
                     <div class="kpi-cell">
@@ -300,12 +301,8 @@
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div class="form-group">
-                                <label class="form-label">Moneda *</label>
-                                <select name="moneda" class="form-input" required>
-                                    <template x-for="m in ['USD','PYG','BRL']" :key="m">
-                                        <option :value="m" :selected="m === monedaPrincipal" x-text="m"></option>
-                                    </template>
-                                </select>
+                                <label class="form-label">Moneda</label>
+                                <div class="form-input" style="display:flex;align-items:center;opacity:.7;cursor:not-allowed;" x-text="monedaPrincipal"></div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Monto *</label>
@@ -347,33 +344,31 @@
                 <div class="form-group">
                     <label class="form-label">Origen *</label>
                     <select name="origen" class="form-input" required>
-                        <option value="CAJA_CHICA">Caja Chica</option>
-                        <option value="CAJA_CAPITAL">Caja Capital</option>
+                        <option value="CAJA_CAPITAL">Caja Capital (USD)</option>
+                        <option value="CAJA_CHICA">Caja Chica (PYG)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Destino *</label>
                     <select name="destino" class="form-input" required>
-                        <option value="CAJA_CAPITAL">Caja Capital</option>
-                        <option value="CAJA_CHICA">Caja Chica</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Moneda *</label>
-                    <select name="moneda" class="form-input" required>
-                        @foreach(['USD','PYG','BRL'] as $m)
-                            <option value="{{ $m }}">{{ $m }}</option>
-                        @endforeach
+                        <option value="CAJA_CHICA">Caja Chica (PYG)</option>
+                        <option value="CAJA_CAPITAL">Caja Capital (USD)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Monto *</label>
                     <input type="number" name="monto" class="form-input" step="0.01" min="0.01" required>
                 </div>
-                <div class="form-group" style="grid-column:1/-1">
+                <div class="form-group">
                     <label class="form-label">Concepto (opcional)</label>
                     <input type="text" name="concepto" class="form-input" maxlength="255"
                         placeholder="Ej: Reposición de caja chica">
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                    <p style="font-size:.75rem;color:var(--text-muted);margin:0;line-height:1.5">
+                        El monto se ingresa en la moneda de la caja de <strong>origen</strong>.
+                        La conversión a la moneda de destino se calcula automáticamente con la cotización del día.
+                    </p>
                 </div>
             </div>
             <div class="flex gap-2 justify-end mt-4">
