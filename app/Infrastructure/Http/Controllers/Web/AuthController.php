@@ -23,7 +23,8 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Usuarios desactivados no pueden iniciar sesión (mismo mensaje genérico para no revelar el estado).
+        if (Auth::attempt([...$credentials, 'activo' => true], $request->boolean('remember'))) {
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard'));
         }
