@@ -46,6 +46,14 @@ class VehicleWebController extends Controller
             ->orderByDesc('g.fecha_gasto')
             ->orderByDesc('g.id')
             ->select('g.*', 'u.name as registrado_por')
+            ->selectSub(
+                DB::table('documentos')->select('id')
+                    ->where('documentable_type', 'gastos_vehiculo')
+                    ->whereColumn('documentable_id', 'g.id')
+                    ->whereNull('deleted_at')
+                    ->latest('id')->limit(1),
+                'comprobante_id'
+            )
             ->get();
         $proveedor = $vehiculo->proveedor_id ? DB::table('proveedores')->where('id', $vehiculo->proveedor_id)->first() : null;
         $imagenes = DB::table('vehiculo_imagenes')->where('vehiculo_id', $id)->whereNull('deleted_at')->orderBy('orden')->get();

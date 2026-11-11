@@ -109,6 +109,7 @@ class DocumentoWebController extends Controller
             'facturas_proveedores' => 'repuestos.ver',
             'compras'              => 'repuestos.ver',
             'ventas'               => 'ventas.ver',
+            'gastos_vehiculo'      => 'vehiculos.ver',
         ];
 
         $permission = $permissionMap[$type] ?? null;

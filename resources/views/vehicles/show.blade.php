@@ -104,6 +104,12 @@
                                     <div class="font-medium">{{ $g->concepto }}</div>
                                     @if($g->descripcion)<div class="text-xs" style="color: var(--text-muted);">{{ \Illuminate\Support\Str::limit($g->descripcion, 60) }}</div>@endif
                                     @if($g->numero_remision)<div class="text-xs" style="color: var(--text-muted);">Rem.: {{ $g->numero_remision }}</div>@endif
+                                    @if($g->comprobante_id)
+                                        <a href="{{ route('documentos.download', $g->comprobante_id) }}" class="inline-flex items-center gap-1 text-xs text-accent hover:underline mt-0.5">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" /></svg>
+                                            Ver comprobante
+                                        </a>
+                                    @endif
                                 </td>
                                 <td class="py-3">
                                     <span class="inline-flex px-2 py-0.5 rounded-full text-[0.65rem] font-semibold" style="background: var(--border); color: var(--text-muted);">{{ ucfirst(strtolower(str_replace('_', ' ', $g->categoria))) }}</span>
