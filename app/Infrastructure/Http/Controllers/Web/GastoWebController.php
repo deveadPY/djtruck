@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller;
 use App\Infrastructure\Http\Requests\StoreVehicleExpenseRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class GastoWebController extends Controller
 {
@@ -31,7 +32,7 @@ class GastoWebController extends Controller
             if ($archivo = $request->file('comprobante')) {
                 // Mismo almacenamiento que el módulo de documentos (tabla polimórfica `documentos`).
                 $dir = 'uploads/documentos/gastos_vehiculo/' . $gastoId;
-                $nombre = time() . '_' . uniqid() . '.' . $archivo->guessExtension();
+                $nombre = Str::random(40) . '.' . $archivo->guessExtension();
                 $nombreOriginal = $archivo->getClientOriginalName();
                 $mime = $archivo->getMimeType();
                 $tamano = $archivo->getSize();

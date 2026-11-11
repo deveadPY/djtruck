@@ -9,7 +9,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $permisos = ['vehiculos.ver', 'vehiculos.editar'];
+    $permisos = ['vehiculos.ver', 'vehiculos.editar', 'documentos.ver'];
     foreach ($permisos as $p) {
         Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
     }
@@ -59,7 +59,9 @@ test('registra gasto con comprobante y lo muestra en el detalle', function () {
 
     $this->get(route('vehicles.show', $this->vehiculoId))
         ->assertOk()
-        ->assertSee(route('documentos.download', $doc->id), false);
+        ->assertSee(route('documentos.download', [$doc->id, 'inline' => 1]), false);
+
+    $this->get(route('documentos.download', [$doc->id, 'inline' => 1]))->assertOk();
 });
 
 test('registra gasto sin comprobante', function () {

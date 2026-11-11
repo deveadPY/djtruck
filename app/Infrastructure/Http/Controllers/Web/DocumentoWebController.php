@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class DocumentoWebController extends Controller
 {
@@ -16,6 +17,8 @@ class DocumentoWebController extends Controller
         'proveedores',
         'compras',
     ];
+
+    private const INLINE_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
     public function upload(Request $request)
     {
@@ -43,7 +46,7 @@ class DocumentoWebController extends Controller
             $mimeType = $archivo->getClientMimeType();
             $tamano = $archivo->getSize();
 
-            $nombre = time() . '_' . uniqid() . '_' . $nombreOriginal;
+            $nombre = Str::random(40) . '.' . $archivo->guessExtension();
             $archivo->move(public_path($uploadDir), $nombre);
 
             DB::table('documentos')->insert([
@@ -75,6 +78,15 @@ class DocumentoWebController extends Controller
 
         if (!file_exists($path)) {
             abort(404, 'Archivo no encontrado en disco.');
+        }
+
+        // Vista en el navegador solo para tipos seguros, detectados del archivo real (no del cliente; evita SVG/HTML con scripts).
+        $mimeReal = mime_content_type($path) ?: '';
+        if (request()->boolean('inline') && in_array($mimeReal, self::INLINE_MIMES, true)) {
+            return response()->file($path, [
+                'Content-Type'           => $mimeReal,
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
         }
 
         return response()->download($path, $doc->nombre_original);

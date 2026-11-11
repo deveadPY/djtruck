@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Documentos privados (comprobantes, facturas): solo se descargan vía /documentos/{id}/download con permisos
+    RewriteRule ^uploads/documentos/ - [F,L]
+
     # ── Forzar HTTPS ──────────────────────────────────────────────────────
     # Descomentar las 2 líneas siguientes una vez que el SSL esté activo:
     # RewriteCond %{HTTPS} off
