@@ -90,3 +90,12 @@ test('usuario inactivo no puede iniciar sesión', function () {
     // Debe ser rechazado (ya sea por sesión o redirección)
     $this->assertGuest();
 });
+
+test('usuario desactivado con sesión abierta es expulsado', function () {
+    $user = User::factory()->create(['activo' => true]);
+    $this->actingAs($user);
+    $user->update(['activo' => false]);
+
+    $this->get('/dashboard')->assertRedirect(route('login'));
+    $this->assertGuest();
+});
