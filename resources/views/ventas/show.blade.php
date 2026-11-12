@@ -3,8 +3,6 @@
 @section('page-title', 'Detalle de Venta')
 
 @section('content')
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>@endif
 
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -356,13 +354,21 @@
     </div>
 
     @if(session('show_print_modal'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (confirm('¿Desea imprimir la Nota de Venta ahora?')) {
-                    window.open('{{ route('ventas.imprimir', $venta->id) }}', '_blank');
-                }
-            });
-        </script>
+        {{-- Aviso no bloqueante para imprimir la nota de venta --}}
+        <div id="printNotaToast" role="status"
+            class="fixed top-5 right-5 left-5 sm:left-auto z-50 sm:max-w-md flex flex-wrap items-center gap-3 bg-surface-2 border border-border border-l-4 rounded-xl shadow-2xl p-4"
+            style="border-left-color:var(--success)">
+            <div class="flex-1 min-w-0">
+                <strong class="block text-sm text-foreground">Venta registrada</strong>
+                <span class="text-xs text-muted-foreground">La nota de venta está lista para imprimir.</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('ventas.imprimir', $venta->id) }}" target="_blank" class="btn btn-primary text-xs"
+                    onclick="document.getElementById('printNotaToast').remove()">Imprimir nota</a>
+                <button type="button" class="btn btn-ghost text-xs" onclick="document.getElementById('printNotaToast').remove()">Descartar</button>
+            </div>
+        </div>
+        <script>setTimeout(() => document.getElementById('printNotaToast')?.remove(), 15000);</script>
     @endif
 {{-- ── Modal Cancelar Venta ── --}}
 <div id="modal-cancelar-venta" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">

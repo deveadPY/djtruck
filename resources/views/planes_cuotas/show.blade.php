@@ -3,12 +3,6 @@
 @section('page-title', 'Plan de Pagos')
 
 @section('content')
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>
-    @endif
-    @if(session('info'))
-        <div class="flash-success" style="background:rgba(59,130,246,.12);border-color:#3b82f6;color:#3b82f6">{{ session('info') }}</div>
-    @endif
 
     <div class="flex flex-wrap items-center gap-3 mb-6">
         <a href="{{ route('ventas.show', $venta->id) }}" class="btn btn-ghost">← Volver a la venta</a>
@@ -17,11 +11,15 @@
     </div>
 
     {{-- Resumen estadístico --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         @php
             $stats = [
                 'Cliente' => $cliente->razon_social ?? '—',
                 'Capital Financiado' => '$ ' . number_format($plan->capital_total_usd, 2, ',', '.') . ' USD',
+                'Saldo pendiente' => '$ ' . number_format($saldoPendiente, 2, ',', '.') . ' USD',
+                'Próximo vencimiento' => $proxima
+                    ? \Carbon\Carbon::parse($proxima->fecha_vencimiento)->format('d/m/Y') . ' · $ ' . number_format($proxima->saldo, 2, ',', '.')
+                    : '—',
                 'Cuotas Pagadas' => $pagado . ' de ' . $cuotas->count(),
                 'Vencidas' => $vencidas,
             ];
@@ -81,8 +79,10 @@
                         <th>Vencimiento</th>
                         <th>Capital</th>
                         <th>Interés</th>
+                        <th>Mora</th>
                         <th>Total</th>
                         <th>Pagado</th>
+                        <th>Saldo</th>
                         <th>Estado</th>
                         <th>Acción</th>
                     </tr>
@@ -94,18 +94,20 @@
                             <td>{{ \Carbon\Carbon::parse($c->fecha_vencimiento)->format('d/m/Y') }}</td>
                             <td>$ {{ number_format($c->capital, 2, ',', '.') }}</td>
                             <td>$ {{ number_format($c->interes, 2, ',', '.') }}</td>
-                            <td><strong>$ {{ number_format($c->capital + $c->interes, 2, ',', '.') }}</strong></td>
+                            <td @if($c->interes_mora > 0) style="color:var(--danger)" @endif>$ {{ number_format($c->interes_mora, 2, ',', '.') }}</td>
+                            <td><strong>$ {{ number_format($c->capital + $c->interes + $c->interes_mora, 2, ',', '.') }}</strong></td>
                             <td>$ {{ number_format($c->monto_pagado, 2, ',', '.') }}</td>
+                            <td><strong>$ {{ number_format($c->saldo, 2, ',', '.') }}</strong></td>
                             <td>
                                 @php $cs = match ($c->estado) { 'PAGADA' => 'badge-disponible', 'VENCIDA', 'EN_MORA' => 'badge-vendido', default => 'badge-preparacion'}; @endphp
                                 <span class="badge-status {{ $cs }}">{{ $c->estado }}</span>
                             </td>
                             <td>
-                                @if($c->estado === 'PENDIENTE' || $c->estado === 'VENCIDA' || $c->estado === 'EN_MORA')
+                                @if(in_array($c->estado, ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL']) && $c->saldo > 0)
                                     <button type="button" class="btn btn-ghost"
                                         style="padding:.25rem .5rem;font-size:.7rem;color:var(--success)"
-                                        onclick="openPayModal({{ $c->id }}, {{ $c->numero_cuota }}, {{ $c->total_cuotas }}, '{{ \Carbon\Carbon::parse($c->fecha_vencimiento)->format('d/m/Y') }}', {{ $c->capital }}, {{ $c->interes }}, {{ $c->capital + $c->interes }})">
-                                        ✓ Pagar
+                                        onclick="openPayModal({{ $c->id }}, {{ $c->numero_cuota }}, {{ $c->total_cuotas }}, '{{ \Carbon\Carbon::parse($c->fecha_vencimiento)->format('d/m/Y') }}', {{ (float) $c->capital }}, {{ (float) $c->interes }}, {{ (float) $c->interes_mora }}, {{ (float) $c->monto_pagado }}, {{ $c->saldo }})">
+                                        {{ $c->estado === 'PAGADA_PARCIAL' ? 'Cobrar saldo' : 'Pagar' }}
                                     </button>
                                 @elseif($c->estado === 'PAGADA')
                                     <div style="display:inline-flex;align-items:center;gap:.5rem">
@@ -165,10 +167,31 @@
                     <span>Interés:</span>
                     <span id="modalInteres"></span>
                 </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:.5rem">
+                    <span>Mora:</span>
+                    <span id="modalMora"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:.5rem">
+                    <span>Ya pagado:</span>
+                    <span id="modalPagado"></span>
+                </div>
                 <hr style="border-color:var(--border);margin:.5rem 0">
                 <div style="display:flex;justify-content:space-between;font-size:.95rem">
-                    <strong style="color:var(--text)">Total a pagar:</strong>
+                    <strong style="color:var(--text)">Saldo a cobrar:</strong>
                     <strong id="modalTotal" style="color:var(--success)"></strong>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3" style="margin-bottom:1rem">
+                <div>
+                    <label for="payFormMonto" class="form-label">Monto a cobrar (USD)</label>
+                    <input type="number" name="monto_pagado" id="payFormMonto" form="payForm" class="form-input w-full"
+                           step="0.01" min="0.01" max="" required>
+                </div>
+                <div>
+                    <label for="payFormFecha" class="form-label">Fecha de pago</label>
+                    <input type="date" name="fecha_pago" id="payFormFecha" form="payForm" class="form-input w-full"
+                           value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
                 </div>
             </div>
 
@@ -188,15 +211,13 @@
             </div>
 
             <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem">
-                Se registrará el pago con fecha de hoy ({{ date('d/m/Y') }}). Esta acción no se puede deshacer.
+                Si cobrás menos del saldo, la cuota queda como pago parcial. Esta acción no se puede deshacer.
             </p>
             <div style="display:flex;gap:.5rem;justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closePayModal()">Cancelar</button>
                 <form id="payForm" method="POST" action=""
-                    onsubmit="var b=this.querySelector('button[type=submit]');b.disabled=true;b.textContent='⏳ Procesando...';b.style.opacity='.6'">
+                    onsubmit="var b=this.querySelector('button[type=submit]');b.disabled=true;b.textContent='Procesando...';b.style.opacity='.6'">
                     @csrf
-                    <input type="hidden" name="fecha_pago" value="{{ date('Y-m-d') }}">
-                    <input type="hidden" name="monto_pagado" id="payFormMonto" value="">
                     <input type="hidden" name="aplicar_descuento_anticipo" id="discountApplied" value="0">
                     <input type="hidden" name="descuento_anticipo_pct" id="discountPctForm" value="">
                     <input type="hidden" name="descuento_proporcional" value="0">
@@ -237,7 +258,7 @@
             <div style="display:flex;gap:.5rem;justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closeLiquidateModal()">Cancelar</button>
                 <form id="liquidateForm" method="POST" action=""
-                    onsubmit="var b=this.querySelector('button[type=submit]');b.disabled=true;b.textContent='⏳ Procesando...';b.style.opacity='.6'">
+                    onsubmit="var b=this.querySelector('button[type=submit]');b.disabled=true;b.textContent='Procesando...';b.style.opacity='.6'">
                     @csrf
                     <input type="hidden" name="fecha_liquidacion" value="{{ date('Y-m-d') }}">
                     <input type="hidden" name="aplicar_descuento_liquidacion" id="liqDiscountApplied" value="0">
@@ -255,16 +276,22 @@
 
         let currentCapital = 0, currentMonto = 0;
 
-        function openPayModal(id, num, total, venc, capital, interes, monto) {
+        function openPayModal(id, num, total, venc, capital, interes, mora, pagado, saldo) {
             let url = "{{ route('cuotas.pagar', ':id') }}";
             url = url.replace(':id', id);
             document.getElementById('payForm').action = url;
-            document.getElementById('payFormMonto').value = monto;
+            const montoInput = document.getElementById('payFormMonto');
+            montoInput.value = saldo.toFixed(2);
+            montoInput.max = saldo.toFixed(2);
+            document.getElementById('payFormFecha').value = "{{ date('Y-m-d') }}";
             document.getElementById('modalCuotaNum').textContent = num + '/' + total;
             document.getElementById('modalVencimiento').textContent = venc;
             document.getElementById('modalCapital').textContent = formatMoney(capital);
             document.getElementById('modalInteres').textContent = formatMoney(interes);
-            document.getElementById('modalTotal').textContent = formatMoney(monto);
+            document.getElementById('modalMora').textContent = formatMoney(mora);
+            document.getElementById('modalPagado').textContent = formatMoney(pagado);
+            document.getElementById('modalTotal').textContent = formatMoney(saldo);
+            const monto = saldo;
             currentCapital = capital;
             currentMonto = monto;
             document.getElementById('payModal').style.display = 'flex';

@@ -42,8 +42,6 @@
             id="nav-step-2" data-step="2" onclick="goToStep(2)">2. Cliente</div>
         <div class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
             id="nav-step-3" data-step="3" onclick="goToStep(3)">3. Precio y Pago</div>
-        <div class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-            id="nav-step-4" data-step="4" onclick="goToStep(4)">4. Confirmar</div>
     </div>
 
     <form method="POST" action="{{ route('ventas.store') }}" id="ventaForm">
@@ -255,7 +253,7 @@
                             <div class="client-card group p-4 py-5 cursor-pointer bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-indigo-50/50 dark:[&.selected]:bg-indigo-900/10 shadow-sm"
                                 data-id="{{ $c->id }}" data-nombre="{{ $c->razon_social }}" data-ruc="{{ $c->ruc }}"
                                 data-telefono="{{ $c->telefono }}" data-pais="{{ $c->pais }}"
-                                onclick="seleccionarCliente(this)">
+                                onclick="seleccionarCliente(this, true)">
 
                                 <div class="flex items-start gap-3 mb-2">
                                     <div
@@ -295,6 +293,12 @@
                                             <span>{{ $c->telefono }}</span>
                                         </div>
                                     @endif
+                                    <div class="w-full flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                                        <span class="whitespace-nowrap">Crédito disp. US$ {{ number_format($c->credito_disponible_usd, 2, ',', '.') }}</span>
+                                        @if($c->cuotas_vencidas > 0)
+                                            <span class="badge-status badge-vendido whitespace-nowrap" title="Tiene {{ $c->cuotas_vencidas }} cuota(s) vencida(s)">{{ $c->cuotas_vencidas }} vencida{{ $c->cuotas_vencidas > 1 ? 's' : '' }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -629,83 +633,10 @@
                     onclick="goToStep(2)">← Volver a Cliente</button>
                 <button type="button"
                     class="px-6 py-2.5 rounded-lg text-sm font-medium bg-primary text-white hover:bg-indigo-700 shadow-sm transition-colors"
-                    onclick="goToStep(4)">Siguiente → Confirmar</button>
+                    onclick="abrirModalConfirmacion()">Revisar y confirmar</button>
             </div>
         </div>
 
-        {{-- ═══════════════════════════════════ STEP 4: CONFIRMACIÓN ═══════════════════════════════════ --}}
-        <div class="step-content" id="step4">
-            <div class="erp-card">
-                <div class="erp-card-header">
-                    <h2>Resumen de la Venta</h2>
-                </div>
-                <div class="erp-card-body">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                        <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5 md:col-span-1">
-                            <div class="text-[0.7rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                </svg>
-                                Items de la Venta
-                            </div>
-                            <div id="resumen_items_list" class="space-y-3 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
-                                {{-- Se llena vía JS --}}
-                            </div>
-                        </div>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-                            <div
-                                class="text-[0.7rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
-                                Cliente
-                            </div>
-                            <div class="font-bold text-lg text-slate-800 dark:text-slate-100" id="resumen_cliente">—</div>
-                            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1" id="resumen_cliente_ruc">—</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Precio</div>
-                            <div class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400" id="resumen_precio">$0
-                            </div>
-                        </div>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Modalidad</div>
-                            <div class="text-xl font-bold text-slate-800 dark:text-slate-100" id="resumen_modalidad">Contado
-                            </div>
-                        </div>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Rentabilidad</div>
-                            <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400" id="resumen_rentabilidad">
-                                $0</div>
-                        </div>
-                    </div>
-
-                    <div id="resumen_pagos_box" class="mb-6"></div>
-
-                    <div class="flex justify-between items-center mt-8">
-                        <button type="button"
-                            class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            onclick="goToStep(3)">← Volver a editar</button>
-                        <button type="button" onclick="abrirModalConfirmacion()"
-                            class="px-8 py-3 rounded-xl text-base font-bold bg-primary text-white hover:bg-indigo-700 shadow-sm transition-colors flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                            Confirmar y Registrar Venta</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </form>
 
     {{-- ═══════ Modal Nuevo Cliente ═══════ --}}
@@ -837,6 +768,7 @@
     @push('scripts')
         <script>
             let currentStep = 1;
+            let volvioAClientes = false;
             let selectedVehiculo = null;
             let selectedCliente = null;
             let pagoCount = 1;
@@ -845,13 +777,13 @@
 
             // ══════════ STEP NAVIGATION ══════════
             function goToStep(step) {
+                if (step === 2 && currentStep > 2) volvioAClientes = true;
                 if (step === 2 && itemsVenta.length === 0) {
                     alert('Agregá al menos un ítem al carrito primero.'); return;
                 }
                 if (step === 3 && !document.getElementById('cliente_id_input').value) {
                     alert('Seleccioná un cliente primero.'); return;
                 }
-                if (step === 4) buildResumen();
 
                 document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
                 document.getElementById('step' + step).classList.add('active');
@@ -948,7 +880,7 @@
                 });
             });
 
-            function seleccionarCliente(el) {
+            function seleccionarCliente(el, avanzar = false) {
                 document.querySelectorAll('#clientesGrid .client-card').forEach(c => c.classList.remove('selected'));
                 el.classList.add('selected');
                 document.getElementById('cliente_id_input').value = el.dataset.id;
@@ -957,6 +889,7 @@
                     id: el.dataset.id, nombre: el.dataset.nombre, ruc: el.dataset.ruc,
                     telefono: el.dataset.telefono, pais: el.dataset.pais
                 };
+                if (avanzar && !volvioAClientes && itemsVenta.length) goToStep(3);
             }
 
             document.getElementById('buscarCliente').addEventListener('input', function () {
@@ -1187,81 +1120,6 @@
                 calcRent();
             }
 
-            // ══════════ RESUMEN ══════════
-            function buildResumen() {
-                const mode = document.getElementById('modalidad_pago').value || 'CONTADO';
-                
-                // Items Summary
-                const itemsList = document.getElementById('resumen_items_list');
-                itemsList.innerHTML = '';
-                
-                itemsVenta.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'flex flex-col border-b border-slate-100 dark:border-slate-700/50 pb-2 last:border-0';
-                    div.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <span class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${escHtml(item.descripcion)}</span>
-                            <span class="text-xs font-mono text-slate-500">$ ${formatNumber(item.precio_unitario_usd * item.cantidad)}</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-0.5">
-                            <span class="text-[0.6rem] text-slate-400 uppercase tracking-widest">${item.type === 'camion' ? 'Camión' : 'Repuesto'}</span>
-                            <span class="text-[0.65rem] text-slate-500">${item.cantidad} x $ ${formatNumber(item.precio_unitario_usd)}</span>
-                        </div>
-                    `;
-                    itemsList.appendChild(div);
-                });
-
-                if (selectedCliente) {
-                    document.getElementById('resumen_cliente').textContent = selectedCliente.nombre;
-                    document.getElementById('resumen_cliente_ruc').textContent = 'RUC: ' + (selectedCliente.ruc || 'N/A') + ' · ' + selectedCliente.pais;
-                }
-                const precioBase = parseFloat(document.getElementById('precio_usd').value) || 0;
-                const descuento = parseFloat(document.getElementById('descuento_usd').value) || 0;
-                const precioFinal = Math.max(0, precioBase - descuento);
-
-                document.getElementById('resumen_precio').innerHTML = '$ ' + formatNumber(precioFinal) + ' USD' +
-                    (descuento > 0 ? `<br><span style="font-size:.7rem;color:var(--danger);font-weight:normal">- $ ${formatNumber(descuento)} desc.</span>` : '');
-
-                document.getElementById('resumen_modalidad').textContent = mode === 'CONTADO' ? 'Contado' : ('Cuotas (' + document.getElementById('tipo_plan').value + ')');
-
-                const costo = parseFloat(document.getElementById('valor_libro_span')?.dataset?.costoRaw) || 0;
-                const rent = precioFinal - costo;
-                const rentEl = document.getElementById('resumen_rentabilidad');
-                rentEl.textContent = '$ ' + formatNumber(rent);
-                rentEl.className = rent >= 0 ? 'text-xl font-bold text-emerald-600 dark:text-emerald-400' : 'text-xl font-bold text-red-600 dark:text-red-400';
-
-                // Build payment summary
-                let html = '';
-                let totalPagos = 0;
-                document.querySelectorAll('.payment-entry').forEach(row => {
-                    const tipo = row.querySelector('select')?.value || 'EFECTIVO';
-                    const monto = parseFloat(row.querySelector('.pago-monto')?.value) || 0;
-                    if (monto > 0) {
-                        totalPagos += monto;
-                        const labels = { EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia', VEHICULO_CANJE: 'Vehículo canje', CHEQUE: 'Cheque' };
-                        html += `<div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 text-sm">
-                                                            <span class="text-slate-600 dark:text-slate-300">${mode === 'CONTADO' ? 'Pago' : 'Entrega'}: ${labels[tipo] || tipo}</span>
-                                                            <strong class="text-slate-800 dark:text-slate-100">$ ${formatNumber(monto)}</strong>
-                                                         </div>`;
-                    }
-                });
-
-                if (mode === 'CUOTAS') {
-                    const financiar = Math.max(0, precioFinal - totalPagos);
-                    html += `<div class="flex justify-between py-2 text-sm">
-                                                        <span class="text-slate-600 dark:text-slate-300">A financiar en cuotas</span>
-                                                        <strong class="text-indigo-600 dark:text-indigo-400">$ ${formatNumber(financiar)}</strong>
-                                                     </div>`;
-                }
-                document.getElementById('resumen_pagos_box').innerHTML = html ? `
-                                            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-                                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                                                    Detalle de ${mode === 'CONTADO' ? 'pagos' : 'entregas y cuotas'}
-                                                </div>
-                                                ${html}
-                                            </div>` : '';
-            }
-
             // ══════════ MODAL CLIENTE ══════════
             function abrirModalCliente() { document.getElementById('modalCliente').style.display = 'flex'; }
             function cerrarModalCliente() { document.getElementById('modalCliente').style.display = 'none'; document.getElementById('formModalCliente').reset(); }
@@ -1292,13 +1150,13 @@
                                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
                                                             </div>
                                                             <div class="flex-1 min-w-0">
-                                                                <div class="font-bold text-[1.05rem] text-slate-800 dark:text-slate-100 group-[.selected]:text-primary transition-colors truncate">${data.cliente.razon_social}</div>
+                                                                <div class="font-bold text-[1.05rem] text-slate-800 dark:text-slate-100 group-[.selected]:text-primary transition-colors truncate">${escHtml(data.cliente.razon_social)}</div>
                                                                 <div class="text-[0.75rem] text-slate-500 dark:text-slate-400 mt-0.5">Recién creado</div>
                                                             </div>
                                                         </div>`;
                         grid.prepend(card);
-                        seleccionarCliente(card);
                         cerrarModalCliente();
+                        seleccionarCliente(card, true);
                     } else { alert('Error al guardar.'); }
                 } catch (err) { console.error(err); alert('Error de conexión.'); }
                 finally { btn.disabled = false; btn.textContent = 'Guardar Cliente'; }
@@ -1748,10 +1606,11 @@
                 return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             }
 
-            // Si la validación falló, reconstruye carrito, cliente y pagos para no volver a cargar todo
+            // Si la validación falló (o se llegó con ?vehiculo_id= / ?cliente_id=), reconstruye
+            // carrito, cliente y pagos para no volver a cargar todo
             function restaurarVentaAnterior(old) {
-                if (!old || !Array.isArray(old.items) || !old.items.length) return;
-                old.items.forEach(it => {
+                if (!old || (!(Array.isArray(old.items) && old.items.length) && !old.cliente_id)) return;
+                (old.items || []).forEach(it => {
                     const esCamion = (it.itemable_type || '').includes('Vehicle');
                     const card = document.querySelector(`${esCamion ? '.vehicle-card' : '.repuesto-card'}[data-id="${it.itemable_id}"]`);
                     if (!card) return;
@@ -1783,14 +1642,21 @@
                     toggleCamposPago(idx, p.tipo);
                 });
                 calcularTotalPagos();
-                goToStep(cliente ? 3 : 2);
+                if (itemsVenta.length) goToStep(cliente ? 3 : 2);
             }
 
             // Init
             fetchRates();
             document.querySelector('input[name="fecha_venta"]').addEventListener('change', fetchRates);
             onTipoPlanChange();
-            restaurarVentaAnterior(@json(session()->getOldInput() ?: null));
+            @php
+                $precargaVenta = $precarga ? array_filter([
+                    'items' => isset($precarga['vehiculo_id'])
+                        ? [['itemable_id' => $precarga['vehiculo_id'], 'itemable_type' => 'App\\Models\\Vehicle']] : null,
+                    'cliente_id' => $precarga['cliente_id'] ?? null,
+                ]) : null;
+            @endphp
+            restaurarVentaAnterior(@json(session()->getOldInput() ?: $precargaVenta));
         </script>
     @endpush
 @endsection

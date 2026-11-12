@@ -95,17 +95,34 @@ class ClienteWebController extends Controller
 
         // Obtener historial de ventas
         $ventas = DB::table('ventas')
-            ->join('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
+            ->leftJoin('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
             ->where('ventas.cliente_id', $id)
             ->whereNull('ventas.deleted_at')
             ->select('ventas.*', 'vehiculos.marca', 'vehiculos.modelo', 'vehiculos.numero_chasis')
             ->orderBy('ventas.fecha_venta', 'desc')
             ->get();
 
-        // Obtener planes de cuotas activos
+        // Planes de cuotas con su cobranza: saldo, vencidas y próxima cuota (una consulta de cuotas)
         $planes = DB::table('planes_cuotas')
-            ->where('cliente_id', $id)
+            ->leftJoin('ventas', 'planes_cuotas.venta_id', '=', 'ventas.id')
+            ->where('planes_cuotas.cliente_id', $id)
+            ->select('planes_cuotas.*', 'ventas.numero_venta')
             ->get();
+        $cuotasPorPlan = DB::table('cuotas')
+            ->whereIn('plan_cuotas_id', $planes->pluck('id'))
+            ->whereIn('estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('deleted_at')
+            ->orderBy('fecha_vencimiento')
+            ->get()
+            ->each(fn($c) => $c->saldo = max(0, $c->capital + $c->interes + $c->interes_mora - $c->monto_pagado))
+            ->groupBy('plan_cuotas_id');
+        $hoy = now()->toDateString();
+        $planes->each(function ($p) use ($cuotasPorPlan, $hoy) {
+            $cuotas = $cuotasPorPlan->get($p->id, collect());
+            $p->saldo = $cuotas->sum('saldo');
+            $p->vencidas = $cuotas->where('fecha_vencimiento', '<', $hoy)->count();
+            $p->proxima = $cuotas->first();
+        });
 
         // Calcular saldo deudor en planes activos (solo cuotas pendientes/mora)
         $saldo_deudor = DB::table('cuotas')

@@ -63,12 +63,10 @@ final class PayInstallmentsUseCase
         $moneda  = $cuotas->first()->moneda;
 
         // ── 3. Calcular imputación ───────────────────────────────────────
-        $cuotasData = $cuotas->map(fn($c) => [
-            'capital'      => (float) $c->capital,
-            'interes'      => (float) $c->interes,
-            'interes_mora' => (float) $c->interes_mora,
-            'monto_pagado' => (float) ($c->monto_pagado ?? 0),
-        ])->toArray();
+        // Saldo de cada componente: lo ya pagado cubrió mora → interés → capital (mismo
+        // orden de prelación), así el saldo coincide con capital + interes + mora - pagado.
+        $pendientes = $cuotas->mapWithKeys(fn($c) => [$c->id => $this->pendientePorComponente($c)]);
+        $cuotasData = $pendientes->map(fn($p) => $p + ['monto_pagado' => 0])->values()->toArray();
 
         $totalPendiente = $this->imputation->totalPendiente($cuotasData);
 
@@ -102,10 +100,7 @@ final class PayInstallmentsUseCase
         // Si no se pagó mora completa o interés completo, es pago parcial
         $moraPendienteTotal = array_sum(array_map(fn($c) => (float) ($c['interes_mora'] ?? 0), $cuotasData));
         $interesPendienteTotal = array_sum(array_map(fn($c) => (float) ($c['interes'] ?? 0), $cuotasData));
-        $capitalPendienteTotal = array_sum(array_map(
-            fn($c) => max(0, (float) $c['capital'] - (float) ($c['monto_pagado'] ?? 0)),
-            $cuotasData
-        ));
+        $capitalPendienteTotal = array_sum(array_column($cuotasData, 'capital'));
 
         $cubreTodo = $imputacion->mora >= $moraPendienteTotal
                   && $imputacion->interes >= $interesPendienteTotal
@@ -115,7 +110,7 @@ final class PayInstallmentsUseCase
         $cajaId = $dto->cajaId ?? $this->caja->cajaCapitalId();
 
         return DB::transaction(function () use (
-            $cuotas, $dto, $imputacion, $descuentoAplicado, $capitalEfectivo,
+            $cuotas, $pendientes, $dto, $imputacion, $descuentoAplicado, $capitalEfectivo,
             $cubreTodo, $planId, $ventaId, $moneda, $cajaId
         ) {
             $ahora = now();
@@ -128,12 +123,8 @@ final class PayInstallmentsUseCase
             $cuotasPagadasIds   = [];
 
             foreach ($cuotas as $cuota) {
-                $cap      = (float) $cuota->capital;
-                $int      = (float) $cuota->interes;
-                $mora     = (float) $cuota->interes_mora;
                 $yaPagado = (float) ($cuota->monto_pagado ?? 0);
-
-                $capPend  = max(0, $cap - $yaPagado);
+                ['capital' => $capPend, 'interes' => $int, 'interes_mora' => $mora] = $pendientes[$cuota->id];
 
                 // Asignar mora a esta cuota
                 $moraAsignada = min($restanteMora, $mora);
@@ -157,7 +148,7 @@ final class PayInstallmentsUseCase
                 $nuevoMontoPagado = $yaPagado + $totalPagadoCuota;
 
                 // Determinar nuevo estado
-                $capitalCubierto = ($yaPagado + $capitalAsignado) >= ($cap - 0.001);
+                $capitalCubierto = $capitalAsignado >= ($capPend - 0.001);
                 $interesCubierto = $interesAsignado >= ($int - 0.001);
                 $moraCubierta    = $moraAsignada >= ($mora - 0.001);
 
@@ -170,8 +161,8 @@ final class PayInstallmentsUseCase
                 DB::table('cuotas')->where('id', $cuota->id)->update([
                     'estado'               => $nuevoEstado,
                     'fecha_pago_efectivo'  => $nuevoEstado === 'PAGADA' ? $dto->fechaPago : $cuota->fecha_pago_efectivo,
+                    // interes_mora queda como mora devengada: lo cobrado ya suma en monto_pagado
                     'monto_pagado'         => round($nuevoMontoPagado, 4),
-                    'interes_mora'         => round($mora - $moraAsignada, 4),
                     'descuento_anticipo'   => round((float) ($cuota->descuento_anticipo ?? 0) + $descuentoAsignado, 4),
                     'caja_cobro_id'        => $cajaId,
                     'updated_by'           => $dto->userId,
@@ -259,6 +250,20 @@ final class PayInstallmentsUseCase
                 'cuotas_parciales'  => count($dto->cuotasIds) - count($cuotasPagadasIds),
             ];
         });
+    }
+
+    /** @return array{capital: float, interes: float, interes_mora: float} */
+    private function pendientePorComponente(object $c): array
+    {
+        $pagado = (float) ($c->monto_pagado ?? 0);
+        $pend = [];
+        foreach (['interes_mora', 'interes', 'capital'] as $campo) {
+            $monto = (float) $c->{$campo};
+            $cubierto = min($pagado, $monto);
+            $pend[$campo] = $monto - $cubierto;
+            $pagado -= $cubierto;
+        }
+        return $pend;
     }
 
     /**

@@ -87,7 +87,7 @@ class VentaWebController extends Controller
         return view('ventas.index', compact('ventas', 'q', 'estado', 'desde', 'hasta'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $vehiculos = DB::table('vehiculos')
             ->whereIn('estado', ['DISPONIBLE', 'RESERVADO'])
@@ -105,7 +105,15 @@ class VentaWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'repuestos'));
+        // Precarga desde otras pantallas (?vehiculo_id= / ?cliente_id=): solo ids que estén en las listas
+        $vehiculoId = filter_var($request->query('vehiculo_id'), FILTER_VALIDATE_INT);
+        $clienteId  = filter_var($request->query('cliente_id'), FILTER_VALIDATE_INT);
+        $precarga = array_filter([
+            'vehiculo_id' => $vehiculos->contains('id', $vehiculoId) ? $vehiculoId : null,
+            'cliente_id'  => $clientes->contains('id', $clienteId) ? $clienteId : null,
+        ]);
+
+        return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'repuestos', 'precarga'));
     }
 
     public function store(StoreSaleRequest $request)
@@ -128,7 +136,7 @@ class VentaWebController extends Controller
         }
     }
 
-    /** Clientes activos con su crédito disponible (una sola consulta para el saldo deudor). */
+    /** Clientes activos con su crédito disponible y cuotas vencidas (una sola consulta agrupada). */
     private function clientesConCreditoDisponible()
     {
         $deuda = DB::table('cuotas')
@@ -136,7 +144,11 @@ class VentaWebController extends Controller
             ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
             ->whereNull('cuotas.deleted_at')
             ->groupBy('planes_cuotas.cliente_id')
-            ->pluck(DB::raw('SUM(cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado)'), 'planes_cuotas.cliente_id');
+            ->select('planes_cuotas.cliente_id')
+            ->selectRaw('SUM(cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado) as saldo')
+            ->selectRaw('SUM(CASE WHEN cuotas.fecha_vencimiento < ? THEN 1 ELSE 0 END) as vencidas', [now()->toDateString()])
+            ->get()
+            ->keyBy('cliente_id');
 
         return DB::table('clientes')
             ->where('activo', true)
@@ -144,7 +156,9 @@ class VentaWebController extends Controller
             ->orderBy('razon_social')
             ->get()
             ->map(function ($cliente) use ($deuda) {
-                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) ($deuda[$cliente->id] ?? 0));
+                $d = $deuda[$cliente->id] ?? null;
+                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) ($d->saldo ?? 0));
+                $cliente->cuotas_vencidas = (int) ($d->vencidas ?? 0);
                 return $cliente;
             });
     }

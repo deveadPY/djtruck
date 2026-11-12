@@ -288,7 +288,14 @@ class PlanCuotasWebController extends Controller
 
         $pagado = $cuotas->where('estado', 'PAGADA')->count();
         $pendiente = $cuotas->where('estado', 'PENDIENTE')->count();
-        $vencidas = $cuotas->where('estado', 'VENCIDA')->count();
+        $vencidas = $cuotas->whereIn('estado', ['VENCIDA', 'EN_MORA'])->count();
+
+        // Saldo real de cada cuota (mismo criterio que el cobro y el estado de cuenta)
+        $cuotas->each(fn($c) => $c->saldo = in_array($c->estado, ['PAGADA', 'ANULADA'])
+            ? 0.0
+            : round(max(0, $c->capital + $c->interes + $c->interes_mora - $c->monto_pagado), 2));
+        $saldoPendiente = $cuotas->sum('saldo');
+        $proxima = $cuotas->where('saldo', '>', 0)->sortBy('fecha_vencimiento')->first();
 
         // También cargar las entregas
         $entregas = DB::table('detalles_pago')
@@ -297,7 +304,7 @@ class PlanCuotasWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('planes_cuotas.show', compact('plan', 'cuotas', 'venta', 'cliente', 'pagado', 'pendiente', 'vencidas', 'entregas'));
+        return view('planes_cuotas.show', compact('plan', 'cuotas', 'venta', 'cliente', 'pagado', 'pendiente', 'vencidas', 'entregas', 'saldoPendiente', 'proxima'));
     }
 
     public function downloadRecibo($cuotaId)
