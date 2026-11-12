@@ -2,6 +2,8 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Infrastructure\Currency\LaMonedaRateSync;
+use Carbon\Carbon;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -9,7 +11,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $hoy = now()->toDateString();
+        // El negocio opera en America/Asuncion aunque la app corra en UTC.
+        $hoy     = LaMonedaRateSync::hoy();
+        $manana  = Carbon::parse($hoy)->addDay()->toDateString();
+        $en7dias = Carbon::parse($hoy)->addDays(7)->toDateString();
 
         // ── Stats de inventario ───────────────────────────────────────────
         $totalVehiculos = DB::table('vehiculos')->whereNull('deleted_at')->count();
@@ -41,22 +46,44 @@ class DashboardController extends Controller
             ->value('total');
 
         // ── Cuotas ───────────────────────────────────────────────────────
-        $cuotasEnMora = DB::table('cuotas')
-            ->whereIn('estado', ['VENCIDA', 'EN_MORA'])
+        // Mora: vencidas/en mora por estado o pendientes con fecha pasada (igual que la pestaña de notificaciones).
+        $mora = DB::table('cuotas')
             ->whereNull('deleted_at')
-            ->count();
+            ->where(function ($q) use ($hoy) {
+                $q->whereIn('estado', ['VENCIDA', 'EN_MORA'])
+                    ->orWhere(fn ($q2) => $q2->where('estado', 'PENDIENTE')->where('fecha_vencimiento', '<', $hoy));
+            })
+            ->selectRaw('COUNT(*) as cantidad, SUM(capital + interes + COALESCE(interes_mora, 0) - COALESCE(monto_pagado, 0)) as total')
+            ->first();
+        $cuotasEnMora = (int) $mora->cantidad;
+        $montoMoraUsd = (float) $mora->total;
 
-        $montoMoraUsd = (float) DB::table('cuotas')
-            ->whereIn('estado', ['VENCIDA', 'EN_MORA'])
-            ->whereNull('deleted_at')
-            ->selectRaw('SUM(capital + interes - COALESCE(monto_pagado, 0)) as total')
-            ->value('total');
-
-        $cuotasHoy = DB::table('cuotas')
+        $hoyAgg = DB::table('cuotas')
             ->where('estado', 'PENDIENTE')
             ->where('fecha_vencimiento', $hoy)
             ->whereNull('deleted_at')
-            ->count();
+            ->selectRaw('COUNT(*) as cantidad, SUM(capital + interes - COALESCE(monto_pagado, 0)) as total')
+            ->first();
+        $cuotasHoy   = (int) $hoyAgg->cantidad;
+        $montoHoyUsd = (float) $hoyAgg->total;
+
+        // Lista corta solo si son pocas; si son más, se ve en notificaciones.
+        $cuotasHoyLista = $cuotasHoy >= 1 && $cuotasHoy <= 5
+            ? DB::table('cuotas')
+                ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
+                ->join('clientes', 'planes_cuotas.cliente_id', '=', 'clientes.id')
+                ->where('cuotas.estado', 'PENDIENTE')
+                ->where('cuotas.fecha_vencimiento', $hoy)
+                ->whereNull('cuotas.deleted_at')
+                ->select([
+                    'cuotas.id',
+                    'planes_cuotas.id as plan_id',
+                    DB::raw('COALESCE(clientes.razon_social, clientes.nombre_fantasia) as cliente_nombre'),
+                    DB::raw('cuotas.capital + cuotas.interes - COALESCE(cuotas.monto_pagado, 0) as monto'),
+                ])
+                ->orderBy('cuotas.id')
+                ->get()
+            : collect();
 
         // ── Stock bajo mínimo ─────────────────────────────────────────────
         $stockBajoMinimo = DB::table('stock_repuestos')
@@ -120,7 +147,7 @@ class DashboardController extends Controller
         // ── Cobros próximos 7d (suma) ─────────────────────────────────────
         $cobrosProximos7dTotal = (float) DB::table('cuotas')
             ->where('estado', 'PENDIENTE')
-            ->whereBetween('fecha_vencimiento', [$hoy, now()->addDays(7)->toDateString()])
+            ->whereBetween('fecha_vencimiento', [$hoy, $en7dias])
             ->whereNull('deleted_at')
             ->selectRaw('SUM(capital + interes) as total')
             ->value('total');
@@ -147,7 +174,7 @@ class DashboardController extends Controller
             ->join('ventas', 'cuotas.venta_id', '=', 'ventas.id')
             ->join('clientes', 'ventas.cliente_id', '=', 'clientes.id')
             ->where('cuotas.estado', 'PENDIENTE')
-            ->whereBetween('cuotas.fecha_vencimiento', [$hoy, now()->addDays(7)->toDateString()])
+            ->whereBetween('cuotas.fecha_vencimiento', [$hoy, $en7dias])
             ->whereNull('cuotas.deleted_at')
             ->select([
                 'cuotas.id',
@@ -175,6 +202,10 @@ class DashboardController extends Controller
             'cuotasEnMora',
             'montoMoraUsd',
             'cuotasHoy',
+            'montoHoyUsd',
+            'cuotasHoyLista',
+            'hoy',
+            'manana',
             'stockBajoMinimo',
             'repuestosBajos',
             'cobrosProximos7dTotal',
