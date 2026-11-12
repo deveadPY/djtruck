@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 
 // ── Login ────────────────────────────────────────────────────────────────
 
@@ -98,4 +99,17 @@ test('usuario desactivado con sesión abierta es expulsado', function () {
 
     $this->get('/dashboard')->assertRedirect(route('login'));
     $this->assertGuest();
+});
+
+// ── Sesión vencida (419) ─────────────────────────────────────────────────
+
+test('token vencido en el login vuelve al formulario con aviso y sin la contraseña', function () {
+    Route::post('/_prueba-419', fn () => throw new \Illuminate\Session\TokenMismatchException())->middleware('web');
+
+    $this->from('/login')
+        ->post('/_prueba-419', ['email' => 'admin@test.com', 'password' => 'secreta'])
+        ->assertRedirect('/login')
+        ->assertSessionHas('error', 'La página había expirado. Volvé a intentarlo.')
+        ->assertSessionHasInput('email', 'admin@test.com')
+        ->assertSessionMissing('_old_input.password');
 });

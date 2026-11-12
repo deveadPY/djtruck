@@ -37,6 +37,22 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Sesión vencida o formulario abierto demasiado tiempo (error 419): en vez de la página
+        // "Page Expired", volver al formulario con lo tipeado (sin contraseña) y un aviso claro.
+        // Laravel convierte TokenMismatchException en HttpException 419 antes de los render callbacks.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419 || $request->expectsJson()) {
+                return null;
+            }
+            if ($request->routeIs('logout')) {
+                return redirect()->route('login');
+            }
+
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation', '_token']))
+                ->with('error', 'La página había expirado. Volvé a intentarlo.');
+        });
+
         // Respuestas JSON para errores en rutas API
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*') || $request->wantsJson()) {
