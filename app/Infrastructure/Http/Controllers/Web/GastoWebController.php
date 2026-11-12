@@ -21,7 +21,7 @@ class GastoWebController extends Controller
     {
         DB::table('vehiculos')->where('id', $vehiculoId)->whereNull('deleted_at')->firstOrFail();
 
-        $data = collect($request->validated())->except('comprobante')->all();
+        $data = $request->gasto();
         $data['vehiculo_id'] = $vehiculoId;
         $data['created_by'] = Auth::id();
         $data['aplicado_al_costo'] = false;

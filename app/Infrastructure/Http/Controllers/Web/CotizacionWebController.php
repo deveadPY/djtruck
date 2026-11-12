@@ -2,6 +2,8 @@
 
 namespace App\Infrastructure\Http\Controllers\Web;
 
+use App\Infrastructure\Currency\LaMonedaRateSync;
+use Carbon\Carbon;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,16 +62,39 @@ class CotizacionWebController extends Controller
     }
 
     /**
-     * Endpoint API para JS — devuelve las tasas vigentes del día.
+     * Endpoint para JS — tasas vigentes a la fecha pedida (hoy por defecto).
+     * Para hoy, primero intenta actualizar desde La Moneda (como mucho cada 30 min).
      */
-    public function getTodayRates(Request $request)
+    public function getTodayRates(Request $request, LaMonedaRateSync $sync)
     {
-        $pyg = DB::table(self::TABLE)->where('moneda_destino', 'PYG')->orderBy('id', 'desc')->first();
-        $brl = DB::table(self::TABLE)->where('moneda_destino', 'BRL')->orderBy('id', 'desc')->first();
+        // Los formularios mandan la fecha sin cabecera JSON: una fecha inválida no debe redirigir.
+        $hoy = LaMonedaRateSync::hoy();
+        try {
+            $fecha = min(Carbon::parse((string) $request->query('fecha', $hoy))->toDateString(), $hoy);
+        } catch (\Throwable) {
+            $fecha = $hoy;
+        }
 
-        return response()->json([
-            'PYG' => $pyg ? (float) $pyg->venta : 1,
-            'BRL' => $brl ? (float) $brl->venta : 1,
-        ]);
+        if ($fecha === $hoy) {
+            // Sin tasa de hoy se espera a La Moneda (máx. ~5 s); si ya hay, se refresca tras responder.
+            $sync->tieneTasasDeHoy() ? defer(fn () => $sync->syncIfDue()) : $sync->syncIfDue();
+        }
+
+        $tasas = [];
+        $detalle = [];
+        foreach (['PYG', 'BRL'] as $moneda) {
+            $fila = DB::table(self::TABLE)->where('moneda_destino', $moneda)
+                ->whereDate('fecha', '<=', $fecha)->orderByDesc('fecha')->orderByDesc('id')->first()
+                ?? DB::table(self::TABLE)->where('moneda_destino', $moneda)->orderBy('fecha')->orderBy('id')->first();
+
+            // 1 se mantiene por compatibilidad con los formularios que solo leen PYG/BRL.
+            $tasas[$moneda] = $fila ? (float) $fila->venta : 1;
+            $detalle[$moneda] = $fila ? [
+                'fecha'  => substr((string) $fila->fecha, 0, 10),
+                'fuente' => (int) $fila->created_by === LaMonedaRateSync::SISTEMA ? 'La Moneda' : 'Carga manual',
+            ] : null;
+        }
+
+        return response()->json($tasas + ['detalle' => $detalle]);
     }
 }

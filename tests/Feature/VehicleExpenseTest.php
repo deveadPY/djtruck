@@ -37,7 +37,7 @@ function gastoPayload(array $extra = []): array
 {
     return $extra + [
         'concepto' => 'Cambio de frenos', 'categoria' => 'REPARACION_MECANICA', 'origen_tipo' => 'MANO_OBRA',
-        'moneda' => 'PYG', 'tasa_cambio' => 7300, 'monto_moneda' => 730000, 'monto_usd' => 100,
+        'moneda' => 'PYG', 'tasa_cambio' => 7300, 'monto_moneda' => 730000,
         'fecha_gasto' => '2026-11-11',
     ];
 }
@@ -76,5 +76,34 @@ test('rechaza comprobante con formato no permitido', function () {
         'comprobante' => UploadedFile::fake()->create('script.php', 10, 'application/x-php'),
     ]))->assertSessionHasErrors('comprobante');
 
+    expect(DB::table('gastos_vehiculo')->count())->toBe(0);
+});
+
+test('el monto en USD lo calcula el servidor e ignora el enviado', function () {
+    $this->post(route('gastos.store', $this->vehiculoId), gastoPayload(['monto_usd' => 999999]))->assertRedirect();
+
+    expect((float) DB::table('gastos_vehiculo')->value('monto_usd'))->toBe(100.0);
+});
+
+test('gasto en USD usa tasa 1 aunque no se envíe cotización', function () {
+    $this->post(route('gastos.store', $this->vehiculoId), gastoPayload([
+        'moneda' => 'USD', 'tasa_cambio' => 7300, 'monto_moneda' => 250,
+    ]))->assertRedirect();
+
+    $gasto = DB::table('gastos_vehiculo')->first();
+    expect((float) $gasto->tasa_cambio)->toBe(1.0)->and((float) $gasto->monto_usd)->toBe(250.0);
+});
+
+test('gasto en guaraníes sin cotización es rechazado', function () {
+    $payload = gastoPayload();
+    unset($payload['tasa_cambio']);
+
+    $this->post(route('gastos.store', $this->vehiculoId), $payload)->assertSessionHasErrors('tasa_cambio');
+    expect(DB::table('gastos_vehiculo')->count())->toBe(0);
+});
+
+test('rechaza una cotización absurda (error de tipeo)', function () {
+    $this->post(route('gastos.store', $this->vehiculoId), gastoPayload(['tasa_cambio' => 7.3]))
+        ->assertSessionHasErrors('tasa_cambio');
     expect(DB::table('gastos_vehiculo')->count())->toBe(0);
 });

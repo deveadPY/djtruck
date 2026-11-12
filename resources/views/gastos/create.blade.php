@@ -79,31 +79,36 @@
                         <label class="form-label">Cantidad repuesto</label>
                         <input type="number" name="repuesto_cantidad" value="{{ old('repuesto_cantidad') }}" step="0.001" min="0" class="form-input">
                     </div>
-                    <div class="form-group" style="grid-column:1/-1; display:flex; gap:1.25rem;">
-                        <div style="flex:1;">
-                            <label class="form-label">Moneda *</label>
-                            <select name="moneda" required class="form-input">
-                                @foreach(['USD', 'PYG', 'BRL'] as $m)
-                                    <option value="{{ $m }}" {{ old('moneda', 'USD') == $m ? 'selected' : '' }}>{{ $m }}</option>
-                                @endforeach
-                            </select>
+                    <fieldset class="form-group" style="grid-column:1/-1">
+                        <legend class="form-label mb-1.5">Moneda del gasto *</legend>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            @foreach(['USD' => ['Dólar', 'us'], 'PYG' => ['Guaraní', 'py'], 'BRL' => ['Real', 'br']] as $m => [$nombre, $bandera])
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="moneda" value="{{ $m }}" class="peer sr-only" @checked(old('moneda', 'USD') === $m)>
+                                    <div class="flex items-center gap-3 p-3 rounded-xl border-2 border-border bg-surface-2 transition-all hover:bg-surface-3 peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
+                                        <img src="https://flagcdn.com/w40/{{ $bandera }}.png" class="w-8 h-6 rounded object-cover" alt="">
+                                        <div class="min-w-0">
+                                            <span class="block text-sm font-bold text-foreground">{{ $m }} <span class="font-normal text-muted-foreground">· {{ $nombre }}</span></span>
+                                            <span class="block text-xs text-muted-foreground" data-tasa-de="{{ $m }}">{{ $m === 'USD' ? 'Moneda base' : 'Cargando cotización…' }}</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            @endforeach
                         </div>
-                        <div style="flex:1;">
-                            <label class="form-label">Tasa de Cambio</label>
-                            <input type="number" name="tasa_cambio" value="1" step="0.0001" readonly class="form-input" style="cursor:not-allowed; opacity:.7;">
-                        </div>
-                    </div>
+                    </fieldset>
                     <div class="form-group">
-                        <label class="form-label">Monto en moneda *</label>
-                        <input type="number" name="monto_moneda" value="{{ old('monto_moneda') }}" step="0.01" min="0" required class="form-input">
+                        <label class="form-label" for="monto_moneda">Monto en <span data-moneda-actual>{{ old('moneda', 'USD') }}</span> *</label>
+                        <input type="number" id="monto_moneda" name="monto_moneda" value="{{ old('monto_moneda') }}" step="0.01" min="0.01" required class="form-input" inputmode="decimal">
+                        <div class="text-xs mt-1 text-muted-foreground" id="equivalente-usd"></div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Monto en USD *</label>
-                        <input type="number" name="monto_usd" value="{{ old('monto_usd') }}" step="0.01" min="0" required class="form-input">
+                    <div class="form-group" id="tasa-group">
+                        <label class="form-label" for="tasa_cambio">Cotización (<span data-moneda-actual>{{ old('moneda', 'USD') }}</span> por 1 USD)</label>
+                        <input type="number" id="tasa_cambio" name="tasa_cambio" value="{{ old('tasa_cambio') }}" step="any" min="0.01" class="form-input" inputmode="decimal">
+                        <div class="text-xs mt-1 text-muted-foreground" id="tasa-fuente" aria-live="polite"></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Fecha del gasto *</label>
-                        <input type="date" name="fecha_gasto" value="{{ old('fecha_gasto', date('Y-m-d')) }}" required class="form-input">
+                        <input type="date" name="fecha_gasto" value="{{ old('fecha_gasto', now('America/Asuncion')->toDateString()) }}" required class="form-input">
                     </div>
                     <div class="form-group" style="grid-column:1/-1">
                         <label class="form-label" for="comprobante">Comprobante (factura, recibo o foto)</label>
@@ -125,48 +130,72 @@
 
     @push('scripts')
     <script>
-        let currentRates = { PYG: 1, BRL: 1 };
+        (function () {
+            const form = document.getElementById('monto_moneda').form;
+            const tasaInput = document.getElementById('tasa_cambio');
+            const montoInput = document.getElementById('monto_moneda');
+            const fechaInput = form.querySelector('input[name="fecha_gasto"]');
+            const fuenteEl = document.getElementById('tasa-fuente');
+            let rates = {};
+            let detalle = {};
+            // Tras un error de validación se respeta la cotización que el usuario había escrito.
+            let tasaManual = @json(filled(old('tasa_cambio')));
 
-        async function fetchRates() {
-            try {
-                const fecha = document.querySelector('input[name="fecha_gasto"]').value || new Date().toISOString().split('T')[0];
-                const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${fecha}`);
-                const data = await res.json();
-                currentRates = data;
-                calcularTotalUsd();
-            } catch(e) { console.error('Error fetching rates', e); }
-        }
+            const fmt = (n, d) => Number(n).toLocaleString('es-PY', { minimumFractionDigits: d, maximumFractionDigits: d });
+            const moneda = () => form.querySelector('input[name="moneda"]:checked')?.value || 'USD';
 
-        function calcularTotalUsd() {
-            const monto = parseFloat(document.querySelector('input[name="monto_moneda"]').value) || 0;
-            const moneda = document.querySelector('select[name="moneda"]').value;
-            let totalUsd = monto;
-            let tasaUsada = null;
+            function render() {
+                const m = moneda();
+                const esUsd = m === 'USD';
+                document.getElementById('tasa-group').style.display = esUsd ? 'none' : '';
+                tasaInput.disabled = esUsd;
+                tasaInput.required = !esUsd;
+                if (!esUsd && !tasaManual) tasaInput.value = rates[m] ?? '';
+                form.querySelectorAll('[data-moneda-actual]').forEach(el => el.textContent = m);
 
-            if(moneda === 'PYG') {
-                const rate = parseFloat(currentRates.PYG) || 1;
-                totalUsd = monto / rate;
-                tasaUsada = rate;
-            } else if (moneda === 'BRL') {
-                const rate = parseFloat(currentRates.BRL) || 1;
-                totalUsd = monto / rate;
-                tasaUsada = rate;
+                for (const k of ['PYG', 'BRL']) {
+                    const el = form.querySelector(`[data-tasa-de="${k}"]`);
+                    el.textContent = rates[k] ? `1 USD = ${fmt(rates[k], k === 'PYG' ? 0 : 2)}` : 'Sin cotización';
+                }
+
+                const det = detalle[m];
+                fuenteEl.textContent = tasaManual ? 'Cotización modificada a mano.'
+                    : det ? `Fuente: ${det.fuente} · ${new Date(det.fecha + 'T00:00').toLocaleDateString('es-PY')}`
+                    : 'Sin cotización registrada: ingrésala a mano.';
+                const monto = parseFloat(montoInput.value) || 0;
+                const tasa = esUsd ? 1 : (parseFloat(tasaInput.value) || 0);
+                document.getElementById('equivalente-usd').textContent =
+                    !esUsd && monto > 0 && tasa > 0 ? `Equivale a USD ${fmt(monto / tasa, 2)}` : '';
             }
 
-            document.querySelector('input[name="monto_usd"]').value = totalUsd.toFixed(2);
-            if (tasaUsada) {
-                document.querySelector('input[name="tasa_cambio"]').value = tasaUsada.toFixed(2);
-            } else {
-                document.querySelector('input[name="tasa_cambio"]').value = '1';
+            async function cargarCotizacion() {
+                try {
+                    const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${encodeURIComponent(fechaInput.value)}`,
+                        { headers: { Accept: 'application/json' } });
+                    if (!res.ok) throw new Error(res.status);
+                    const d = await res.json();
+                    // Solo se usan las monedas con tasa registrada (las demás llegan como 1 por compatibilidad).
+                    detalle = d.detalle || {};
+                    rates = {};
+                    for (const k of ['PYG', 'BRL']) if (detalle[k]) rates[k] = d[k];
+                } catch (e) {
+                    rates = {};
+                    detalle = {};
+                }
+                render();
             }
-        }
 
-        document.querySelector('input[name="fecha_gasto"]').addEventListener('change', fetchRates);
-        document.querySelector('select[name="moneda"]').addEventListener('change', calcularTotalUsd);
-        document.querySelector('input[name="monto_moneda"]').addEventListener('input', calcularTotalUsd);
+            form.querySelectorAll('input[name="moneda"]').forEach(r => r.addEventListener('change', () => {
+                tasaManual = false;
+                render();
+            }));
+            tasaInput.addEventListener('input', () => { tasaManual = true; render(); });
+            montoInput.addEventListener('input', render);
+            fechaInput.addEventListener('change', () => { tasaManual = false; cargarCotizacion(); });
 
-        // Fetch initial rates on load
-        fetchRates();
+            render();
+            cargarCotizacion();
+        })();
     </script>
     @endpush
 @endsection
