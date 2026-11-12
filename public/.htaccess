@@ -14,7 +14,9 @@
     RewriteCond %{HTTPS} off
     RewriteCond %{HTTP:X-Forwarded-Proto} !https
     RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    # THE_REQUEST conserva la URL original: REQUEST_URI ya trae el /public/ que agrega el .htaccess de la raíz
+    RewriteCond %{THE_REQUEST} ^\S+\s+(\S+)
+    RewriteRule ^ https://%{HTTP_HOST}%1 [L,R=301,NE]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
