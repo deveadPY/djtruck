@@ -104,7 +104,9 @@ class VehicleWebController extends Controller
     public function create()
     {
         $proveedores = DB::table('proveedores')->where('activo', true)->whereNull('deleted_at')->get();
-        return view('vehicles.create', compact('proveedores'));
+        // Marcas ya usadas como sugerencias: evita variantes tipeadas distinto de la misma marca.
+        $marcas = DB::table('vehiculos')->whereNull('deleted_at')->distinct()->orderBy('marca')->pluck('marca');
+        return view('vehicles.create', compact('proveedores', 'marcas'));
     }
 
     public function store(StoreVehicleRequest $request)
