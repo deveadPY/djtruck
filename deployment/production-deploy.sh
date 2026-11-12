@@ -73,7 +73,7 @@ log "✓ .env presente"
 # Paso 1: Modo mantenimiento
 log ""
 log "[1/8] Activando modo mantenimiento..."
-php artisan down --message="Aplicando actualización del sistema" --retry=60 || true
+php artisan down --retry=60 || true  # --message ya no existe desde Laravel 8
 log "✓ Sitio en modo mantenimiento"
 
 # Trap para asegurar que SIEMPRE se restaure el sitio si falla
