@@ -2,6 +2,7 @@
 @section('title', 'Configuración de Email')
 @section('page-title', 'Comunicaciones & SMTP')
 
+@section('flash-propio', '1')
 @section('content')
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-1">

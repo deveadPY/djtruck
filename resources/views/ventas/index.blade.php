@@ -3,8 +3,6 @@
 @section('page-title', 'Ventas')
 
 @section('content')
-    @if(session('success'))
-    <div class="flash-success">{{ session('success') }}</div>@endif
 
     {{-- ── Cabecera y Filtros ── --}}
     <div class="space-y-4 mb-6">

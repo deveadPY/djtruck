@@ -50,7 +50,8 @@ Route::middleware(['auth', '2fa.verify:always'])->group(function () {
 // ── Rutas autenticadas (con 2FA enforced + verified) ────────────────────
 Route::middleware(['auth', '2fa.enforce', '2fa.verify'])->group(function () {
 
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    // POST: un GET permitiría cerrar la sesión con un enlace o un precargado del navegador.
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Dashboard (accesible a todos los roles)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

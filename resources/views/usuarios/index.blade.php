@@ -125,7 +125,7 @@
 
                                     @can('usuarios.eliminar')
                                         @if(!$esEliminado && $user->id !== auth()->id())
-                                            <form method="POST" action="{{ route('usuarios.destroy', $user) }}" class="inline" onsubmit="return confirm('¿Confirmar purga del usuario {{ $user->name }}?')">
+                                            <form method="POST" action="{{ route('usuarios.destroy', $user) }}" class="inline" data-danger-title="Eliminar usuario" data-danger-confirm="Se eliminará al usuario {{ $user->name }} y ya no podrá ingresar al sistema." data-danger-action-label="Sí, eliminar">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="w-8 h-8 rounded-lg bg-surface-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 border border-border transition-all flex items-center justify-center" title="Eliminar Definitivamente">
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -208,7 +208,7 @@
                             @endcan
                             @can('usuarios.eliminar')
                                 @if(!$esEliminado && $user->id !== auth()->id())
-                                    <form method="POST" action="{{ route('usuarios.destroy', $user) }}" class="inline" onsubmit="return confirm('¿Borrar usuario?')">
+                                    <form method="POST" action="{{ route('usuarios.destroy', $user) }}" class="inline" data-danger-title="Eliminar usuario" data-danger-confirm="Se eliminará al usuario {{ $user->name }} y ya no podrá ingresar al sistema." data-danger-action-label="Sí, eliminar">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="w-9 h-9 rounded-xl bg-surface-2 text-red-500 flex items-center justify-center border border-border">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79" /></svg>

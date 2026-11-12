@@ -20,12 +20,6 @@
     </div>
 
     <div class="max-w-3xl mx-auto">
-        @if(session('success'))
-            <div class="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-fade-in text-center">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                {{ session('success') }}
-            </div>
-        @endif
 
         @if($errors->any())
             <div class="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-black uppercase tracking-widest space-y-2 animate-fade-in">

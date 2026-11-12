@@ -69,7 +69,7 @@ test('logout desautentica al usuario', function () {
     $user = User::factory()->create(['activo' => true]);
     $this->actingAs($user);
 
-    $this->get('/logout');
+    $this->post('/logout');
     $this->assertGuest();
 });
 

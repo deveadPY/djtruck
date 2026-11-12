@@ -449,7 +449,7 @@
                         <form method="POST"
                               action="{{ route('repuestos.toggleActive', $r->id) }}"
                               class="inline"
-                              onsubmit="return confirm('¿Descontinuar {{ addslashes($r->codigo) }}? Ya no aparecerá en alertas de stock ni en ventas. Es reversible.')">
+                              data-danger-title="¿Descontinuar {{ $r->codigo }}?" data-danger-confirm="Ya no aparecerá en alertas de stock ni en ventas. Es reversible." data-danger-action-label="Descontinuar">
                             @csrf
                             <input type="hidden" name="discontinuar" value="1">
                             <button class="px-2 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider hover:bg-amber-500/20 text-amber-500 transition-all"
