@@ -43,6 +43,8 @@ class VentaWebController extends Controller
         $estado = $request->input('estado', '');
         $desde  = $request->input('desde', '');
         $hasta  = $request->input('hasta', '');
+        $modalidad = in_array($request->input('modalidad'), ['CONTADO', 'CUOTAS'], true) ? $request->input('modalidad') : '';
+        $conSaldo  = $request->boolean('con_saldo');
 
         $ventas = DB::table('ventas')
             // Oculta las canceladas salvo que se filtre explícitamente por estado CANCELADO.
@@ -53,6 +55,7 @@ class VentaWebController extends Controller
             )
             ->leftJoin('clientes', 'ventas.cliente_id', '=', 'clientes.id')
             ->leftJoin('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
+            ->leftJoinSub($this->saldoCuotasPorVenta(), 'saldos', 'saldos.venta_id', '=', 'ventas.id')
             ->select(
                 'ventas.*',
                 'clientes.razon_social as cliente_nombre',
@@ -60,6 +63,7 @@ class VentaWebController extends Controller
                 'vehiculos.modelo',
                 'vehiculos.numero_chasis'
             )
+            ->selectRaw('COALESCE(saldos.saldo, 0) as saldo_pendiente, COALESCE(saldos.vencidas, 0) as cuotas_vencidas')
             ->when(filled($q), function ($query) use ($q) {
                 $like = '%' . $q . '%';
                 $query->where(function ($inner) use ($like) {
@@ -80,11 +84,25 @@ class VentaWebController extends Controller
             ->when(filled($estado), fn($query) => $query->where('ventas.estado', $estado))
             ->when(filled($desde), fn($query) => $query->where('ventas.fecha_venta', '>=', $desde))
             ->when(filled($hasta), fn($query) => $query->where('ventas.fecha_venta', '<=', $hasta))
+            ->when(filled($modalidad), fn($query) => $query->where('ventas.modalidad_pago', $modalidad))
+            ->when($conSaldo, fn($query) => $query->where('saldos.saldo', '>', 0))
             ->latest('ventas.created_at')
             ->paginate(20)
             ->withQueryString();
 
-        return view('ventas.index', compact('ventas', 'q', 'estado', 'desde', 'hasta'));
+        return view('ventas.index', compact('ventas', 'q', 'estado', 'desde', 'hasta', 'modalidad', 'conSaldo'));
+    }
+
+    /** Saldo y cuotas vencidas por venta (cuotas no pagadas), en una sola consulta agrupada. */
+    private function saldoCuotasPorVenta()
+    {
+        return DB::table('cuotas')
+            ->whereIn('estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('deleted_at')
+            ->groupBy('venta_id')
+            ->select('venta_id')
+            ->selectRaw('SUM(capital + interes + interes_mora - monto_pagado) as saldo')
+            ->selectRaw('SUM(CASE WHEN fecha_vencimiento < ? THEN 1 ELSE 0 END) as vencidas', [now()->toDateString()]);
     }
 
     public function create(Request $request)

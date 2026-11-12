@@ -56,6 +56,21 @@
                     </select>
                 </div>
 
+                {{-- Modalidad y saldo --}}
+                <div class="flex gap-2 items-center">
+                    <select name="modalidad" onchange="this.form.submit()" aria-label="Modalidad de pago"
+                        class="form-input h-11 text-sm rounded-xl transition-all flex-1">
+                        <option value="">TODAS LAS MODALIDADES</option>
+                        @foreach(['CONTADO' => 'Contado', 'CUOTAS' => 'Cuotas'] as $val => $label)
+                            <option value="{{ $val }}" @selected($modalidad === $val)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <label class="flex items-center gap-2 text-xs font-medium text-muted-foreground whitespace-nowrap cursor-pointer">
+                        <input type="checkbox" name="con_saldo" value="1" @checked($conSaldo) onchange="this.form.submit()" class="rounded border-border">
+                        Con saldo pendiente
+                    </label>
+                </div>
+
                 {{-- Rango de Fechas --}}
                 <div class="flex gap-2 sm:col-span-2">
                     <div class="relative flex-1">
@@ -68,7 +83,7 @@
                             class="form-input h-11 text-sm rounded-xl transition-all w-full">
                         <span class="absolute -top-2 left-3 px-1 text-xs font-medium text-muted-foreground" style="background:var(--surface)">Hasta</span>
                     </div>
-                    @if($q || $estado || $desde || $hasta)
+                    @if($q || $estado || $desde || $hasta || $modalidad || $conSaldo)
                         <a href="{{ route('ventas.index') }}" class="btn btn-ghost !bg-red-500/5 !text-red-400 border-red-500/10 px-4 rounded-xl hover:!bg-red-500/20" title="Limpiar">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -100,6 +115,7 @@
                         <th>Vehículo / Chasis</th>
                         <th>Cliente</th>
                         <th>Monto Venta</th>
+                        <th>Saldo</th>
                         <th class="text-center">Estado</th>
                         <th class="text-right !pr-6">Acciones</th>
                     </tr>
@@ -136,6 +152,16 @@
                                     @endif
                                 </div>
                             </td>
+                            <td>
+                                @if($v->saldo_pendiente > 0)
+                                    <span class="font-bold text-sm text-foreground">$ {{ number_format($v->saldo_pendiente, 2, ',', '.') }}</span>
+                                    @if($v->cuotas_vencidas > 0)
+                                        <span class="badge-status badge-vendido ml-1" title="{{ $v->cuotas_vencidas }} cuota(s) vencida(s)">Mora</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-muted-foreground">—</span>
+                                @endif
+                            </td>
                             <td class="text-center">
                                 @php $cls = match($v->estado) { 'COMPLETADO' => 'badge-disponible', 'CANCELADO'  => 'badge-vendido', 'RESERVADO'  => 'badge-preparacion', default => 'badge-toma' }; @endphp
                                 <span class="badge-status {{ $cls }}">{{ $v->estado }}</span>
@@ -151,7 +177,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-20">
+                            <td colspan="8" class="text-center py-20">
                                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                                     <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -196,6 +222,14 @@
                             <span class="text-lg font-bold text-accent">$ {{ number_format($v->precio_venta_usd, 2, ',', '.') }}</span>
                             <span class="text-xs text-muted-foreground">USD</span>
                         </div>
+                        @if($v->saldo_pendiente > 0)
+                            <div class="text-xs text-muted-foreground mt-1">
+                                Saldo: <span class="font-bold text-foreground">$ {{ number_format($v->saldo_pendiente, 2, ',', '.') }}</span>
+                                @if($v->cuotas_vencidas > 0)
+                                    <span class="badge-status badge-vendido ml-1">Mora</span>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                     <div class="h-9 w-9 rounded-xl bg-surface3 flex items-center justify-center text-muted-foreground">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

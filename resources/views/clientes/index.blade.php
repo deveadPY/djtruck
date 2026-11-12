@@ -39,8 +39,13 @@
                 <input type="text" name="q" value="{{ $q }}" placeholder="RUC, razón social o nombre..."
                     class="form-input !pl-11 h-11 text-sm rounded-xl transition-all">
             </div>
-            
-            @if($q)
+            <select name="orden" onchange="this.form.submit()" aria-label="Ordenar clientes"
+                class="form-input h-11 text-sm rounded-xl transition-all w-auto">
+                <option value="">Más recientes</option>
+                <option value="deuda" @selected($orden === 'deuda')>Mayor deuda</option>
+            </select>
+
+            @if($q || $orden)
                 <a href="{{ route('clientes.index') }}" class="btn btn-ghost !bg-red-500/5 !text-red-400 border-red-500/10 px-4 rounded-2xl hover:!bg-red-500/20" title="Limpiar">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -69,6 +74,7 @@
                         <th>Razón Social / Fantasía</th>
                         <th>Contacto</th>
                         <th>Línea Crédito</th>
+                        <th>Deuda</th>
                         <th class="text-center">Estado</th>
                         <th class="text-right !pr-6">Acciones</th>
                     </tr>
@@ -108,6 +114,16 @@
                                     $ {{ number_format($c->linea_credito_usd, 2, ',', '.') }}
                                 </div>
                             </td>
+                            <td>
+                                @if($c->deuda_usd > 0)
+                                    <span class="font-bold text-sm text-foreground">$ {{ number_format($c->deuda_usd, 2, ',', '.') }}</span>
+                                    @if($c->cuotas_vencidas > 0)
+                                        <span class="badge-status badge-vendido ml-1" title="{{ $c->cuotas_vencidas }} cuota(s) vencida(s)">Mora</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-muted-foreground">—</span>
+                                @endif
+                            </td>
                             <td class="text-center">
                                 <span class="badge-status {{ $c->activo ? 'badge-disponible' : 'badge-vendido' }}">
                                     {{ $c->activo ? 'ACTIVO' : 'INACTIVO' }}
@@ -130,7 +146,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-20">
+                            <td colspan="7" class="text-center py-20">
                                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                                     <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
@@ -176,6 +192,14 @@
                         <div class="text-right">
                             <div class="text-xs text-muted-foreground mb-0.5">Línea de Crédito</div>
                             <div class="text-sm font-bold text-accent">$ {{ number_format($c->linea_credito_usd, 2, ',', '.') }}</div>
+                            @if($c->deuda_usd > 0)
+                                <div class="text-xs text-muted-foreground mt-1">
+                                    Deuda: <span class="font-bold text-foreground">$ {{ number_format($c->deuda_usd, 2, ',', '.') }}</span>
+                                    @if($c->cuotas_vencidas > 0)
+                                        <span class="badge-status badge-vendido ml-1">Mora</span>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
