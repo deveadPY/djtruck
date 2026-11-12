@@ -37,7 +37,15 @@ Flujo y experiencia:
 
 El detalle por archivo está en los commits de la rama.
 
-## Lote 2 — siguiente (esfuerzo medio, sin cambios de base de datos)
+## Lote 2 — implementado (salvo GLB-7 y COM-6 parcial)
+
+Hecho: GLB-2 (+ Nuevo y atajos), GLB-8 (búsqueda general), GLB-9 (franja "Hoy"), INV-6, INV-7, INV-8, COM-7 (WhatsApp; el enlace al PDF del recibo necesita una ruta firmada), COM-11, COM-14 (venta y plan de cuotas con tokens), ADM-11, ADM-13, ADM-14, y deuda/mora en clientes.
+
+Flujo de venta (pedido del usuario): precio sin el centavo extra (38.000 → 38.000,01 por conversión USD↔moneda con la rueda del mouse), moneda en tarjetas con cotización de La Moneda, un solo precio y descuento, pago contado precargado. **Venta contado desde la ficha del camión: 3 clics** (Vender → Revisar y confirmar → Registrar venta), verificada de punta a punta con datos reales.
+
+Pendiente de este lote: GLB-7 (componentes de listado reutilizables), ADM-15 (reportes de caja y gastos).
+
+### Tabla original del lote 2
 
 | id | Mejora | Impacto |
 |---|---|---|
