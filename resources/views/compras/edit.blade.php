@@ -115,6 +115,7 @@
                     <div class="form-group">
                         <label class="form-label">Tasa de Cambio (a USD)</label>
                         <input type="number" name="tasa_cambio" id="tasa_cambio" value="{{ $compra->tasa_cambio }}" step="0.0001" class="form-input" oninput="calculateAll()">
+                        <p id="tasaAviso" class="hidden text-xs text-amber-500 mt-1" role="status">No hay cotización cargada para esta moneda: se usó una tasa de referencia. Verifíquela antes de guardar.</p>
                     </div>
 
                     <div class="pt-4 border-t border-border space-y-2">
@@ -189,7 +190,7 @@
     let itemIndex = 0;
     const itemsBody = document.getElementById('itemsBody');
     const template = document.getElementById('itemRowTemplate').innerHTML;
-    let currentRates = { PYG: 1, BRL: 1 };
+    let currentRates = {};
 
     // Preload existing items
     const existingItems = @json($items);
@@ -315,7 +316,7 @@
                 options.forEach(opt => {
                     if (!opt.value) return;
                     const optProvId = opt.getAttribute('data-proveedor');
-                    if (!proveedorId || optProvId == proveedorId) {
+                    if (!proveedorId || !optProvId || optProvId == proveedorId) {
                         ts.addOption({ value: opt.value, text: opt.text });
                     }
                 });
@@ -329,11 +330,16 @@
         const tasaInput = document.getElementById('tasa_cambio');
         if (moneda === 'USD') {
             tasaInput.value = 1;
+            document.getElementById('tasaAviso').classList.add('hidden');
             tasaInput.readOnly = true;
             tasaInput.classList.add('bg-surface3', 'opacity-70');
         } else {
             if (!tasaInput.value || tasaInput.value == '1') {
-                tasaInput.value = currentRates[moneda] || (moneda === 'PYG' ? 7300 : 5);
+                const tasaHoy = parseFloat(currentRates[moneda]);
+                // La API devuelve 1 cuando no hay cotización: se usa una referencia y se avisa.
+                const sinCotizacion = !(tasaHoy > 1);
+                tasaInput.value = sinCotizacion ? (moneda === 'PYG' ? 7300 : 5) : tasaHoy;
+                document.getElementById('tasaAviso').classList.toggle('hidden', !sinCotizacion);
             }
             tasaInput.readOnly = false;
             tasaInput.classList.remove('bg-surface3', 'opacity-70');

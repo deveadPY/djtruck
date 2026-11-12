@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 
 class UpdateVehicleRequest extends FormRequest
 {
@@ -15,6 +16,10 @@ class UpdateVehicleRequest extends FormRequest
 
     public function rules(): array
     {
+        // VENDIDO solo lo asigna la venta: un vendido sigue vendido y nadie pasa a vendido desde aquí.
+        $actual = DB::table('vehiculos')->where('id', $this->route('id'))->value('estado');
+        $estados = $actual === 'VENDIDO' ? 'VENDIDO' : 'EN_TRANSITO,EN_ADUANA,EN_PREPARACION,DISPONIBLE,RESERVADO,TOMA,BAJA';
+
         return [
             'marca'                      => 'required|string|max:80',
             'modelo'                     => 'required|string|max:80',
@@ -22,7 +27,7 @@ class UpdateVehicleRequest extends FormRequest
             'color'                      => 'nullable|string|max:50',
             'tipo_vehiculo'              => 'required|in:CAMION_RIGIDO,CAMION_TRACTO,SEMI_REMOLQUE,FURGON,VOLQUETE,CISTERNA,OTRO',
             'kilometraje'                => 'nullable|integer|min:0',
-            'estado'                     => 'required|in:EN_TRANSITO,EN_ADUANA,EN_PREPARACION,DISPONIBLE,RESERVADO,VENDIDO,TOMA,BAJA',
+            'estado'                     => 'required|in:' . $estados,
             'moneda_costo'               => 'required|in:USD,PYG,BRL',
             'costo_origen_usd'           => 'required|numeric|min:0',
             'costo_origen_moneda'        => 'required|numeric|min:0',

@@ -56,12 +56,17 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Estado *</label>
-                        <select name="estado" required class="form-input">
-                            @foreach(['EN_TRANSITO', 'EN_ADUANA', 'EN_PREPARACION', 'DISPONIBLE', 'RESERVADO', 'TOMA', 'BAJA'] as $val)
-                                <option value="{{ $val }}" {{ old('estado', $vehiculo->estado) == $val ? 'selected' : '' }}>
-                                    {{ $val }}</option>
-                            @endforeach
-                        </select>
+                        @if(array_key_exists($vehiculo->estado, $estadosEditables))
+                            <select name="estado" required class="form-input">
+                                @foreach($estadosEditables as $val => $etiqueta)
+                                    <option value="{{ $val }}" @selected(old('estado', $vehiculo->estado) === $val)>{{ $etiqueta }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <input type="hidden" name="estado" value="{{ $vehiculo->estado }}">
+                            <input type="text" value="{{ $estados[$vehiculo->estado] ?? $vehiculo->estado }}" class="form-input" readonly aria-readonly="true">
+                            <p class="text-xs text-muted-foreground mt-1">El estado lo fija la venta y no se cambia desde aquí.</p>
+                        @endif
                     </div>
                     <div class="form-group">
                         <label class="form-label">Kilometraje</label>
@@ -289,7 +294,7 @@
 
                                         <form method="POST"
                                               action="{{ route('vehicles.imagenes.destroy', [$vehiculo->id, $img->id]) }}"
-                                              onsubmit="return confirm('¿Eliminar esta imagen? Esta acción se puede revertir desde la base de datos.')"
+                                              data-danger-confirm="¿Eliminar esta imagen del vehículo?"
                                               onclick="event.stopPropagation()">
                                             @csrf
                                             @method('DELETE')
@@ -341,7 +346,7 @@
 
     @push('scripts')
         <script>
-            let currentRates = { PYG: 1, BRL: 1 };
+            let currentRates = {};
 
             async function fetchRates() {
                 try {
@@ -349,7 +354,6 @@
                     const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${fecha}`);
                     const data = await res.json();
                     currentRates = data;
-                    calcularTotalUsd();
                 } catch (e) { console.error('Error fetching rates', e); }
             }
 
@@ -358,11 +362,10 @@
                 const moneda = document.querySelector('select[name="moneda_costo"]').value;
                 let costoUsd = costoMoneda;
 
-                if (moneda === 'PYG') {
-                    const rate = currentRates.PYG || 1;
-                    costoUsd = costoMoneda / rate;
-                } else if (moneda === 'BRL') {
-                    const rate = currentRates.BRL || 1;
+                if (moneda !== 'USD') {
+                    const rate = parseFloat(currentRates[moneda]);
+                    // Sin cotización no se adivina: el USD queda para cargarlo a mano.
+                    if (!(rate > 1)) return;
                     costoUsd = costoMoneda / rate;
                 }
 
@@ -382,7 +385,16 @@
                 const span = document.createElement('span');
                 span.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border';
                 span.style = 'border-color:var(--border);background:var(--bg-card)';
-                span.innerHTML = `${val} <button type="button" onclick="removeTag(this)" class="opacity-60 hover:opacity-100">&times;</button><input type="hidden" name="equipamiento[]" value="${val}">`;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'opacity-60 hover:opacity-100';
+                btn.textContent = '\u00d7';
+                btn.addEventListener('click', () => removeTag(btn));
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'equipamiento[]';
+                hidden.value = val;
+                span.append(val + ' ', btn, hidden);
                 container.appendChild(span);
                 input.value = '';
             }

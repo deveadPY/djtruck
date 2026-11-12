@@ -3,6 +3,18 @@
 @section('page-title', 'Inventario de Vehículos')
 
 @section('content')
+    @php
+        $badgeEstado = [
+            'DISPONIBLE'     => 'bg-green-500/15 text-green-500',
+            'RESERVADO'      => 'bg-sky-500/15 text-sky-500',
+            'EN_PREPARACION' => 'bg-amber-500/15 text-amber-500',
+            'EN_TRANSITO'    => 'bg-indigo-500/15 text-indigo-400',
+            'EN_ADUANA'      => 'bg-violet-500/15 text-violet-400',
+            'TOMA'           => 'bg-slate-500/15 text-slate-400',
+            'VENDIDO'        => 'bg-red-500/15 text-red-500',
+            'BAJA'           => 'bg-zinc-500/20 text-muted-foreground line-through',
+        ];
+    @endphp
     {{-- ── Cabecera y Filtros ── --}}
     <div class="space-y-4 mb-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -40,13 +52,13 @@
                     class="form-input !pl-11 h-11 text-sm rounded-xl transition-all">
             </div>
             <select name="estado" class="form-input h-11 text-sm rounded-xl !w-auto" onchange="this.form.submit()" aria-label="Filtrar por estado">
-                <option value="">Todos los estados</option>
+                <option value="TODOS" @selected($estado === 'TODOS')>Todos los estados</option>
                 @foreach($estados as $valor => $etiqueta)
                     <option value="{{ $valor }}" @selected($estado === $valor)>{{ $etiqueta }}</option>
                 @endforeach
             </select>
 
-            @if($q || $estado)
+            @if($q || $estado !== 'STOCK')
                 <a href="{{ route('vehicles.index') }}" class="btn btn-ghost !bg-red-500/5 !text-red-400 border-red-500/10 px-4 rounded-2xl hover:!bg-red-500/20" title="Limpiar">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -63,7 +75,7 @@
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Monitor de Inventario Físico</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent"></div>
                 <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-border uppercase tracking-tighter">
-                    {{ $vehiculos->total() }} Unidades Disponibles
+                    {{ $vehiculos->total() }} {{ $vehiculos->total() === 1 ? 'resultado' : 'resultados' }}
                 </span>
             </div>
         </div>
@@ -137,11 +149,10 @@
                                 @endif
                             </td>
                             <td>
-                                @php $cls = match ($v->estado) { 'DISPONIBLE' => 'badge-disponible', 'EN_PREPARACION' => 'badge-preparacion', 'TOMA' => 'badge-toma', default => 'badge-vendido'}; @endphp
-                                <span class="badge-status {{ $cls }}">{{ $v->estado }}</span>
+                                <span class="badge-status {{ $badgeEstado[$v->estado] ?? 'bg-slate-500/15 text-slate-400' }}">{{ $estados[$v->estado] ?? $v->estado }}</span>
                             </td>
                             <td class="text-right !pr-6" onclick="event.stopPropagation()">
-                                <div class="flex justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <div class="flex justify-end gap-1">
                                     <a href="{{ route('vehicles.show', $v->id) }}" class="p-2 rounded-xl hover:bg-accent/10 text-accent transition-all" title="Ver Detalle">
                                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -158,7 +169,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-20">
+                            <td colspan="7" class="text-center py-20">
                                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                                     <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.129-1.125v-10.5a1.125 1.125 0 0 0-1.125-1.125H3.375a1.125 1.125 0 0 0-1.125 1.125v4.5m17.25 2.25h-5.625c-.621 0-1.125.504-1.125 1.125v3.375m7.5-3.375h-7.5m7.5-1.125h-7.5" />
@@ -177,9 +188,8 @@
     <div class="md:hidden space-y-4">
         @forelse($vehiculos as $v)
             <div class="relative overflow-hidden rounded-2xl border bg-surface2 p-4 transition-all duration-200 active:scale-[0.99] cursor-pointer" style="border-color:var(--border)" onclick="window.location='{{ route('vehicles.show', $v->id) }}'">
-                @php $cls = match ($v->estado) { 'DISPONIBLE' => 'badge-disponible', 'EN_PREPARACION' => 'badge-preparacion', 'TOMA' => 'badge-toma', default => 'badge-vendido'}; @endphp
                 <div class="absolute top-3 right-3">
-                    <span class="badge-status {{ $cls }}">{{ $v->estado }}</span>
+                    <span class="badge-status {{ $badgeEstado[$v->estado] ?? 'bg-slate-500/15 text-slate-400' }}">{{ $estados[$v->estado] ?? $v->estado }}</span>
                 </div>
 
                 <div class="flex items-start gap-3 mb-4 pr-24">
@@ -250,10 +260,10 @@
             </div>
         @endforelse
     </div>
-        @if($vehiculos->hasPages())
-            <div class="px-6 py-4 border-t border-border">
-                {{ $vehiculos->links() }}
-            </div>
-        @endif
-    </div>
+
+    @if($vehiculos->hasPages())
+        <div class="px-6 py-4">
+            {{ $vehiculos->links() }}
+        </div>
+    @endif
 @endsection

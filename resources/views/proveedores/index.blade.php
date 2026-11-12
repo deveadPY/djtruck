@@ -111,12 +111,27 @@
                             </td>
                             <td>
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold" style="color: var(--text)">{{ $p->telefono ?: '—' }}</span>
+                                    @php
+                                        $telLink = preg_replace('/[^\d+]/', '', (string) $p->telefono);
+                                        $waDigits = preg_replace('/\D/', '', (string) $p->telefono);
+                                        // Paraguay: número local con 0 inicial -> +595 sin el 0.
+                                        if (str_starts_with($waDigits, '0')) $waDigits = '595' . substr($waDigits, 1);
+                                    @endphp
+                                    @if($p->telefono)
+                                        <span class="flex items-center gap-2">
+                                            <a href="tel:{{ $telLink }}" onclick="event.stopPropagation()" class="text-xs font-bold text-foreground hover:text-primary hover:underline truncate">{{ $p->telefono }}</a>
+                                            @if($waDigits)
+                                                <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[0.65rem] font-bold text-green-500 hover:underline" title="Escribir por WhatsApp" aria-label="WhatsApp {{ $p->telefono }}"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>WhatsApp</a>
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span class="text-xs font-bold text-foreground">—</span>
+                                    @endif
                                     <span class="text-[0.6rem] text-muted-foreground truncate max-w-[120px]">{{ $p->email }}</span>
                                 </div>
                             </td>
                             <td class="text-right !pr-6" onclick="event.stopPropagation()">
-                                <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex justify-end gap-1">
                                     <a href="{{ route('proveedores.edit', $p->id) }}" class="p-2 rounded-xl hover:bg-surface-3 text-muted-foreground hover:text-foreground transition-all">
                                         <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
@@ -171,7 +186,22 @@
                 <div class="grid grid-cols-2 gap-4 pt-4 border-t" style="border-color: var(--border)">
                     <div class="flex flex-col">
                         <span class="text-[0.5rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Contacto Directo</span>
-                        <span class="text-xs font-bold truncate" style="color: var(--text)">{{ $p->telefono ?: 'No disp.' }}</span>
+                        @php
+                            $telLink = preg_replace('/[^\d+]/', '', (string) $p->telefono);
+                            $waDigits = preg_replace('/\D/', '', (string) $p->telefono);
+                            // Paraguay: número local con 0 inicial -> +595 sin el 0.
+                            if (str_starts_with($waDigits, '0')) $waDigits = '595' . substr($waDigits, 1);
+                        @endphp
+                        @if($p->telefono)
+                            <span class="flex items-center gap-2">
+                                <a href="tel:{{ $telLink }}" onclick="event.stopPropagation()" class="text-xs font-bold text-foreground hover:text-primary hover:underline truncate">{{ $p->telefono }}</a>
+                                @if($waDigits)
+                                    <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[0.65rem] font-bold text-green-500 hover:underline" title="Escribir por WhatsApp" aria-label="WhatsApp {{ $p->telefono }}"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>WhatsApp</a>
+                                @endif
+                            </span>
+                        @else
+                            <span class="text-xs font-bold text-foreground">No disp.</span>
+                        @endif
                     </div>
                     <div class="flex flex-col items-end">
                         <span class="text-[0.5rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Operativa</span>

@@ -4,38 +4,57 @@
 
 @push('styles')
     <style>
+        /* CSS plano: la directiva apply no funciona en un <style> normal con el CDN de Tailwind. */
         .img-drop-zone {
-            @apply border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200;
-            border-color: var(--border);
+            border: 2px dashed var(--border);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 200ms;
             color: var(--text-muted);
         }
 
         .img-drop-zone:hover,
         .img-drop-zone.dragover {
-            @apply border-primary;
-            background: rgba(108, 99, 255, .05);
+            border-color: var(--primary);
+            background: color-mix(in srgb, var(--primary) 5%, transparent);
         }
 
         .img-preview-item {
-            @apply relative rounded-xl overflow-hidden border aspect-[4/3];
-            border-color: var(--border);
+            position: relative;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            aspect-ratio: 4 / 3;
         }
 
         .img-preview-item img {
-            @apply w-full h-full object-cover;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .img-preview-item .remove-img {
-            @apply absolute top-1 right-1 w-6 h-6 rounded-full border-none cursor-pointer flex items-center justify-center text-white text-xs;
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
             background: rgba(0, 0, 0, .6);
         }
     </style>
 @endpush
 
 @section('content')
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>
-    @endif
     @if($errors->any())
         <div class="flash-error">{{ $errors->first() }}</div>
     @endif
@@ -390,13 +409,22 @@
             }
 
             function updatePreview() {
-                previewGrid.innerHTML = '';
+                previewGrid.replaceChildren();
                 filesArray.forEach((file, i) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const div = document.createElement('div');
                         div.className = 'img-preview-item';
-                        div.innerHTML = `<img src="${e.target.result}"><button type="button" class="remove-img" onclick="removeFile(${i})">&times;</button>`;
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = file.name;
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'remove-img';
+                        btn.textContent = '\u00d7';
+                        btn.setAttribute('aria-label', 'Quitar imagen');
+                        btn.addEventListener('click', () => removeFile(i));
+                        div.append(img, btn);
                         previewGrid.appendChild(div);
                     };
                     reader.readAsDataURL(file);
@@ -420,7 +448,16 @@
                 const span = document.createElement('span');
                 span.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border';
                 span.style = 'border-color:var(--border);background:var(--bg-card)';
-                span.innerHTML = `${val} <button type="button" onclick="removeTag(this)" class="opacity-60 hover:opacity-100">&times;</button><input type="hidden" name="equipamiento[]" value="${val}">`;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'opacity-60 hover:opacity-100';
+                btn.textContent = '\u00d7';
+                btn.addEventListener('click', () => removeTag(btn));
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'equipamiento[]';
+                hidden.value = val;
+                span.append(val + ' ', btn, hidden);
                 container.appendChild(span);
                 input.value = '';
             }

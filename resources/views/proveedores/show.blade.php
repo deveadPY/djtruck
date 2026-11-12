@@ -34,9 +34,11 @@
                     <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
                 </svg>
             </a>
-            <form method="POST" action="{{ route('proveedores.destroy', $proveedor->id) }}" onsubmit="return confirm('¿Eliminar registro comercial?')">
+            <form method="POST" action="{{ route('proveedores.destroy', $proveedor->id) }}"
+                data-danger-confirm="Se eliminará el proveedor {{ $proveedor->razon_social }}. Sus compras registradas se conservan."
+                data-danger-title="Eliminar proveedor">
                 @csrf @method('DELETE')
-                <button type="submit" class="p-3 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-lg">
+                <button type="submit" class="p-3 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-lg" title="Eliminar proveedor" aria-label="Eliminar proveedor">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
@@ -92,7 +94,22 @@
                         </div>
                         <div class="flex flex-col min-w-0">
                             <span class="text-[0.55rem] font-black text-muted-foreground uppercase tracking-widest">Línea Directa</span>
-                            <span class="text-xs font-bold text-foreground truncate">{{ $proveedor->telefono ?: 'No especificado' }}</span>
+                            @php
+                                $telLink = preg_replace('/[^\d+]/', '', (string) $proveedor->telefono);
+                                $waDigits = preg_replace('/\D/', '', (string) $proveedor->telefono);
+                                // Paraguay: número local con 0 inicial -> +595 sin el 0.
+                                if (str_starts_with($waDigits, '0')) $waDigits = '595' . substr($waDigits, 1);
+                            @endphp
+                            @if($proveedor->telefono)
+                                <span class="flex items-center gap-2">
+                                    <a href="tel:{{ $telLink }}" onclick="event.stopPropagation()" class="text-xs font-bold text-foreground hover:text-primary hover:underline truncate">{{ $proveedor->telefono }}</a>
+                                    @if($waDigits)
+                                        <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[0.65rem] font-bold text-green-500 hover:underline" title="Escribir por WhatsApp" aria-label="WhatsApp {{ $proveedor->telefono }}"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>WhatsApp</a>
+                                    @endif
+                                </span>
+                            @else
+                                <span class="text-xs font-bold text-foreground">No especificado</span>
+                            @endif
                         </div>
                     </div>
                     <div class="flex items-center gap-3 p-3 rounded-2xl bg-surface2/50 border border-border group hover:bg-primary/5 transition-all">

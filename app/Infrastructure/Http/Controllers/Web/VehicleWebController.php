@@ -40,8 +40,12 @@ class VehicleWebController extends Controller
     public function index(Request $request)
     {
         $q = $request->input('q');
-        $estado = in_array($request->input('estado'), array_keys(self::ESTADOS_FILTRO), true) ? $request->input('estado') : null;
-        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15, $estado);
+        // Por defecto se lista el stock; "TODOS" quita el filtro.
+        $estado = $request->input('estado', 'STOCK');
+        if ($estado !== 'TODOS' && !array_key_exists($estado, self::ESTADOS_FILTRO)) {
+            $estado = 'STOCK';
+        }
+        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15, $estado === 'TODOS' ? null : $estado);
         $vehiculos->appends(['q' => $q, 'estado' => $estado]); // Ensure pagination links keep the query
         $estados = self::ESTADOS_FILTRO;
 
@@ -79,7 +83,9 @@ class VehicleWebController extends Controller
             ->latest()
             ->get();
 
-        return view('vehicles.show', compact('vehiculo', 'gastos', 'proveedor', 'imagenes', 'documentos'));
+        $estados = self::ESTADOS_FILTRO;
+
+        return view('vehicles.show', compact('vehiculo', 'gastos', 'proveedor', 'imagenes', 'documentos', 'estados'));
     }
 
     public function create()
@@ -102,8 +108,11 @@ class VehicleWebController extends Controller
 
         $proveedores = DB::table('proveedores')->where('activo', true)->whereNull('deleted_at')->get();
         $imagenes    = $this->imageRepository->getByVehicle((int) $id);
+        $estados     = self::ESTADOS_FILTRO;
+        // VENDIDO lo fija la venta: no se elige desde este formulario.
+        $estadosEditables = array_diff_key($estados, array_flip(['STOCK', 'VENDIDO']));
 
-        return view('vehicles.edit', compact('vehiculo', 'proveedores', 'imagenes'));
+        return view('vehicles.edit', compact('vehiculo', 'proveedores', 'imagenes', 'estados', 'estadosEditables'));
     }
 
     public function update(UpdateVehicleRequest $request, $id)

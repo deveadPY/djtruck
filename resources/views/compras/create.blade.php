@@ -118,6 +118,7 @@
                     <div class="form-group">
                         <label class="form-label">Tasa de Cambio (a USD)</label>
                         <input type="number" name="tasa_cambio" id="tasa_cambio" value="1" step="0.0001" class="form-input" oninput="calculateAll()">
+                        <p id="tasaAviso" class="hidden text-xs text-amber-500 mt-1" role="status">No hay cotización cargada para esta moneda: se usó una tasa de referencia. Verifíquela antes de guardar.</p>
                     </div>
 
                     <div class="pt-4 border-t border-border space-y-2">
@@ -194,7 +195,7 @@
     let itemIndex = 0;
     const itemsBody = document.getElementById('itemsBody');
     const template = document.getElementById('itemRowTemplate').innerHTML;
-    let currentRates = { PYG: 1, BRL: 1 };
+    let currentRates = {};
 
     function updateFileName(input) {
         const count = input.files.length;
@@ -230,7 +231,7 @@
                     if (!opt.value) return;
                     const optProvId = opt.getAttribute('data-proveedor');
                     
-                    if (!proveedorId || optProvId == proveedorId) {
+                    if (!proveedorId || !optProvId || optProvId == proveedorId) {
                         ts.addOption({
                             value: opt.value,
                             text: opt.text,
@@ -338,10 +339,15 @@
         
         if (moneda === 'USD') {
             tasaInput.value = 1;
+            document.getElementById('tasaAviso').classList.add('hidden');
             tasaInput.readOnly = true;
             tasaInput.classList.add('bg-surface3', 'opacity-70');
         } else {
-            tasaInput.value = currentRates[moneda] || (moneda === 'PYG' ? 7300 : 5);
+            const tasaHoy = parseFloat(currentRates[moneda]);
+                // La API devuelve 1 cuando no hay cotización: se usa una referencia y se avisa.
+                const sinCotizacion = !(tasaHoy > 1);
+                tasaInput.value = sinCotizacion ? (moneda === 'PYG' ? 7300 : 5) : tasaHoy;
+                document.getElementById('tasaAviso').classList.toggle('hidden', !sinCotizacion);
             tasaInput.readOnly = false;
             tasaInput.classList.remove('bg-surface3', 'opacity-70');
         }
@@ -378,38 +384,6 @@
         else container.style.display = 'flex';
     }
 
-    function filterProductsByProvider() {
-        const proveedorId = document.getElementById('proveedor_id_selector').value;
-        const selects = document.querySelectorAll('.producto-select');
-        
-        selects.forEach(select => {
-            if (select.tomselect) {
-                const ts = select.tomselect;
-                const currentValue = ts.getValue();
-                let currentValid = false;
-                
-                // Iterar sobre todas las opciones originales
-                const options = select.querySelectorAll('option');
-                ts.clearOptions();
-                
-                options.forEach(opt => {
-                    if (!opt.value) return;
-                    const optProvId = opt.getAttribute('data-proveedor');
-                    
-                    if (!proveedorId || optProvId == proveedorId) {
-                        ts.addOption({
-                            value: opt.value,
-                            text: opt.text
-                        });
-                        if (opt.value == currentValue) currentValid = true;
-                    }
-                });
-                
-                if (!currentValid) ts.setValue('');
-                ts.refreshOptions(false);
-            }
-        });
-    }
 
     // Inicializar
     document.addEventListener('DOMContentLoaded', () => {
