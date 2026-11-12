@@ -44,6 +44,7 @@
 </style>
 @endpush
 
+@section('flash-propio', '1')
 @section('content')
 
     {{-- Flash de éxito con link a recibo --}}
@@ -83,7 +84,7 @@
         </div>
 
         {{-- Botones INGRESO / EGRESO con modal Alpine.js --}}
-        <div class="flex gap-2" x-data="movModal()">
+        <div class="flex gap-2" x-data="movModal()" @keydown.escape.window="show=false">
             <button type="button" class="btn btn-success" @click="abrir('INGRESO')">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -98,13 +99,14 @@
             </button>
 
             {{-- ── Modal ── --}}
-            <div class="mov-modal-overlay" x-show="show" x-transition.opacity @click.self="show=false" style="display:none">
+            <div class="mov-modal-overlay" x-show="show" x-transition.opacity @click.self="show=false" style="display:none"
+                 role="dialog" aria-modal="true" aria-labelledby="movModalTitle">
                 <div class="mov-modal-box" @click.stop x-transition.scale>
 
                     {{-- Header dinámico según tipo --}}
                     <div class="mov-modal-header" :class="tipo === 'INGRESO' ? 'mov-modal-header-ingreso' : 'mov-modal-header-egreso'">
                         <div>
-                            <div class="font-bold text-base" x-text="tipo === 'INGRESO' ? '↑ Agregar efectivo' : '↓ Retirar efectivo'"></div>
+                            <div id="movModalTitle" class="font-bold text-base" x-text="tipo === 'INGRESO' ? '↑ Agregar efectivo' : '↓ Retirar efectivo'"></div>
                             <div class="text-xs opacity-75 mt-0.5">{{ $caja->nombre }}</div>
                         </div>
                         <button type="button" @click="show=false" class="opacity-75 hover:opacity-100 transition">
@@ -115,7 +117,7 @@
                     </div>
 
                     <div class="mov-modal-body">
-                        <form method="POST" action="{{ route('finance.caja.movimiento', $caja->codigo) }}">
+                        <form method="POST" action="{{ route('finance.caja.movimiento', $caja->codigo) }}" @submit="enviando = true">
                             @csrf
                             <input type="hidden" name="tipo" :value="tipo">
 
@@ -155,7 +157,7 @@
 
                             <div class="flex justify-end gap-2 mt-5">
                                 <button type="button" class="btn btn-ghost" @click="show=false">Cancelar</button>
-                                <button type="submit" class="btn"
+                                <button type="submit" class="btn" :disabled="enviando"
                                         :class="tipo === 'INGRESO' ? 'btn-success' : 'btn-danger'"
                                         x-text="tipo === 'INGRESO' ? '↑ Registrar ingreso' : '↓ Registrar egreso'">
                                 </button>
@@ -168,7 +170,7 @@
     </div>
 
     {{-- ── Stats ──────────────────────────────────────────────────────────── --}}
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div class="stat-card {{ $saldo['saldo_usd'] < 0 ? 'danger' : '' }}">
             <div class="stat-label">Saldo actual (USD)</div>
             <div class="stat-value {{ $saldo['saldo_usd'] >= 0 ? 'text-green-500' : 'text-red-500' }}">
@@ -177,19 +179,11 @@
             <div class="text-xs mt-1" style="color:var(--text-muted)">Equivalente USD</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Saldo actual (PYG)</div>
+            <div class="stat-label">Neto en efectivo PYG</div>
             <div class="stat-value text-blue-500">
                 Gs {{ number_format($saldo['saldo_pyg'] ?? 0, 0, ',', '.') }}
             </div>
-            <div class="text-xs mt-1" style="color:var(--text-muted)">Solo movimientos en PYG</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Total ingresos (período)</div>
-            <div class="stat-value text-green-500">$ {{ number_format($totalesPeriodo->ingresos_usd ?? 0, 2, ',', '.') }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Total egresos (período)</div>
-            <div class="stat-value text-red-500">$ {{ number_format($totalesPeriodo->egresos_usd ?? 0, 2, ',', '.') }}</div>
+            <div class="text-xs mt-1" style="color:var(--text-muted)">Ingresos menos egresos cargados en guaraníes; no es un saldo de caja.</div>
         </div>
     </div>
 
@@ -228,7 +222,7 @@
             </form>
         </div>
 
-        {{-- Totales del período --}}
+        {{-- Totales del período (respetan el filtro de tipo, igual que el PDF) --}}
         <div class="grid grid-cols-3 text-center border-b" style="border-color:var(--border)">
             <div class="py-3 border-r" style="border-color:var(--border)">
                 <div class="text-xs" style="color:var(--text-muted)">Ingresos período</div>
@@ -272,18 +266,7 @@
                             </td>
                             <td>
                                 @if($m->ref_type)
-                                    @php
-                                        $origenLabel = match($m->ref_type) {
-                                            'venta'            => 'Venta',
-                                            'cuota'            => 'Cuota',
-                                            'factura_gasto_op' => 'Gasto local',
-                                            'factura_vehiculo' => 'Gasto vehículo',
-                                            'transferencia'    => '↔ Transferencia',
-                                            'manual'           => 'Manual',
-                                            default            => $m->ref_type,
-                                        };
-                                    @endphp
-                                    <span class="ref-chip">{{ $origenLabel }}</span>
+                                    <span class="ref-chip">{{ $refLabels[$m->ref_type] ?? $m->ref_type }}</span>
                                 @else
                                     <span style="color:var(--text-muted)">—</span>
                                 @endif
@@ -336,6 +319,7 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('movModal', () => ({
         show: false,
+        enviando: false,
         tipo: 'INGRESO',
         abrir(tipo) {
             this.tipo = tipo;

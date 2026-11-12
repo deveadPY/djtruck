@@ -61,32 +61,6 @@
     .mov-ingreso { color: #10b981; font-weight: 700; }
     .mov-egreso  { color: #ef4444; font-weight: 700; }
 
-    /* ── Modal movimiento ── */
-    .mov-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,.55);
-        backdrop-filter: blur(3px); z-index: 200;
-        display: flex; align-items: center; justify-content: center; padding: 1rem;
-    }
-    .mov-box {
-        background: var(--surface); border: 1px solid var(--border);
-        border-radius: 1rem; width: 100%; max-width: 460px;
-        box-shadow: 0 24px 64px rgba(0,0,0,.4); overflow: hidden;
-    }
-    .mov-header {
-        padding: 1.2rem 1.5rem; color: #fff;
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .mov-header-ingreso { background: linear-gradient(135deg,#059669,#10b981); }
-    .mov-header-egreso  { background: linear-gradient(135deg,#dc2626,#ef4444); }
-    .mov-body { padding: 1.5rem; }
-    .tipo-pill {
-        display: inline-flex; align-items: center; gap: .35rem;
-        padding: .28rem .75rem; border-radius: 99px;
-        font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-    }
-    .tipo-pill-ingreso { background: rgba(16,185,129,.15); color: #059669; }
-    .tipo-pill-egreso  { background: rgba(239,68,68,.15);  color: #dc2626; }
-
     /* ── Transfer modal (legacy) ── */
     .transfer-modal-overlay {
         display: none; position: fixed; inset: 0; z-index: 200;
@@ -104,13 +78,6 @@
 
 @section('content')
 
-{{-- Alpine.js wrapper para el modal compartido de movimientos --}}
-<div x-data="cajaDashModal()">
-
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>
-    @endif
-
     {{-- ── KPIs del mes ─────────────────────────────────────────────────── --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="stat-card">
@@ -123,7 +90,7 @@
             <div class="stat-value text-red-500">$ {{ number_format($egresosMes, 2, ',', '.') }}</div>
             <div class="text-xs mt-1" style="color:var(--text-muted)">USD acumulado</div>
         </div>
-        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="stat-card {{ $cuotasVencidas > 0 ? 'warning' : '' }}"> 0 ? 'warning' : '' }}">
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="stat-card {{ $cuotasVencidas > 0 ? 'warning' : '' }}">
             <div class="stat-label">Cuotas vencidas</div>
             <div class="stat-value {{ $cuotasVencidas > 0 ? 'text-amber-500' : 'text-green-500' }}">
                 {{ $cuotasVencidas }}
@@ -268,80 +235,12 @@
         </div>
     </div>
 
-    {{-- ── Modal movimiento rápido (compartido, Alpine.js) ─────────────── --}}
-    <div class="mov-overlay" x-show="show" x-transition.opacity @click.self="show=false" style="display:none">
-        <div class="mov-box" @click.stop x-transition>
-
-            <div class="mov-header" :class="tipo === 'INGRESO' ? 'mov-header-ingreso' : 'mov-header-egreso'">
-                <div>
-                    <div class="font-bold text-base"
-                         x-text="tipo === 'INGRESO' ? '↑ Agregar efectivo' : '↓ Retirar efectivo'"></div>
-                    <div class="text-xs opacity-75 mt-0.5" x-text="cajaNombre"></div>
-                </div>
-                <button type="button" @click="show=false" class="opacity-75 hover:opacity-100 transition">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="mov-body">
-                <form method="POST" :action="formAction">
-                    @csrf
-                    <input type="hidden" name="tipo" :value="tipo">
-
-                    <div class="mb-4">
-                        <span class="tipo-pill" :class="tipo === 'INGRESO' ? 'tipo-pill-ingreso' : 'tipo-pill-egreso'">
-                            <span x-text="tipo === 'INGRESO' ? '↑' : '↓'"></span>
-                            <span x-text="tipo === 'INGRESO' ? 'Ingreso de efectivo' : 'Egreso de efectivo'"></span>
-                        </span>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="form-group">
-                                <label class="form-label">Moneda *</label>
-                                <select name="moneda" class="form-input" required>
-                                    <template x-for="m in ['USD','PYG','BRL']" :key="m">
-                                        <option :value="m" :selected="m === monedaPrincipal" x-text="m"></option>
-                                    </template>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Monto *</label>
-                                <input type="number" name="monto" class="form-input"
-                                       step="0.01" min="0.01" required placeholder="0.00"
-                                       x-ref="montoInput">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Concepto / Descripción *</label>
-                            <input type="text" name="concepto" class="form-input" required maxlength="300"
-                                   :placeholder="tipo === 'INGRESO'
-                                       ? 'Ej: Reposición caja chica, aporte...'
-                                       : 'Ej: Gastos de oficina, suministros...'">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-2 mt-5">
-                        <button type="button" class="btn btn-ghost" @click="show=false">Cancelar</button>
-                        <button type="submit" class="btn"
-                                :class="tipo === 'INGRESO' ? 'btn-success' : 'btn-danger'"
-                                x-text="tipo === 'INGRESO' ? '↑ Registrar ingreso' : '↓ Registrar egreso'">
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-</div>{{-- /Alpine wrapper --}}
 
 {{-- ── Modal transferencia ──────────────────────────────────────────── --}}
-<div class="transfer-modal-overlay" id="transferModal">
+<div class="transfer-modal-overlay" id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferModalTitle">
     <div class="transfer-box">
-        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:var(--text)">Transferir entre cajas</h3>
-        <form method="POST" action="{{ route('finance.transferir') }}">
+        <h3 id="transferModalTitle" style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:var(--text)">Transferir entre cajas</h3>
+        <form method="POST" action="{{ route('finance.transferir') }}" onsubmit="this.querySelector('[type=submit]').disabled = true">
             @csrf
             <div class="form-grid">
                 <div class="form-group">
@@ -388,30 +287,12 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
-    // Alpine component
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('cajaDashModal', () => ({
-            show: false,
-            tipo: 'INGRESO',
-            cajaCodigo: '',
-            cajaNombre: '',
-            monedaPrincipal: 'USD',
-            formAction: '',
-            abrir(tipo, codigo, nombre, moneda, action) {
-                this.tipo            = tipo;
-                this.cajaCodigo      = codigo;
-                this.cajaNombre      = nombre;
-                this.monedaPrincipal = moneda;
-                this.formAction      = action;
-                this.show            = true;
-                this.$nextTick(() => this.$refs.montoInput?.focus());
-            },
-        }));
-    });
-
     // Cerrar modal transferencia al click fuera
     document.getElementById('transferModal').addEventListener('click', function(e) {
         if (e.target === this) this.classList.remove('open');
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') document.getElementById('transferModal').classList.remove('open');
     });
 
     // Flujo 7 días

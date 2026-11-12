@@ -16,6 +16,20 @@ use Illuminate\Support\Facades\DB;
 
 final class FinanceWebController extends Controller
 {
+    /** Etiquetas legibles del origen (ref_type) de un movimiento de caja. */
+    public const REF_LABELS = [
+        'venta'            => 'Venta',
+        'cuota'            => 'Cuota',
+        'recibo_cuota'     => 'Cobro de cuota',
+        'compra'           => 'Compra',
+        'comision'         => 'Comisión',
+        'factura_gasto_op' => 'Gasto local',
+        'factura_vehiculo' => 'Gasto vehículo',
+        'factura_mixto'    => 'Gasto mixto',
+        'transferencia'    => 'Transferencia',
+        'manual'           => 'Manual',
+    ];
+
     public function __construct(
         private readonly CajaService       $cajas,
         private readonly CurrencyConverter $currency,
@@ -28,12 +42,15 @@ final class FinanceWebController extends Controller
         $chica   = $this->buildCajaResumen('CAJA_CHICA');
         $capital = $this->buildCajaResumen('CAJA_CAPITAL');
 
-        $ingresosMes = DB::table('movimientos_caja')
-            ->whereNull('deleted_at')->where('tipo', 'INGRESO')
+        // Las transferencias entre cajas no son ingresos ni egresos de la empresa.
+        $sinTransferencias = fn () => DB::table('movimientos_caja')
+            ->whereNull('deleted_at')
+            ->where(fn ($q) => $q->whereNull('ref_type')->orWhere('ref_type', '!=', 'transferencia'));
+
+        $ingresosMes = $sinTransferencias()->where('tipo', 'INGRESO')
             ->where('created_at', '>=', now()->startOfMonth())->sum('monto_usd');
 
-        $egresosMes = DB::table('movimientos_caja')
-            ->whereNull('deleted_at')->where('tipo', 'EGRESO')
+        $egresosMes = $sinTransferencias()->where('tipo', 'EGRESO')
             ->where('created_at', '>=', now()->startOfMonth())->sum('monto_usd');
 
         $cuotasVencidas = DB::table('cuotas')
@@ -41,8 +58,7 @@ final class FinanceWebController extends Controller
             ->where('fecha_vencimiento', '<', now()->toDateString())
             ->count();
 
-        $flujo7dias = DB::table('movimientos_caja')
-            ->whereNull('deleted_at')
+        $flujo7dias = $sinTransferencias()
             ->where('created_at', '>=', now()->subDays(6)->startOfDay())
             ->selectRaw(
                 "DATE(created_at) as fecha,
@@ -86,6 +102,7 @@ final class FinanceWebController extends Controller
             ->where('caja_id', $caja->id)->whereNull('deleted_at')
             ->whereDate('created_at', '>=', $desde)
             ->whereDate('created_at', '<=', $hasta)
+            ->when($tipoFil, fn ($q) => $q->where('tipo', $tipoFil))
             ->selectRaw(
                 "SUM(CASE WHEN tipo='INGRESO' THEN monto_usd ELSE 0 END) as ingresos_usd,
                  SUM(CASE WHEN tipo='EGRESO'  THEN monto_usd ELSE 0 END) as egresos_usd"
@@ -94,7 +111,7 @@ final class FinanceWebController extends Controller
         return view('finance.caja', compact(
             'caja', 'saldo', 'movimientos',
             'totalesPeriodo', 'desde', 'hasta', 'tipoFil'
-        ));
+        ) + ['refLabels' => self::REF_LABELS]);
     }
 
     // ── Movimiento manual ───────────────────────────────────────────────────
@@ -149,7 +166,7 @@ final class FinanceWebController extends Controller
         $usuario = DB::table('users')->where('id', $movimiento->created_by)->first();
         $empresa = EmpresaSettings::get();
 
-        $pdf = Pdf::loadView('pdfs.recibo-movimiento-caja', compact('movimiento', 'caja', 'empresa', 'usuario'))
+        $pdf = Pdf::loadView('pdfs.recibo-movimiento-caja', compact('movimiento', 'caja', 'empresa', 'usuario') + ['refLabels' => self::REF_LABELS])
             ->setPaper('a5', 'portrait');
 
         // Autoprint Script
@@ -247,7 +264,7 @@ final class FinanceWebController extends Controller
         $pdf = Pdf::loadView('pdfs.reporte-caja', compact(
             'caja', 'movimientos', 'totales', 'saldoActual',
             'empresa', 'usuario', 'desde', 'hasta', 'tipoFil'
-        ))->setPaper('a4', 'portrait');
+        ) + ['refLabels' => self::REF_LABELS])->setPaper('a4', 'portrait');
 
         $filename = "reporte-{$codigo}-{$desde}-a-{$hasta}.pdf";
 

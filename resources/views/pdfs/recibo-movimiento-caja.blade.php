@@ -109,7 +109,7 @@
                 <table class="info-table">
                     <tr><td class="label">Tipo:</td><td class="value">{{ $movimiento->tipo }}</td></tr>
                     <tr><td class="label">Concepto:</td><td class="value">{{ $movimiento->concepto }}</td></tr>
-                    <tr><td class="label">Origen:</td><td class="value">{{ ucfirst($movimiento->ref_type ?? 'Manual') }}</td></tr>
+                    <tr><td class="label">Origen:</td><td class="value">{{ $refLabels[$movimiento->ref_type ?? 'manual'] ?? $movimiento->ref_type }}</td></tr>
                 </table>
             </td>
         </tr>

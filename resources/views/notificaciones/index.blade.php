@@ -63,8 +63,8 @@
     </div>
 
     {{-- ── Tabs ────────────────────────────────────────────────────────────── --}}
-    <div class="notif-tabs" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
-        <button class="notif-tab-btn active"
+    <div class="notif-tabs" role="tablist" aria-label="Tipos de notificación" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+        <button type="button" role="tab" aria-selected="true" aria-controls="panel-mora" class="notif-tab-btn active"
             style="border:1px solid #ef4444; color:#ef4444; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('mora',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -73,7 +73,7 @@
             </svg>
             En Mora ({{ $cuotasMora->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-hoy" class="notif-tab-btn"
             style="border:1px solid #f59e0b; color:#f59e0b; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('hoy',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -82,7 +82,7 @@
             </svg>
             Cobros de Hoy ({{ $cuotasHoy->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-proximas" class="notif-tab-btn"
             style="border:1px solid #3b82f6; color:#3b82f6; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('proximas',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -90,7 +90,7 @@
             </svg>
             Próx. 7 Días ({{ $cuotasProximas->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-facturas_pagar" class="notif-tab-btn"
             style="border:1px solid #8b5cf6; color:#8b5cf6; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('facturas_pagar',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -99,7 +99,7 @@
             </svg>
             Facturas Pagar ({{ $facturasPagar->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-facturas_declarar" class="notif-tab-btn"
             style="border:1px solid #10b981; color:#10b981; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('facturas_declarar',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -108,7 +108,7 @@
             </svg>
             A Declarar ({{ $facturasDeclarar->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-stock" class="notif-tab-btn"
             style="border:1px solid #f59e0b; color:#f59e0b; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('stock',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -119,7 +119,7 @@
     </div>
 
     {{-- ── Tab: En Mora ────────────────────────────────────────────────────── --}}
-    <div id="panel-mora" class="notif-panel active">
+    <div id="panel-mora" role="tabpanel" class="notif-panel active">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#ef4444; display: flex; align-items: center; gap: 0.5rem;">
@@ -182,13 +182,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $cuotasMora->appends(request()->except('mora_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $cuotasMora->appends(request()->except('mora_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Hoy ────────────────────────────────────────────────────────── --}}
-    <div id="panel-hoy" class="notif-panel" style="display:none">
+    <div id="panel-hoy" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#f59e0b; display: flex; align-items: center; gap: 0.5rem;">
@@ -238,13 +238,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $cuotasHoy->appends(request()->except('hoy_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $cuotasHoy->appends(request()->except('hoy_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Próximas ───────────────────────────────────────────────────── --}}
-    <div id="panel-proximas" class="notif-panel" style="display:none">
+    <div id="panel-proximas" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#3b82f6; display: flex; align-items: center; gap: 0.5rem;">
@@ -303,13 +303,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $cuotasProximas->appends(request()->except('prox_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $cuotasProximas->appends(request()->except('prox_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Facturas a Pagar ───────────────────────────────────────────── --}}
-    <div id="panel-facturas_pagar" class="notif-panel" style="display:none">
+    <div id="panel-facturas_pagar" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#8b5cf6; display: flex; align-items: center; gap: 0.5rem;">
@@ -348,7 +348,7 @@
                                     <td style="font-weight:600">{{ $row->proveedor_nombre }}</td>
                                     <td>{{ $row->numero_factura }}</td>
                                     <td>{{ \Carbon\Carbon::parse($row->fecha_factura)->format('d/m/Y') }}</td>
-                                    <td style="font-weight:600;color:#8b5cf6">{{ $row->moneda }}
+                                    <td style="font-weight:600;color:#8b5cf6">USD
                                         {{ number_format($row->total_usd, 2, ',', '.') }}
                                     </td>
                                     <td><a href="{{ route('facturas.show', $row->factura_id) }}" class="btn btn-ghost"
@@ -358,13 +358,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $facturasPagar->appends(request()->except('pagar_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $facturasPagar->appends(request()->except('pagar_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Facturas a Declarar ────────────────────────────────────────── --}}
-    <div id="panel-facturas_declarar" class="notif-panel" style="display:none">
+    <div id="panel-facturas_declarar" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#10b981; display: flex; align-items: center; gap: 0.5rem;">
@@ -403,7 +403,7 @@
                                     <td style="font-weight:600">{{ $row->proveedor_nombre }}</td>
                                     <td>{{ $row->numero_factura }}</td>
                                     <td>{{ \Carbon\Carbon::parse($row->fecha_factura)->format('d/m/Y') }}</td>
-                                    <td style="font-weight:600">{{ $row->moneda }} {{ number_format($row->total_usd, 2, ',', '.') }}
+                                    <td style="font-weight:600">USD {{ number_format($row->total_usd, 2, ',', '.') }}
                                     </td>
                                     <td><a href="{{ route('facturas.show', $row->factura_id) }}" class="btn btn-ghost"
                                             style="font-size:.72rem;padding:.3rem .7rem">Ver</a></td>
@@ -412,14 +412,14 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $facturasDeclarar->appends(request()->except('declarar_page'))->links() }}
+                <div style="padding:.75rem 1rem">{{ $facturasDeclarar->appends(request()->except('declarar_page', 'tab'))->links() }}
                 </div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Stock Bajo ────────────────────────────────────────────────── --}}
-    <div id="panel-stock" class="notif-panel" style="display:none">
+    <div id="panel-stock" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#f59e0b; display: flex; align-items: center; gap: 0.5rem;">
@@ -471,7 +471,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $repuestosBajos->appends(request()->except('stock_page'))->links() }}
+                <div style="padding:.75rem 1rem">{{ $repuestosBajos->appends(request()->except('stock_page', 'tab'))->links() }}
                 </div>
             @endif
         </div>
@@ -482,14 +482,21 @@
             document.querySelectorAll('.notif-panel').forEach(function (p) { p.style.display = 'none'; });
             document.querySelectorAll('.notif-tab-btn').forEach(function (b) {
                 b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
                 b.style.background = 'transparent';
                 b.style.color = b.dataset.color; // la pestaña que deja de estar activa recupera su color
             });
 
             document.getElementById('panel-' + name).style.display = 'block';
             btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
             btn.style.background = btn.dataset.color;
             btn.style.color = 'white';
+
+            // La pestaña queda en la URL para recargar/compartir; la paginación ya la conserva.
+            const url = new URL(location.href);
+            url.searchParams.set('tab', name);
+            history.replaceState(null, '', url);
         }
 
         // Inicializar tab activa

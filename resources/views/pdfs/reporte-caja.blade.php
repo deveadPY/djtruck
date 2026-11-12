@@ -207,16 +207,7 @@
                     if ($m->tipo === 'INGRESO') $runningUsd += (float) $m->monto_usd;
                     else $runningUsd -= (float) $m->monto_usd;
 
-                    $origenLabel = match($m->ref_type) {
-                        'venta'            => 'Venta',
-                        'cuota'            => 'Cuota',
-                        'factura_gasto_op' => 'Gasto local',
-                        'factura_vehiculo' => 'Gasto veh.',
-                        'factura_mixto'    => 'Mixto',
-                        'transferencia'    => 'Transfer.',
-                        'manual'           => 'Manual',
-                        default            => $m->ref_type ?? '-',
-                    };
+                    $origenLabel = $refLabels[$m->ref_type] ?? ($m->ref_type ?? '-');
                 @endphp
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($m->created_at)->format('d/m/Y H:i') }}</td>

@@ -12,6 +12,8 @@ class FacturaWebController extends Controller
 {
     public function __construct(private readonly CajaService $cajas) {}
 
+    private const ESTADOS = ['PENDIENTE', 'APROBADA', 'PAGADA', 'ANULADA'];
+
     public function index(Request $request)
     {
         $query = DB::table('facturas_proveedores')
@@ -32,10 +34,17 @@ class FacturaWebController extends Controller
             $query->whereDate('facturas_proveedores.fecha_factura', '<=', $request->fecha_fin);
         }
 
-        $facturas = $query->latest('facturas_proveedores.fecha_factura')->get();
-        $proveedores = DB::table('proveedores')->where('activo', true)->whereNull('deleted_at')->orderBy('razon_social')->get();
+        if (in_array($request->input('estado'), self::ESTADOS, true)) {
+            $query->where('facturas_proveedores.estado', $request->input('estado'));
+        }
 
-        return view('facturas.index', compact('facturas', 'proveedores'));
+        // Total de todo el filtro (no solo de la página visible).
+        $totalFiltrado = (float) (clone $query)->sum('facturas_proveedores.total_usd');
+        $facturas = $query->latest('facturas_proveedores.fecha_factura')->paginate(25)->withQueryString();
+        $proveedores = DB::table('proveedores')->where('activo', true)->whereNull('deleted_at')->orderBy('razon_social')->get();
+        $estados = self::ESTADOS;
+
+        return view('facturas.index', compact('facturas', 'proveedores', 'totalFiltrado', 'estados'));
     }
 
     public function create()
