@@ -37,6 +37,14 @@ class VehicleWebController extends Controller
         'BAJA'           => 'Baja',
     ];
 
+    private const ORDENES = [
+        'recientes'   => 'Más recientes',
+        'antiguos'    => 'Más días en stock',
+        'precio_asc'  => 'Precio: menor a mayor',
+        'precio_desc' => 'Precio: mayor a menor',
+        'anio_desc'   => 'Año: más nuevo',
+    ];
+
     public function index(Request $request)
     {
         $q = $request->input('q');
@@ -45,11 +53,16 @@ class VehicleWebController extends Controller
         if ($estado !== 'TODOS' && !array_key_exists($estado, self::ESTADOS_FILTRO)) {
             $estado = 'STOCK';
         }
-        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15, $estado === 'TODOS' ? null : $estado);
-        $vehiculos->appends(['q' => $q, 'estado' => $estado]); // Ensure pagination links keep the query
+        $orden = $request->input('orden', 'recientes');
+        if (!is_string($orden) || !array_key_exists($orden, self::ORDENES)) {
+            $orden = 'recientes';
+        }
+        $vehiculos = $this->vehicleRepository->searchPaginated($q, 15, $estado === 'TODOS' ? null : $estado, $orden);
+        $vehiculos->appends(['q' => $q, 'estado' => $estado, 'orden' => $orden]); // Ensure pagination links keep the query
         $estados = self::ESTADOS_FILTRO;
+        $ordenes = self::ORDENES;
 
-        return view('vehicles.index', compact('vehiculos', 'q', 'estado', 'estados'));
+        return view('vehicles.index', compact('vehiculos', 'q', 'estado', 'estados', 'orden', 'ordenes'));
     }
 
     public function show($id)

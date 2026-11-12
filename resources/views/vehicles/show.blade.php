@@ -61,12 +61,22 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-xs font-semibold uppercase tracking-wider mb-4" style="color: var(--text-muted);">Datos del vehículo</h3>
-                    @foreach([
+                    @php
+                        $motor = trim(($vehiculo->motor_descripcion ?? '') . ($vehiculo->potencia_hp ? " · {$vehiculo->potencia_hp} HP" : ''), ' ·');
+                        $enStock = !in_array($vehiculo->estado, ['VENDIDO', 'BAJA'], true) && $vehiculo->created_at;
+                        $diasStock = $enStock ? (int) $vehiculo->created_at->diffInDays(now()) : null;
+                    @endphp
+                    @foreach(array_filter([
                             'Chasis' => $vehiculo->numero_chasis,
+                            'Año' => $vehiculo->anio,
                             'Color' => $vehiculo->color,
                             'Tipo' => $vehiculo->tipo_vehiculo,
+                            'Motor' => $motor ?: null,
+                            'N.º motor' => $vehiculo->numero_motor,
+                            'Ubicación' => $vehiculo->ubicacion,
                             'Kilometraje' => number_format((float) $vehiculo->kilometraje, 0, ',', '.') . ' km',
-                        ] as $label => $value)
+                            'Días en stock' => $diasStock !== null ? $diasStock . ($diasStock === 1 ? ' día' : ' días') : null,
+                        ], fn ($v) => filled($v)) as $label => $value)
                         <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
                             <span style="color: var(--text-muted);">{{ $label }}</span>
                             <span>{{ $value }}</span>
@@ -88,6 +98,19 @@
                             <span class="text-accent">{{ $value }}</span>
                         </div>
                     @endforeach
+                    @php
+                        $valorLibro = (float) $vehiculo->costo_origen_usd + (float) ($vehiculo->total_gastos_usd ?? 0);
+                        $margen = $vehiculo->precio_contado_usd ? (float) $vehiculo->precio_contado_usd - $valorLibro : null;
+                    @endphp
+                    <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
+                        <span style="color: var(--text-muted);" title="Precio contado menos valor libro (costo + gastos)">Margen estimado</span>
+                        @if($margen === null)
+                            <span class="text-muted-foreground">— <span class="text-xs">(sin precio contado)</span></span>
+                        @else
+                            <span class="font-semibold {{ $margen >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                                {{ $margen < 0 ? '−' : '' }}$ {{ number_format(abs($margen), 2, ',', '.') }}                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

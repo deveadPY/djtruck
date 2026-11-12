@@ -55,6 +55,15 @@ class GastoWebController extends Controller
             $this->recalcularTotal($vehiculoId);
         });
 
+        if ($request->boolean('otro')) {
+            // Se conservan moneda y categoría (ya validadas) para cargar el siguiente gasto más rápido.
+            return redirect()->route('gastos.create', $vehiculoId)->with([
+                'success'         => 'Gasto registrado. Puedes cargar el siguiente.',
+                'gasto_moneda'    => $data['moneda'],
+                'gasto_categoria' => $data['categoria'],
+            ]);
+        }
+
         return redirect()->route('vehicles.show', $vehiculoId)->with('success', 'Gasto registrado y valor libro actualizado.');
     }
 

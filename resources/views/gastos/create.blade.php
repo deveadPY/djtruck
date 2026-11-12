@@ -46,7 +46,7 @@
                                     'DOCUMENTACION' => 'Documentación',
                                     'OTROS_PREPARACION' => 'Otros',
                                 ] as $v => $l)
-                                <option value="{{ $v }}" {{ old('categoria') == $v ? 'selected' : '' }}>{{ $l }}</option>
+                                <option value="{{ $v }}" {{ old('categoria', session('gasto_categoria')) == $v ? 'selected' : '' }}>{{ $l }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -84,7 +84,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             @foreach(['USD' => ['Dólar', 'us'], 'PYG' => ['Guaraní', 'py'], 'BRL' => ['Real', 'br']] as $m => [$nombre, $bandera])
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="moneda" value="{{ $m }}" class="peer sr-only" @checked(old('moneda', 'USD') === $m)>
+                                    <input type="radio" name="moneda" value="{{ $m }}" class="peer sr-only" @checked(old('moneda', session('gasto_moneda', 'USD')) === $m)>
                                     <div class="flex items-center gap-3 p-3 rounded-xl border-2 border-border bg-surface-2 transition-all hover:bg-surface-3 peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
                                         <img src="https://flagcdn.com/w40/{{ $bandera }}.png" class="w-8 h-6 rounded object-cover" alt="">
                                         <div class="min-w-0">
@@ -97,12 +97,12 @@
                         </div>
                     </fieldset>
                     <div class="form-group">
-                        <label class="form-label" for="monto_moneda">Monto en <span data-moneda-actual>{{ old('moneda', 'USD') }}</span> *</label>
+                        <label class="form-label" for="monto_moneda">Monto en <span data-moneda-actual>{{ old('moneda', session('gasto_moneda', 'USD')) }}</span> *</label>
                         <input type="number" id="monto_moneda" name="monto_moneda" value="{{ old('monto_moneda') }}" step="0.01" min="0.01" required class="form-input" inputmode="decimal">
                         <div class="text-xs mt-1 text-muted-foreground" id="equivalente-usd"></div>
                     </div>
                     <div class="form-group" id="tasa-group">
-                        <label class="form-label" for="tasa_cambio">Cotización (<span data-moneda-actual>{{ old('moneda', 'USD') }}</span> por 1 USD)</label>
+                        <label class="form-label" for="tasa_cambio">Cotización (<span data-moneda-actual>{{ old('moneda', session('gasto_moneda', 'USD')) }}</span> por 1 USD)</label>
                         <input type="number" id="tasa_cambio" name="tasa_cambio" value="{{ old('tasa_cambio') }}" step="any" min="0.01" class="form-input" inputmode="decimal">
                         <div class="text-xs mt-1 text-muted-foreground" id="tasa-fuente" aria-live="polite"></div>
                     </div>
@@ -120,9 +120,13 @@
                         <textarea name="descripcion" rows="2" class="form-input">{{ old('descripcion') }}</textarea>
                     </div>
                 </div>
-            <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:1.25rem;margin-top:1rem;border-top:1px solid var(--border)">
+            {{-- El modal de confirmación envía con form.submit(), que no incluye el botón pulsado: por eso este campo oculto. --}}
+            <input type="hidden" name="otro" value="1" id="gasto-otro" disabled>
+            <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:flex-end;padding-top:1.25rem;margin-top:1rem;border-top:1px solid var(--border)">
+                {{-- El principal va primero en el DOM para que Enter lo use; `order` lo muestra a la derecha. --}}
+                <button type="submit" class="btn btn-primary" style="order:3" onclick="document.getElementById('gasto-otro').disabled = true">Registrar gasto</button>
                 <a href="{{ route('vehicles.show', $vehiculo->id) }}" class="btn btn-ghost">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Registrar gasto</button>
+                <button type="submit" name="otro" value="1" class="btn btn-ghost" onclick="document.getElementById('gasto-otro').disabled = false">Guardar y registrar otro</button>
             </div>
         </form>
         </div>
