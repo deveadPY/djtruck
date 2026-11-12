@@ -210,8 +210,31 @@
                         <option value="EGRESO"  {{ $tipoFil === 'EGRESO'  ? 'selected' : '' }}>Egresos</option>
                     </select>
                 </div>
+                <div>
+                    <label class="form-label" for="filtro-origen">Origen</label>
+                    <select id="filtro-origen" name="origen" class="form-input text-xs py-1.5">
+                        <option value="">Todos</option>
+                        @foreach($refLabels as $valor => $etiqueta)
+                            <option value="{{ $valor }}" {{ $origenFil === $valor ? 'selected' : '' }}>{{ $etiqueta }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="filtro-moneda">Moneda</label>
+                    <select id="filtro-moneda" name="moneda" class="form-input text-xs py-1.5">
+                        <option value="">Todas</option>
+                        @foreach(['USD','PYG','BRL'] as $mon)
+                            <option value="{{ $mon }}" {{ $monedaFil === $mon ? 'selected' : '' }}>{{ $mon }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-ghost text-xs py-1.5">Filtrar</button>
-                <a href="{{ route('finance.caja.reporte', [$caja->codigo, 'desde' => $desde, 'hasta' => $hasta, 'tipo' => $tipoFil]) }}"
+                @php $filtrosUrl = array_filter(['desde' => $desde, 'hasta' => $hasta, 'tipo' => $tipoFil, 'origen' => $origenFil, 'moneda' => $monedaFil]); @endphp
+                <a href="{{ route('finance.caja.show', [$caja->codigo] + $filtrosUrl + ['export' => 'csv']) }}"
+                   class="btn btn-ghost text-xs py-1.5" title="Descargar movimientos filtrados en CSV (Excel)">
+                    CSV
+                </a>
+                <a href="{{ route('finance.caja.reporte', [$caja->codigo] + $filtrosUrl) }}"
                    target="_blank"
                    class="btn btn-primary text-xs py-1.5" title="Descargar reporte PDF">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -220,6 +243,22 @@
                     PDF
                 </a>
             </form>
+        </div>
+
+        {{-- Saldos del período: en la moneda filtrada o en USD; no dependen del filtro de tipo --}}
+        @php
+            $fmtSaldo = fn ($v) => ($saldosPeriodo['moneda'] === 'PYG' ? 'Gs ' : $saldosPeriodo['moneda'] . ' ')
+                . number_format($v, $saldosPeriodo['moneda'] === 'PYG' ? 0 : 2, ',', '.');
+        @endphp
+        <div class="grid grid-cols-2 text-center border-b" style="border-color:var(--border)">
+            <div class="py-3 border-r" style="border-color:var(--border)">
+                <div class="text-xs" style="color:var(--text-muted)">Saldo inicial (antes del {{ \Carbon\Carbon::parse($desde)->format('d/m/Y') }})</div>
+                <div class="font-bold">{{ $fmtSaldo($saldosPeriodo['inicial']) }}</div>
+            </div>
+            <div class="py-3">
+                <div class="text-xs" style="color:var(--text-muted)">Saldo final (al {{ \Carbon\Carbon::parse($hasta)->format('d/m/Y') }})</div>
+                <div class="font-bold {{ $saldosPeriodo['final'] >= 0 ? 'text-green-500' : 'text-red-500' }}">{{ $fmtSaldo($saldosPeriodo['final']) }}</div>
+            </div>
         </div>
 
         {{-- Totales del período (respetan el filtro de tipo, igual que el PDF) --}}

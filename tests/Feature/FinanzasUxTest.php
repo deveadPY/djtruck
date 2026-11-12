@@ -52,7 +52,7 @@ test('la caja filtra totales por tipo y muestra etiquetas legibles', function ()
         ->assertViewHas('totalesPeriodo', fn ($t) => (float) $t->ingresos_usd === 100.0 && (float) $t->egresos_usd === 0.0)
         ->assertSee('Cobro de cuota')
         ->assertSee('Neto en efectivo PYG')
-        ->assertDontSee('recibo_cuota');
+        ->assertDontSee('<span class="ref-chip">recibo_cuota', false); // la clave cruda solo puede estar como value del filtro
 });
 
 test('facturas paginadas con total filtrado de todo el filtro', function () {

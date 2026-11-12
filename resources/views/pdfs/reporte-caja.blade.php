@@ -136,6 +136,8 @@
                     <tr><td class="label">Fecha desde:</td><td class="value">{{ \Carbon\Carbon::parse($desde)->format('d/m/Y') }}</td></tr>
                     <tr><td class="label">Fecha hasta:</td><td class="value">{{ \Carbon\Carbon::parse($hasta)->format('d/m/Y') }}</td></tr>
                     <tr><td class="label">Tipo:</td><td class="value">{{ $tipoFil ?: 'Todos' }}</td></tr>
+                    <tr><td class="label">Origen:</td><td class="value">{{ $origenFil ? ($refLabels[$origenFil] ?? $origenFil) : 'Todos' }}</td></tr>
+                    <tr><td class="label">Moneda:</td><td class="value">{{ $monedaFil ?: 'Todas' }}</td></tr>
                     <tr><td class="label">Total registros:</td><td class="value">{{ $movimientos->count() }}</td></tr>
                 </table>
             </td>
@@ -162,6 +164,21 @@
             <td style="width:25%;">
                 <div class="resumen-valor color-blue">$ {{ number_format($saldoActual['saldo_usd'] ?? 0, 2, ',', '.') }}</div>
                 <div class="resumen-label">Saldo Actual</div>
+            </td>
+        </tr>
+    </table>
+
+    {{-- SALDOS DEL PERÍODO (moneda filtrada o USD; sin filtro de tipo) --}}
+    @php $decSaldo = $saldosPeriodo['moneda'] === 'PYG' ? 0 : 2; @endphp
+    <table class="resumen-table" style="margin-top:-5px;">
+        <tr>
+            <td style="width:50%;">
+                <div class="resumen-valor" style="font-size:11px;">{{ $saldosPeriodo['moneda'] }} {{ number_format($saldosPeriodo['inicial'], $decSaldo, ',', '.') }}</div>
+                <div class="resumen-label">Saldo inicial</div>
+            </td>
+            <td style="width:50%;">
+                <div class="resumen-valor {{ $saldosPeriodo['final'] >= 0 ? 'color-green' : 'color-red' }}" style="font-size:11px;">{{ $saldosPeriodo['moneda'] }} {{ number_format($saldosPeriodo['final'], $decSaldo, ',', '.') }}</div>
+                <div class="resumen-label">Saldo final</div>
             </td>
         </tr>
     </table>

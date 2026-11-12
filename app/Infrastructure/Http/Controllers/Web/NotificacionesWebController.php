@@ -198,6 +198,7 @@ class NotificacionesWebController extends Controller
                 'v.id as venta_id',
                 DB::raw('COALESCE(cl.razon_social, cl.nombre_fantasia) as cliente_nombre'),
                 'cl.email as cliente_email',
+                'cl.telefono as cliente_telefono',
             ]);
 
         $cuotasHoy = (clone $baseCuotas)->where('c.estado', 'PENDIENTE')

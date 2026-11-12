@@ -77,41 +77,29 @@ final class FinanceWebController extends Controller
 
     // ── Detalle de caja ─────────────────────────────────────────────────────
 
-    public function show(Request $request, string $codigo): \Illuminate\View\View
+    public function show(Request $request, string $codigo): \Illuminate\View\View|\Symfony\Component\HttpFoundation\StreamedResponse
     {
         $codigo = strtoupper($codigo);
         $caja   = DB::table('cajas')->where('codigo', $codigo)->firstOrFail();
-        $saldo  = $this->cajas->saldo($caja->id);
+        $f      = $this->filtros($request);
 
-        $desde   = $request->input('desde', now()->startOfMonth()->toDateString());
-        $hasta   = $request->input('hasta', now()->toDateString());
-        $tipoFil = $request->input('tipo', '');
-
-        $query = DB::table('movimientos_caja')
-            ->where('caja_id', $caja->id)
-            ->whereNull('deleted_at')
-            ->whereDate('created_at', '>=', $desde)
-            ->whereDate('created_at', '<=', $hasta);
-
-        if ($tipoFil) {
-            $query->where('tipo', $tipoFil);
+        if ($request->input('export') === 'csv') {
+            return $this->exportarCsv($caja, $f);
         }
 
-        $movimientos    = $query->orderByDesc('created_at')->paginate(30)->withQueryString();
-        $totalesPeriodo = DB::table('movimientos_caja')
-            ->where('caja_id', $caja->id)->whereNull('deleted_at')
-            ->whereDate('created_at', '>=', $desde)
-            ->whereDate('created_at', '<=', $hasta)
-            ->when($tipoFil, fn ($q) => $q->where('tipo', $tipoFil))
+        $saldo = $this->cajas->saldo($caja->id);
+
+        $movimientos    = $this->movimientosFiltrados($caja->id, $f)->orderByDesc('created_at')->paginate(30)->withQueryString();
+        $totalesPeriodo = $this->movimientosFiltrados($caja->id, $f)
             ->selectRaw(
                 "SUM(CASE WHEN tipo='INGRESO' THEN monto_usd ELSE 0 END) as ingresos_usd,
                  SUM(CASE WHEN tipo='EGRESO'  THEN monto_usd ELSE 0 END) as egresos_usd"
             )->first();
 
-        return view('finance.caja', compact(
-            'caja', 'saldo', 'movimientos',
-            'totalesPeriodo', 'desde', 'hasta', 'tipoFil'
-        ) + ['refLabels' => self::REF_LABELS]);
+        return view('finance.caja', compact('caja', 'saldo', 'movimientos', 'totalesPeriodo') + $f + [
+            'refLabels'     => self::REF_LABELS,
+            'saldosPeriodo' => $this->saldosPeriodo($caja->id, $f),
+        ]);
     }
 
     // ── Movimiento manual ───────────────────────────────────────────────────
@@ -227,28 +215,12 @@ final class FinanceWebController extends Controller
         $codigo = strtoupper($codigo);
         $caja   = DB::table('cajas')->where('codigo', $codigo)->firstOrFail();
 
-        $desde   = $request->input('desde', now()->startOfMonth()->toDateString());
-        $hasta   = $request->input('hasta', now()->toDateString());
-        $tipoFil = $request->input('tipo', '');
+        $f = $this->filtros($request);
+        ['desde' => $desde, 'hasta' => $hasta, 'tipoFil' => $tipoFil, 'origenFil' => $origenFil, 'monedaFil' => $monedaFil] = $f;
 
-        $query = DB::table('movimientos_caja')
-            ->where('caja_id', $caja->id)
-            ->whereNull('deleted_at')
-            ->whereDate('created_at', '>=', $desde)
-            ->whereDate('created_at', '<=', $hasta);
+        $movimientos = $this->movimientosFiltrados($caja->id, $f)->orderBy('created_at')->get();
 
-        if ($tipoFil) {
-            $query->where('tipo', $tipoFil);
-        }
-
-        $movimientos = $query->orderBy('created_at')->get();
-
-        $totales = DB::table('movimientos_caja')
-            ->where('caja_id', $caja->id)
-            ->whereNull('deleted_at')
-            ->whereDate('created_at', '>=', $desde)
-            ->whereDate('created_at', '<=', $hasta)
-            ->when($tipoFil, fn ($q) => $q->where('tipo', $tipoFil))
+        $totales = $this->movimientosFiltrados($caja->id, $f)
             ->selectRaw("
                 SUM(CASE WHEN tipo='INGRESO' THEN monto_usd ELSE 0 END) as ingresos_usd,
                 SUM(CASE WHEN tipo='EGRESO'  THEN monto_usd ELSE 0 END) as egresos_usd,
@@ -257,13 +229,14 @@ final class FinanceWebController extends Controller
             ")
             ->first();
 
+        $saldosPeriodo = $this->saldosPeriodo($caja->id, $f);
         $saldoActual = $this->cajas->saldo($caja->id);
         $empresa     = EmpresaSettings::get();
         $usuario     = DB::table('users')->where('id', Auth::id())->first();
 
         $pdf = Pdf::loadView('pdfs.reporte-caja', compact(
             'caja', 'movimientos', 'totales', 'saldoActual',
-            'empresa', 'usuario', 'desde', 'hasta', 'tipoFil'
+            'empresa', 'usuario', 'desde', 'hasta', 'tipoFil', 'origenFil', 'monedaFil', 'saldosPeriodo'
         ) + ['refLabels' => self::REF_LABELS])->setPaper('a4', 'portrait');
 
         $filename = "reporte-{$codigo}-{$desde}-a-{$hasta}.pdf";
@@ -272,6 +245,96 @@ final class FinanceWebController extends Controller
     }
 
     // ── Helper privado ──────────────────────────────────────────────────────
+
+    /** Filtros de la caja; los valores fuera de las listas conocidas se ignoran. */
+    private function filtros(Request $request): array
+    {
+        $tipo   = (string) $request->input('tipo', '');
+        $origen = (string) $request->input('origen', '');
+        $moneda = (string) $request->input('moneda', '');
+
+        return [
+            'desde'     => $request->input('desde', now()->startOfMonth()->toDateString()),
+            'hasta'     => $request->input('hasta', now()->toDateString()),
+            'tipoFil'   => in_array($tipo, ['INGRESO', 'EGRESO'], true) ? $tipo : '',
+            'origenFil' => array_key_exists($origen, self::REF_LABELS) ? $origen : '',
+            'monedaFil' => in_array($moneda, ['USD', 'PYG', 'BRL'], true) ? $moneda : '',
+        ];
+    }
+
+    /** Movimientos de la caja con origen y moneda aplicados; con $conPeriodo también fechas y tipo. */
+    private function movimientosFiltrados(int $cajaId, array $f, bool $conPeriodo = true): \Illuminate\Database\Query\Builder
+    {
+        // Columnas calificadas: el CSV une con users, que también tiene created_at/deleted_at.
+        return DB::table('movimientos_caja')
+            ->where('movimientos_caja.caja_id', $cajaId)
+            ->whereNull('movimientos_caja.deleted_at')
+            ->when($f['origenFil'], fn ($q, $v) => $q->where('movimientos_caja.ref_type', $v))
+            ->when($f['monedaFil'], fn ($q, $v) => $q->where('movimientos_caja.moneda', $v))
+            ->when($conPeriodo, fn ($q) => $q
+                ->whereDate('movimientos_caja.created_at', '>=', $f['desde'])
+                ->whereDate('movimientos_caja.created_at', '<=', $f['hasta'])
+                ->when($f['tipoFil'], fn ($q2, $v) => $q2->where('movimientos_caja.tipo', $v)));
+    }
+
+    /**
+     * Saldo inicial (neto acumulado antes de "desde") y final (inicial + neto del período).
+     * Con moneda filtrada se calcula en esa moneda; si no, en USD. No aplica el filtro de tipo:
+     * un saldo solo de ingresos o solo de egresos no tiene sentido.
+     */
+    private function saldosPeriodo(int $cajaId, array $f): array
+    {
+        $col  = $f['monedaFil'] ? 'monto' : 'monto_usd';
+        $neto = "SUM(CASE WHEN tipo='INGRESO' THEN {$col} ELSE -{$col} END)";
+
+        $inicial = (float) $this->movimientosFiltrados($cajaId, $f, false)
+            ->whereDate('created_at', '<', $f['desde'])
+            ->selectRaw("{$neto} as neto")->value('neto');
+
+        $periodo = (float) $this->movimientosFiltrados($cajaId, $f, false)
+            ->whereDate('created_at', '>=', $f['desde'])
+            ->whereDate('created_at', '<=', $f['hasta'])
+            ->selectRaw("{$neto} as neto")->value('neto');
+
+        return [
+            'moneda'  => $f['monedaFil'] ?: 'USD',
+            'inicial' => round($inicial, 2),
+            'final'   => round($inicial + $periodo, 2),
+        ];
+    }
+
+    /** CSV (; y BOM UTF-8 para Excel en español) de los movimientos filtrados. */
+    private function exportarCsv(object $caja, array $f): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $filas = $this->movimientosFiltrados($caja->id, $f)
+            ->leftJoin('users', 'users.id', '=', 'movimientos_caja.created_by')
+            ->select('movimientos_caja.*', 'users.name as usuario')
+            ->orderBy('movimientos_caja.created_at')
+            ->cursor();
+
+        // Evita que Excel interprete el texto como fórmula.
+        $celda = fn ($v) => preg_match('/^[=+\-@\t\r]/', (string) $v) ? "'" . $v : (string) $v;
+        $num   = fn ($v) => number_format((float) $v, 2, ',', '');
+
+        return response()->streamDownload(function () use ($filas, $celda, $num) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['Fecha', 'Tipo', 'Origen', 'Concepto', 'Moneda', 'Monto', 'Monto USD', 'Usuario'], ';');
+            foreach ($filas as $m) {
+                fputcsv($out, array_map($celda, [
+                    \Carbon\Carbon::parse($m->created_at)->format('d/m/Y H:i'),
+                    $m->tipo,
+                    self::REF_LABELS[$m->ref_type] ?? ($m->ref_type ?? ''),
+                    $m->concepto,
+                    $m->moneda,
+                    $num($m->monto),
+                    $num($m->monto_usd),
+                    $m->usuario ?? '',
+                ]), ';');
+            }
+            fclose($out);
+        }, "movimientos-{$caja->codigo}-{$f['desde']}-a-{$f['hasta']}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
 
     private function buildCajaResumen(string $codigo): object
     {

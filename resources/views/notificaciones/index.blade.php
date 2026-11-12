@@ -159,6 +159,14 @@
                                 @php
                                     $dias = \Carbon\Carbon::parse($row->fecha_vencimiento)->diffInDays(\Carbon\Carbon::today());
                                     $monto = (float) $row->capital + (float) $row->interes + (float) $row->interes_mora;
+                                    // Teléfono paraguayo para wa.me: solo dígitos; 0981… → 595981…
+                                    $tel = preg_replace('/\D/', '', (string) $row->cliente_telefono);
+                                    if (str_starts_with($tel, '0')) {
+                                        $tel = '595' . substr($tel, 1);
+                                    }
+                                    $waTexto = "Hola {$row->cliente_nombre}, le recordamos que la cuota {$row->numero_cuota}/{$row->total_cuotas} "
+                                        . "de la venta {$row->numero_venta} está vencida hace {$dias} días. "
+                                        . "Monto vencido: {$row->moneda} " . number_format($monto, 2, ',', '.') . ". Gracias.";
                                 @endphp
                                 <tr>
                                     <td style="font-weight:600">{{ $row->cliente_nombre }}</td>
@@ -174,8 +182,15 @@
                                         {{ number_format($monto, 2, ',', '.') }}
                                     </td>
                                     <td>
-                                        <a href="{{ route('planes_cuotas.show', $row->plan_id) }}" class="btn btn-ghost"
-                                            style="font-size:.72rem;padding:.3rem .7rem">Ver Plan</a>
+                                        <div style="display:flex;gap:.35rem;flex-wrap:wrap">
+                                            @if($tel !== '')
+                                                <a href="https://wa.me/{{ $tel }}?text={{ rawurlencode($waTexto) }}" target="_blank" rel="noopener"
+                                                    class="btn btn-ghost" style="font-size:.72rem;padding:.3rem .7rem;color:#16a34a"
+                                                    aria-label="Enviar WhatsApp a {{ $row->cliente_nombre }}">WhatsApp</a>
+                                            @endif
+                                            <a href="{{ route('planes_cuotas.show', $row->plan_id) }}" class="btn btn-primary"
+                                                style="font-size:.72rem;padding:.3rem .7rem">Registrar pago</a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -440,10 +455,19 @@
                     Todos los repuestos tienen stock suficiente
                 </div>
             @else
+                <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;flex-wrap:wrap">
+                    <button type="button" id="stock-descartar" class="btn btn-ghost" style="font-size:.75rem" disabled
+                        onclick="descartarStockSeleccionadas(this)">Descartar seleccionadas</button>
+                    <span id="stock-estado" role="status" aria-live="polite" style="font-size:.75rem;color:var(--text-muted)"></span>
+                </div>
                 <div style="overflow-x:auto">
                     <table class="erp-table">
                         <thead>
                             <tr>
+                                <th style="width:2rem">
+                                    <input type="checkbox" id="stock-todas" aria-label="Seleccionar todas las alertas de stock"
+                                        onchange="document.querySelectorAll('.stock-check').forEach(c => c.checked = this.checked); actualizarStockSeleccion()">
+                                </th>
                                 <th>Código</th>
                                 <th>Descripción</th>
                                 <th>Stock Actual</th>
@@ -454,6 +478,11 @@
                         <tbody>
                             @foreach($repuestosBajos as $row)
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="stock-check" value="{{ $row->id }}" id="stock-check-{{ $row->id }}"
+                                            onchange="actualizarStockSeleccion()">
+                                        <label for="stock-check-{{ $row->id }}" class="sr-only">Seleccionar {{ $row->codigo }}</label>
+                                    </td>
                                     <td style="font-weight:600; color:var(--accent)">{{ $row->codigo }}</td>
                                     <td>{{ $row->descripcion }}</td>
                                     <td style="font-weight:700; color:#ef4444">
@@ -497,6 +526,38 @@
             const url = new URL(location.href);
             url.searchParams.set('tab', name);
             history.replaceState(null, '', url);
+        }
+
+        function actualizarStockSeleccion() {
+            const n = document.querySelectorAll('.stock-check:checked').length;
+            document.getElementById('stock-descartar').disabled = n === 0;
+            document.getElementById('stock-estado').textContent = n ? n + ' seleccionada(s)' : '';
+        }
+
+        // Usa el endpoint existente de descarte en bloque y recarga para ver la lista actualizada.
+        async function descartarStockSeleccionadas(btn) {
+            const items = [...document.querySelectorAll('.stock-check:checked')]
+                .map(c => ({ tipo: 'stock', referencia_id: Number(c.value) }));
+            if (!items.length) return;
+            btn.disabled = true;
+            const estado = document.getElementById('stock-estado');
+            try {
+                const res = await fetch(@json(route('api.notificaciones.descartar-todas')), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ items }),
+                });
+                if (!res.ok) throw new Error(res.status);
+                estado.textContent = 'Descartadas. Actualizando…';
+                location.reload();
+            } catch (e) {
+                estado.textContent = 'No se pudieron descartar. Intente de nuevo.';
+                btn.disabled = false;
+            }
         }
 
         // Inicializar tab activa
