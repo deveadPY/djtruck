@@ -633,6 +633,40 @@
             </div>
 
             <div class="flex items-center gap-3">
+                {{-- Búsqueda general (atajos: "/" o Ctrl+K) --}}
+                <form method="GET" action="{{ route('buscar') }}" role="search" class="hidden md:block">
+                    <label for="globalSearch" class="sr-only">Buscar en el sistema</label>
+                    <input id="globalSearch" type="search" name="q" minlength="2" autocomplete="off"
+                        placeholder="Buscar chasis, cliente, venta…  ( / )"
+                        class="form-input !py-1.5 !text-[0.8rem] w-64 lg:w-72">
+                </form>
+                <a href="{{ route('buscar') }}" class="md:hidden p-2 rounded-lg" style="background: var(--surface2); color: var(--text-muted);" aria-label="Buscar">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                </a>
+
+                {{-- Acciones rápidas según permisos --}}
+                @php
+                    $accionesRapidas = array_filter([
+                        auth()->user()->can('ventas.crear')    ? ['Nueva venta', route('ventas.create')] : null,
+                        auth()->user()->can('vehiculos.ver')   ? ['Registrar gasto', route('vehicles.index')] : null,
+                        auth()->user()->can('clientes.crear')  ? ['Nuevo cliente', route('clientes.create')] : null,
+                        auth()->user()->can('vehiculos.crear') ? ['Nuevo vehículo', route('vehicles.create')] : null,
+                    ]);
+                @endphp
+                @if($accionesRapidas)
+                    <details class="relative" id="quickActions">
+                        <summary class="btn btn-primary !py-1.5 list-none cursor-pointer [&::-webkit-details-marker]:hidden" aria-label="Acciones rápidas">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                            <span class="hidden sm:inline">Nuevo</span>
+                        </summary>
+                        <div class="absolute right-0 mt-2 w-48 rounded-xl border shadow-lg py-1 z-[120]" style="background: var(--surface); border-color: var(--border);">
+                            @foreach($accionesRapidas as [$texto, $url])
+                                <a href="{{ $url }}" class="block px-4 py-2 text-sm no-underline hover:bg-surface-2" style="color: var(--text);">{{ $texto }}</a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
+
                 {{-- Notificaciones bell --}}
                 @can('cuotas.ver')
                     <div id="notifWrapper" class="relative">
@@ -735,6 +769,21 @@
     @include('partials.danger-confirm-modal')
 
     <script>
+            /* ── Atajos: "/" o Ctrl+K enfoca la búsqueda; Escape cierra "+ Nuevo" ── */
+            document.addEventListener('keydown', function (e) {
+                const enCampo = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+                const buscar = document.getElementById('globalSearch');
+                if (buscar && buscar.offsetParent && ((e.key === '/' && !enCampo) || (e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey)))) {
+                    e.preventDefault();
+                    buscar.focus();
+                }
+                if (e.key === 'Escape') document.getElementById('quickActions')?.removeAttribute('open');
+            });
+            document.addEventListener('click', function (e) {
+                const menu = document.getElementById('quickActions');
+                if (menu && !menu.contains(e.target)) menu.removeAttribute('open');
+            });
+
             /* ── Theme toggle ──────────────────────────────────────────────── */
             (function () {
                 const html = document.documentElement;
