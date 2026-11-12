@@ -8,6 +8,11 @@
     # Documentos privados (comprobantes, facturas): solo se descargan vía /documentos/{id}/download con permisos
     RewriteRule ^uploads/documentos/ - [F,L]
 
+    # URLs con /public/ (las dejó una redirección vieja; la carpeta pública es la raíz del sitio):
+    # llevar a la ruta limpia, conservando los parámetros.
+    RewriteCond %{THE_REQUEST} ^\S+\s+/public/([^?\s]*)
+    RewriteRule ^ https://%{HTTP_HOST}/%1 [L,R=301,NE]
+
     # ── Forzar HTTPS ──────────────────────────────────────────────────────
     # SSL activo: la cookie de sesión es "secure", por http el login daría 419.
     # Se excluye localhost para el desarrollo local sin certificado.
