@@ -3,9 +3,6 @@
 @section('page-title', 'Cotizaciones y Monedas')
 
 @section('content')
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>
-    @endif
 
     {{-- ── Tarjetas de Cotización Actual ────────────────────────────────────── --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-4">

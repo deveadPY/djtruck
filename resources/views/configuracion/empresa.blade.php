@@ -19,12 +19,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-fade-in shadow-lg shadow-primary/5">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-            {{ session('success') }}
-        </div>
-    @endif
 
     @if($errors->any())
         <div class="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-black uppercase tracking-widest space-y-2 animate-fade-in shadow-lg shadow-red-500/5">
@@ -167,13 +161,13 @@
                 <div class="erp-card !bg-surface/60 !backdrop-blur-xl relative overflow-hidden flex flex-col items-center p-8 text-center group" style="border-color: var(--border)">
                     <span class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-6 block">Sello Institucional</span>
                     
-                    <div class="relative w-full aspect-square md:aspect-video rounded-2xl bg-black/40 border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden hover:border-primary/50 transition-all group/logo cursor-pointer mb-6" id="dropZoneContainer">
+                    <div class="relative w-full aspect-square md:aspect-video rounded-2xl bg-black/40 border-2 border-dashed border-border flex items-center justify-center overflow-hidden hover:border-primary/50 transition-all group/logo cursor-pointer mb-6" id="dropZoneContainer">
                         @if($empresa?->logo_path)
                             <img src="{{ $empresa->logoUrl() }}" alt="Logo actual" id="logoPreview" class="max-w-[80%] max-h-[80%] object-contain drop-shadow-2xl transition-transform group-hover/logo:scale-105">
                         @else
                             <div class="flex flex-col items-center gap-4 opacity-30 group-hover/logo:opacity-100 transition-opacity" id="placeholderIcon">
-                                <svg class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
-                                <span class="text-[0.6rem] font-black uppercase tracking-widest text-white">Subir Logotipo</span>
+                                <svg class="w-12 h-12 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                                <span class="text-[0.6rem] font-black uppercase tracking-widest text-foreground">Subir Logotipo</span>
                             </div>
                         @endif
                         <img id="newLogoPreview" class="absolute inset-0 w-full h-full object-contain p-4 hidden z-10">
@@ -208,7 +202,7 @@
                             Confirmar Cambios
                         </button>
                         
-                        <a href="{{ route('dashboard') }}" class="h-10 w-full flex items-center justify-center text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest hover:text-white transition-colors">
+                        <a href="{{ route('dashboard') }}" class="h-10 w-full flex items-center justify-center text-[0.6rem] font-black text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors">
                             Descartar Edición
                         </a>
                     </div>

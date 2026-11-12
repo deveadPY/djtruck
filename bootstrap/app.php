@@ -18,8 +18,12 @@ $app = Application::configure(basePath: dirname(__DIR__))
             \App\Infrastructure\Http\Middleware\ApiNegotiationMiddleware::class,
         ]);
 
+        $middleware->web(append: [
+            \App\Infrastructure\Http\Middleware\EnsureUserIsActiveMiddleware::class,
+        ]);
+
         $middleware->alias([
-            'audit'              => \App\Infrastructure\Http\Middleware\AuditMiddleware::class,
+            'audit'             => \App\Infrastructure\Http\Middleware\AuditMiddleware::class,
             'api.auth'           => \App\Infrastructure\Http\Middleware\ApiAuthMiddleware::class,
             'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,

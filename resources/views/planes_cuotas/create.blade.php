@@ -12,7 +12,7 @@
 
     <div
         style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;font-size:.875rem">
-        📋 Venta <strong>{{ $venta->numero_venta }}</strong> &nbsp;|&nbsp;
+        Venta <strong>{{ $venta->numero_venta }}</strong> &nbsp;|&nbsp;
         Vehículo: <strong>{{ $venta->vehiculo->marca ?? '' }} {{ $venta->vehiculo->modelo ?? '' }}</strong> &nbsp;|&nbsp;
         Cliente: <strong>{{ $venta->cliente->razon_social ?? '' }}</strong> &nbsp;|&nbsp;
         Precio Total: <strong style="color:var(--accent)">$ {{ number_format($venta->precio_venta_usd, 2, ',', '.') }}
@@ -27,7 +27,7 @@
         SECCIÓN 1: ENTREGAS INICIALES (Down Payments)
         ═══════════════════════════════════════════════════════ --}}
         <div class="erp-card" style="margin-bottom:1.25rem">
-            <div class="section-title" style="margin-top:0;padding:1rem 1rem 0.5rem">💰 Entregas Iniciales (Down Payments)
+            <div class="section-title" style="margin-top:0;padding:1rem 1rem 0.5rem">Entregas Iniciales (Down Payments)
             </div>
             <div style="padding:0 1rem 1rem">
                 <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem">
@@ -53,7 +53,7 @@
         SECCIÓN 2: CONFIGURACIÓN DEL PLAN DE CUOTAS
         ═══════════════════════════════════════════════════════ --}}
         <div class="erp-card" style="margin-bottom:1.25rem">
-            <div class="section-title" style="margin-top:0;padding:1rem 1rem 0.5rem">📅 Plan de Cuotas</div>
+            <div class="section-title" style="margin-top:0;padding:1rem 1rem 0.5rem">Plan de Cuotas</div>
             <div style="padding:0 1rem 1rem">
                 <div class="form-grid">
                     <div class="form-group">
@@ -133,7 +133,7 @@
                     <div style="display:flex; gap:.5rem; margin-top:.5rem">
                         <button type="button" class="btn-add" onclick="addCuotaManual('REGULAR')">+ Cuota Regular</button>
                         <button type="button" class="btn-add" style="background:var(--warning);color:#000"
-                            onclick="addCuotaManual('REFUERZO')">⚡ Cuota Refuerzo</button>
+                            onclick="addCuotaManual('REFUERZO')">Cuota Refuerzo</button>
                     </div>
 
                     <div class="totals-bar" style="margin-top:1rem">
@@ -148,7 +148,7 @@
 
         <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:1.25rem">
             <a href="{{ route('ventas.show', $venta->id) }}" class="btn btn-ghost">Cancelar</a>
-            <button type="submit" class="btn btn-primary">📅 Guardar Plan de Pagos</button>
+            <button type="submit" class="btn btn-primary">Guardar Plan de Pagos</button>
         </div>
     </form>
 

@@ -61,7 +61,7 @@
 
                         <div class="pt-6">
                             <button type="submit" class="btn btn-primary w-full py-4 text-sm font-bold uppercase tracking-widest rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
-                                💾 Guardar Cotización
+                                Guardar Cotización
                             </button>
                         </div>
                     </form>

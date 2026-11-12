@@ -20,7 +20,7 @@
 
             <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
                 @can('repuestos.crear')
-                    <label class="btn btn-ghost !bg-surface2/50 !backdrop-blur-sm border-white/5 cursor-pointer flex-shrink-0" title="Importar">
+                    <label class="btn btn-ghost !bg-surface2/50 !backdrop-blur-sm border-border cursor-pointer flex-shrink-0" title="Importar">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
                         </svg>
@@ -32,7 +32,7 @@
                     </label>
                 @endcan
 
-                <a href="{{ route('repuestos.export') }}" class="btn btn-ghost !bg-surface2/50 !backdrop-blur-sm border-white/5 flex-shrink-0">
+                <a href="{{ route('repuestos.export') }}" class="btn btn-ghost !bg-surface2/50 !backdrop-blur-sm border-border flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
                     </svg>
@@ -59,13 +59,13 @@
                     </svg>
                 </span>
                 <input type="text" name="q" value="{{ $q }}" placeholder="Código, nombre o marca..." 
-                    class="form-input !pl-10 !bg-surface/40 !backdrop-blur-md border-white/5 h-11 text-sm rounded-xl">
+                    class="form-input !pl-10 !bg-surface/40 !backdrop-blur-md border-border h-11 text-sm rounded-xl">
             </div>
             
             <div class="flex gap-2">
-                <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer px-4 py-2.5 rounded-xl border border-white/5 bg-surface/40 backdrop-blur-md hover:bg-surface3 transition-all">
-                    <input type="checkbox" name="stock_bajo" value="1" @checked($stockBajo) onchange="this.form.submit()" class="rounded-md border-white/10 bg-surface3 text-primary focus:ring-primary/30">
-                    <span class="text-xs font-bold uppercase tracking-tighter {{ $stockBajo ? 'text-amber-500' : 'text-muted-foreground' }}">⚠️ S. Bajo</span>
+                <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer px-4 py-2.5 rounded-xl border border-border bg-surface/40 backdrop-blur-md hover:bg-surface3 transition-all">
+                    <input type="checkbox" name="stock_bajo" value="1" @checked($stockBajo) onchange="this.form.submit()" class="rounded-md border-border bg-surface3 text-primary focus:ring-primary/30">
+                    <span class="text-xs font-bold uppercase tracking-tighter {{ $stockBajo ? 'text-amber-500' : 'text-muted-foreground' }}">S. Bajo</span>
                 </label>
 
                 <button type="submit" class="btn btn-ghost !bg-primary/10 !text-primary border-primary/20 px-6 rounded-xl hover:!bg-primary/20">
@@ -117,7 +117,7 @@
                         @php $bajominimo = ($r->stock_minimo > 0 && $r->stock_actual <= $r->stock_minimo); @endphp
                         <tr class="hover:bg-primary/5 transition-all duration-200 group">
                             <td class="!pl-6">
-                                <span class="px-2.5 py-1 rounded font-mono text-xs font-bold bg-surface2 text-accent border border-white/5 group-hover:border-accent/30 transition-colors">{{ $r->codigo }}</span>
+                                <span class="px-2.5 py-1 rounded font-mono text-xs font-bold bg-surface2 text-accent border border-border group-hover:border-accent/30 transition-colors">{{ $r->codigo }}</span>
                             </td>
                             <td>
                                 <div class="font-bold text-sm tracking-tight group-hover:text-primary transition-colors">{{ $r->descripcion }}</div>
@@ -217,7 +217,7 @@
     <div class="md:hidden space-y-4">
         @forelse($repuestos as $r)
             @php $bajominimo = ($r->stock_minimo > 0 && $r->stock_actual <= $r->stock_minimo); @endphp
-            <div class="relative overflow-hidden rounded-2xl border border-white/5 bg-surface2/40 backdrop-blur-md p-4 transition-all duration-300">
+            <div class="relative overflow-hidden rounded-2xl border border-border bg-surface2/40 backdrop-blur-md p-4 transition-all duration-300">
                 @if($bajominimo)
                     <div class="absolute top-0 right-0 px-3 py-1 bg-amber-500/10 text-amber-500 text-[0.6rem] font-black uppercase tracking-widest rounded-bl-xl border-b border-l border-amber-500/20">
                         Stock Bajo
@@ -225,20 +225,20 @@
                 @endif
                 
                 <div class="flex items-start gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-surface/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0">
+                    <div class="w-12 h-12 rounded-xl bg-surface/50 border border-border flex flex-col items-center justify-center flex-shrink-0">
                         <span class="text-[0.6rem] text-muted-foreground font-black uppercase tracking-tighter">Stock</span>
                         <span class="text-xs font-black {{ $bajominimo ? 'text-amber-500' : 'text-accent' }}">{{ number_format($r->stock_actual, 0) }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="font-bold text-sm leading-tight text-white group-active:text-primary transition-colors">{{ $r->descripcion }}</div>
+                        <div class="font-bold text-sm leading-tight text-foreground group-active:text-primary transition-colors">{{ $r->descripcion }}</div>
                         <div class="flex items-center gap-2 mt-1.5">
-                            <span class="px-1.5 py-0.5 rounded font-mono text-[0.55rem] font-black bg-surface text-accent/80 border border-white/10 uppercase tracking-tighter">{{ $r->codigo }}</span>
+                            <span class="px-1.5 py-0.5 rounded font-mono text-[0.55rem] font-black bg-surface text-accent/80 border border-border uppercase tracking-tighter">{{ $r->codigo }}</span>
                             <span class="text-[0.6rem] text-muted-foreground font-bold uppercase tracking-[0.1em]">{{ $r->marca_compatible ?? 'Genérico' }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                     <div>
                         <div class="text-[0.55rem] text-muted-foreground font-black uppercase tracking-widest mb-1">Precio Venta</div>
                         <div class="text-sm font-black text-accent-light">
@@ -284,7 +284,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-border">
                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                     <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-5.25v9" />

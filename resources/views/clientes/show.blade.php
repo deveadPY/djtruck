@@ -3,13 +3,10 @@
 @section('page-title', 'Detalle de Cliente')
 
 @section('content')
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>
-    @endif
 
     {{-- Header --}}
     <div class="flex justify-between items-start mb-6 flex-wrap gap-4">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <a href="{{ route('clientes.index') }}" class="btn btn-ghost">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
                 Volver
@@ -28,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             <a href="{{ route('clientes.estado-cuenta-pdf', $cliente->id) }}" class="btn btn-ghost" target="_blank">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
                 Estado de Cuenta PDF
@@ -37,7 +34,7 @@
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                 Editar
             </a>
-            <a href="{{ route('ventas.create') }}" class="btn btn-primary">
+            <a href="{{ route('ventas.create', ['cliente_id' => $cliente->id]) }}" class="btn btn-primary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>
                 Nueva Venta
             </a>
@@ -50,16 +47,29 @@
         <div class="erp-card">
             <div class="erp-card-header"><h2 class="flex items-center gap-2"><svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg> Datos de Contacto</h2></div>
             <div class="erp-card-body">
-                @foreach([
-                    'Email' => $cliente->email ?: 'No registrado',
-                    'Teléfono' => $cliente->telefono ?: 'No registrado',
-                    'Dirección' => $cliente->direccion ?: 'No registrada',
-                ] as $label => $value)
-                    <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
-                        <span style="color:var(--text-muted)">{{ $label }}</span>
-                        <span class="text-right max-w-[60%]">{{ $value }}</span>
-                    </div>
-                @endforeach
+                @php
+                    $telDigitos = preg_replace('/\D/', '', (string) $cliente->telefono);
+                    $waDigitos = str_starts_with($telDigitos, '0') ? '595' . substr($telDigitos, 1) : $telDigitos;
+                @endphp
+                <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
+                    <span style="color:var(--text-muted)">Email</span>
+                    <span class="text-right max-w-[60%]">{{ $cliente->email ?: 'No registrado' }}</span>
+                </div>
+                <div class="flex justify-between items-center gap-2 py-2.5 border-b text-sm" style="border-color: var(--border);">
+                    <span style="color:var(--text-muted)">Teléfono</span>
+                    @if($telDigitos !== '')
+                        <span class="flex flex-wrap items-center justify-end gap-2 max-w-[60%]">
+                            <a href="tel:{{ $telDigitos }}" class="text-accent hover:underline">{{ $cliente->telefono }}</a>
+                            <a href="https://wa.me/{{ $waDigitos }}" target="_blank" rel="noopener" class="btn btn-ghost text-xs px-2 py-1">WhatsApp</a>
+                        </span>
+                    @else
+                        <span class="text-right max-w-[60%]">No registrado</span>
+                    @endif
+                </div>
+                <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
+                    <span style="color:var(--text-muted)">Dirección</span>
+                    <span class="text-right max-w-[60%]">{{ $cliente->direccion ?: 'No registrada' }}</span>
+                </div>
             </div>
         </div>
 
@@ -112,7 +122,7 @@
                         <tr>
                             <td>{{ \Carbon\Carbon::parse($v->fecha_venta)->format('d/m/Y') }}</td>
                             <td><strong class="text-accent">{{ $v->numero_venta }}</strong></td>
-                            <td>{{ $v->marca }} {{ $v->modelo }}<br><span class="text-xs" style="color:var(--text-muted)">{{ $v->numero_chasis }}</span></td>
+                            <td>@if($v->marca){{ $v->marca }} {{ $v->modelo }}<br><span class="text-xs" style="color:var(--text-muted)">{{ $v->numero_chasis }}</span>@else<span style="color:var(--text-muted)">Sin vehículo</span>@endif</td>
                             <td><strong>$ {{ number_format($v->precio_venta_usd, 2, ',', '.') }}</strong></td>
                             <td>@php $cls = match($v->estado) { 'COMPLETADO' => 'badge-disponible', 'CANCELADO' => 'badge-vendido', default => 'badge-preparacion' }; @endphp<span class="badge-status {{ $cls }}">{{ $v->estado }}</span></td>
                             <td><a href="{{ route('ventas.show', $v->id) }}" class="btn btn-ghost text-xs px-2 py-1">Ver →</a></td>
@@ -130,19 +140,22 @@
         <div class="erp-card-header"><h2 class="flex items-center gap-2"><svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" /></svg> Planes de Cuotas Activos</h2></div>
         <div class="overflow-x-auto">
             <table class="erp-table">
-                <thead><tr><th>Venta</th><th>Capital Financiado</th><th>Cuotas</th><th>Primera Cuota</th><th>Estado</th><th class="w-36"></th></tr></thead>
+                <thead><tr><th>Venta</th><th>Capital Financiado</th><th>Saldo pendiente</th><th>Vencidas</th><th>Próxima cuota</th><th>Estado</th><th class="w-36"></th></tr></thead>
                 <tbody>
                     @forelse($planes as $p)
                         <tr>
-                            <td><strong class="text-accent">Venta #{{ $p->venta_id }}</strong></td>
-                            <td><strong>$ {{ number_format($p->capital_total_usd, 2, ',', '.') }} USD</strong></td>
-                            <td>{{ $p->numero_cuotas }} meses</td>
-                            <td>{{ \Carbon\Carbon::parse($p->fecha_primera_cuota)->format('d/m/Y') }}</td>
+                            <td><a href="{{ route('ventas.show', $p->venta_id) }}" class="text-accent font-bold hover:underline">{{ $p->numero_venta ?? '#' . $p->venta_id }}</a><br><span class="text-xs" style="color:var(--text-muted)">{{ $p->numero_cuotas }} cuotas</span></td>
+                            <td>$ {{ number_format($p->capital_total_usd, 2, ',', '.') }}</td>
+                            <td><strong>$ {{ number_format($p->saldo, 2, ',', '.') }}</strong></td>
+                            <td>@if($p->vencidas > 0)<span class="badge-status badge-vendido">{{ $p->vencidas }}</span>@else<span style="color:var(--text-muted)">0</span>@endif</td>
+                            <td>@if($p->proxima){{ \Carbon\Carbon::parse($p->proxima->fecha_vencimiento)->format('d/m/Y') }}<br><span class="text-xs" style="color:var(--text-muted)">$ {{ number_format($p->proxima->saldo, 2, ',', '.') }}</span>@else<span style="color:var(--text-muted)">—</span>@endif</td>
                             <td>@php $cls = match($p->estado) { 'COMPLETADO' => 'badge-disponible', 'CANCELADO' => 'badge-vendido', default => 'badge-preparacion' }; @endphp<span class="badge-status {{ $cls }}">{{ $p->estado }}</span></td>
-                            <td><a href="{{ route('planes_cuotas.show', $p->id) }}" class="btn btn-ghost text-xs px-2 py-1">Gestionar Pagos →</a></td>
+                            <td>
+                                <a href="{{ route('planes_cuotas.show', $p->id) }}" class="btn {{ $p->saldo > 0 ? 'btn-primary' : 'btn-ghost' }} text-xs px-2 py-1">{{ $p->saldo > 0 ? 'Cobrar' : 'Ver plan' }}</a>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-8" style="color:var(--text-muted)">Sin planes de financiación.</td></tr>
+                        <tr><td colspan="7" class="text-center py-8" style="color:var(--text-muted)">Sin planes de financiación.</td></tr>
                     @endforelse
                 </tbody>
             </table>

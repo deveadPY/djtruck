@@ -20,7 +20,7 @@
     @endif
 
     <div class="auth-alert auth-alert-warn">
-        <strong>⚠️ IMPORTANTE — Guardá estos códigos AHORA.</strong>
+        <strong>IMPORTANTE — Guardá estos códigos AHORA.</strong>
         <p style="margin:.5rem 0 0;font-size:.9rem;">
             Cada código sirve <strong>UNA sola vez</strong>. Son tu única forma de recuperar acceso
             si perdés el dispositivo con la app autenticadora. Imprimilos, guardalos en un gestor
@@ -38,11 +38,11 @@
 
             <div class="auth-actions-row no-print">
                 <button onclick="window.print()" class="auth-btn auth-btn-secondary">
-                    🖨️ Imprimir
+                    Imprimir
                 </button>
                 <button id="copyCodesBtn" class="auth-btn auth-btn-secondary"
                         data-codes="{{ implode("\n", $recovery_codes) }}">
-                    📋 Copiar todos
+                    Copiar todos
                 </button>
                 <a href="{{ route('dashboard') }}" class="auth-btn auth-btn-success">
                     ✓ Ya los guardé, ir al panel
@@ -82,7 +82,7 @@
             const codes = btn.getAttribute('data-codes') || '';
             navigator.clipboard.writeText(codes).then(() => {
                 btn.textContent = '✓ Copiado';
-                setTimeout(() => btn.textContent = '📋 Copiar todos', 2500);
+                setTimeout(() => btn.textContent = 'Copiar todos', 2500);
             });
         });
     })();

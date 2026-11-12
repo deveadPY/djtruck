@@ -6,14 +6,14 @@
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-4">
-            <a href="{{ route('facturas.index') }}" class="p-2.5 rounded-xl bg-surface2 border border-white/5 text-muted-foreground hover:text-primary transition-all">
+            <a href="{{ route('facturas.index') }}" class="p-2.5 rounded-xl bg-surface2 border border-border text-muted-foreground hover:text-primary transition-all">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
             </a>
             <div class="flex flex-col">
                 <div class="flex items-center gap-2 mb-1">
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Documento #{{ $factura->numero_factura }}</h1>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Documento #{{ $factura->numero_factura }}</h1>
                     @php $cls=match($factura->estado){'APROBADA','PAGADA'=>'badge-disponible','ANULADA'=>'badge-vendido',default=>'badge-preparacion'}; @endphp
                     <span class="badge-status {{ $cls }} !text-[0.6rem] !px-2 !font-black uppercase tracking-widest shadow-lg">{{ $factura->estado }}</span>
                 </div>
@@ -36,8 +36,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Datos del Gasto y Asociación --}}
         <div class="lg:col-span-2 space-y-6">
-            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5">
-                <div class="erp-card-header !bg-transparent border-b border-white/5">
+            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border">
+                <div class="erp-card-header !bg-transparent border-b border-border">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Información del Emisor y Concepto</h2>
                 </div>
                 <div class="erp-card-body p-6">
@@ -51,12 +51,12 @@
                                 </div>
                                 <div>
                                     <div class="text-[0.6rem] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Beneficiario / Proveedor</div>
-                                    <div class="text-sm font-black text-white uppercase">{{ $factura->proveedor->razon_social ?? '—' }}</div>
+                                    <div class="text-sm font-black text-foreground uppercase">{{ $factura->proveedor->razon_social ?? '—' }}</div>
                                 </div>
                             </div>
-                            <div class="p-4 rounded-2xl bg-surface2 border border-white/5">
+                            <div class="p-4 rounded-2xl bg-surface2 border border-border">
                                 <span class="text-[0.55rem] text-muted-foreground uppercase font-black tracking-[0.2em] block mb-2">Concepto de Gasto</span>
-                                <span class="text-xs font-bold text-white leading-relaxed">{{ $factura->cuenta_gasto ?? 'Sin especificar' }}</span>
+                                <span class="text-xs font-bold text-foreground leading-relaxed">{{ $factura->cuenta_gasto ?? 'Sin especificar' }}</span>
                             </div>
                         </div>
 
@@ -74,7 +74,7 @@
                                         <span class="text-[0.6rem] font-black text-accent uppercase tracking-widest">Inversión Activo</span>
                                     </div>
                                     <a href="{{ route('vehicles.show', $factura->vehiculo->id) }}" class="block">
-                                        <div class="text-xs font-black text-white hover:text-accent transition-colors mb-1 uppercase">{{ $factura->vehiculo->marca }} {{ $factura->vehiculo->modelo }}</div>
+                                        <div class="text-xs font-black text-foreground hover:text-accent transition-colors mb-1 uppercase">{{ $factura->vehiculo->marca }} {{ $factura->vehiculo->modelo }}</div>
                                         <div class="font-mono text-[0.6rem] text-muted-foreground uppercase">Chasis: {{ $factura->vehiculo->numero_chasis }}</div>
                                     </a>
                                     <div class="mt-4 flex items-center gap-2 text-[0.55rem] font-bold text-accent/60 uppercase italic">
@@ -97,7 +97,7 @@
                                         <span class="text-[0.6rem] font-black text-amber-500 uppercase tracking-widest">Reposición Inventario</span>
                                     </div>
                                     <a href="{{ route('compras.show', $factura->compra_id) }}" class="block">
-                                        <div class="text-xs font-black text-white hover:text-amber-500 transition-colors uppercase">Orden de Compra #{{ $factura->compra_id }}</div>
+                                        <div class="text-xs font-black text-foreground hover:text-amber-500 transition-colors uppercase">Orden de Compra #{{ $factura->compra_id }}</div>
                                     </a>
                                 </div>
                             @endif
@@ -105,9 +105,9 @@
                     </div>
 
                     @if($factura->descripcion)
-                        <div class="mt-8 pt-6 border-t border-white/5">
+                        <div class="mt-8 pt-6 border-t border-border">
                             <h3 class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3">Observaciones / Notas Internas</h3>
-                            <p class="text-[0.75rem] text-muted-foreground/80 leading-relaxed italic bg-surface2/50 p-4 rounded-2xl border border-white/5">
+                            <p class="text-[0.75rem] text-muted-foreground/80 leading-relaxed italic bg-surface2/50 p-4 rounded-2xl border border-border">
                                 "{{ $factura->descripcion }}"
                             </p>
                         </div>
@@ -120,26 +120,26 @@
         <div class="space-y-6">
             <div class="erp-card !bg-red-500/5 !border-red-500/20 relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/10 rounded-full blur-3xl"></div>
-                <div class="erp-card-header !bg-transparent border-b border-white/5">
+                <div class="erp-card-header !bg-transparent border-b border-border">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-red-400">Desglose Financiero</h2>
                 </div>
                 <div class="erp-card-body p-6 space-y-5">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-[0.65rem] font-bold">
                             <span class="text-muted-foreground uppercase tracking-widest">Importe Neto</span>
-                            <span class="text-white">{{ $factura->moneda }} {{ number_format($factura->subtotal, 2, ',', '.') }}</span>
+                            <span class="text-foreground">{{ $factura->moneda }} {{ number_format($factura->subtotal, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex items-center justify-between text-[0.65rem] font-bold">
                             <span class="text-muted-foreground uppercase tracking-widest">Gravado (%)</span>
-                            <span class="text-white">{{ $factura->moneda }} {{ number_format($factura->impuestos, 2, ',', '.') }}</span>
+                            <span class="text-foreground">{{ $factura->moneda }} {{ number_format($factura->impuestos, 2, ',', '.') }}</span>
                         </div>
                     </div>
 
-                    <div class="pt-5 border-t border-white/10 text-center">
+                    <div class="pt-5 border-t border-border text-center">
                         <span class="text-[0.55rem] text-muted-foreground uppercase font-black tracking-widest block mb-1">Monto de Egreso (Fiscal)</span>
                         <div class="flex items-center justify-center gap-1.5">
                             <span class="text-xs font-black text-muted-foreground uppercase">{{ $factura->moneda }}</span>
-                            <span class="text-3xl font-black text-white tracking-tighter">{{ number_format($factura->subtotal + $factura->impuestos, 2, ',', '.') }}</span>
+                            <span class="text-3xl font-black text-foreground tracking-tighter">{{ number_format($factura->subtotal + $factura->impuestos, 2, ',', '.') }}</span>
                         </div>
                     </div>
 

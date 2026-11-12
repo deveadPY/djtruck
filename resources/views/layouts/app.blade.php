@@ -69,6 +69,14 @@
                 --accent:         #059669;
                 --accent-light:   #34d399;
 
+                /* Estados (usados por varias vistas; antes no estaban definidos) */
+                --success:        #16a34a;
+                --danger:         #dc2626;
+                --warning:        #d97706;
+                --bg-card:        var(--surface);
+                --surface1:       var(--surface);
+                --white:          #ffffff;
+
                 --shadow:         0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
                 --shadow-lg:      0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
             }
@@ -87,6 +95,10 @@
                 --primary-light:  #d7b7fd;
                 --accent:         #03dac6;
                 --accent-light:   #66fff9;
+
+                --success:        #4ade80;
+                --danger:         #f87171;
+                --warning:        #fbbf24;
 
                 --shadow:         0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
                 --shadow-lg:      0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
@@ -146,10 +158,12 @@
 
             /* Stats */
             .stat-card {
-                @apply rounded-2xl border p-4 sm:p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer;
+                @apply rounded-2xl border p-4 sm:p-5 relative overflow-hidden transition-all duration-200;
                 background: var(--surface);
                 border-color: var(--border);
             }
+            /* Solo las tarjetas que llevan a un módulo parecen clicables */
+            a.stat-card { @apply cursor-pointer hover:-translate-y-0.5; }
             .stat-card::before {
                 content: '';
                 @apply absolute top-0 left-0 right-0 h-[3px];
@@ -200,6 +214,11 @@
             .btn {
                 @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[0.8rem] font-semibold no-underline border-none cursor-pointer transition-all duration-200;
             }
+            /* Foco visible para teclado en todo control interactivo */
+            .btn:focus-visible, a:focus-visible, button:focus-visible, [role="tab"]:focus-visible, summary:focus-visible {
+                outline: 2px solid var(--primary);
+                outline-offset: 2px;
+            }
             .btn-primary {
                 @apply bg-primary text-white hover:bg-primary-hover;
             }
@@ -236,7 +255,7 @@
             }
             .form-input:focus {
                 @apply border-primary outline-none;
-                box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+                box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
             }
             .form-input[type="file"] { @apply py-2 px-3 cursor-pointer; }
             select.form-input option { background: var(--surface2); color: var(--text); }
@@ -249,6 +268,12 @@
                 @apply bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-3 rounded-xl text-sm mb-4;
             }
             .flash-error ul { @apply ml-5 list-disc; }
+            .flash-info {
+                @apply bg-blue-500/10 border border-blue-500/30 text-blue-500 px-4 py-3 rounded-xl text-sm mb-4;
+            }
+            .flash-warning {
+                @apply bg-amber-500/10 border border-amber-500/30 text-amber-600 px-4 py-3 rounded-xl text-sm mb-4;
+            }
 
             /* Sidebar nav link */
             .nav-link {
@@ -375,7 +400,7 @@
             <button id="sidebarToggle"
                 class="absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border flex items-center justify-center text-[0.72rem] cursor-pointer z-[110] transition-all duration-300 hover:bg-primary hover:text-white hover:border-primary shadow-sm"
                 style="background: var(--surface); border-color: var(--border); color: var(--text-muted);"
-                title="Colapsar menú">
+                title="Colapsar menú" aria-label="Colapsar menú">
                 <svg class="w-3.5 h-3.5 transition-transform duration-300" id="sidebarArrow" fill="none"
                     viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -569,8 +594,9 @@
                             {{ ucfirst(auth()->user()->roles->first()?->name ?? auth()->user()->role ?? 'Usuario') }}</div>
                     </div>
                 </div>
-                <a href="{{ route('logout') }}"
-                    class="block mt-1.5 text-center text-[0.72rem] no-underline py-1.5 rounded-lg transition-all duration-200 sidebar-text hover:bg-red-500/10 hover:text-red-500"
+                <form method="POST" action="{{ route('logout') }}">@csrf
+                <button type="submit"
+                    class="w-full border-0 bg-transparent cursor-pointer block mt-1.5 text-center text-[0.72rem] no-underline py-1.5 rounded-lg transition-all duration-200 sidebar-text hover:bg-red-500/10 hover:text-red-500"
                     style="color: var(--text-muted);">
                     <span class="inline-flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -579,7 +605,8 @@
                         </svg>
                         Cerrar sesión
                     </span>
-                </a>
+                </button>
+                </form>
             @endauth
         </div>
 
@@ -606,10 +633,44 @@
             </div>
 
             <div class="flex items-center gap-3">
+                {{-- Búsqueda general (atajos: "/" o Ctrl+K) --}}
+                <form method="GET" action="{{ route('buscar') }}" role="search" class="hidden md:block">
+                    <label for="globalSearch" class="sr-only">Buscar en el sistema</label>
+                    <input id="globalSearch" type="search" name="q" minlength="2" autocomplete="off"
+                        placeholder="Buscar chasis, cliente, venta…  ( / )"
+                        class="form-input !py-1.5 !text-[0.8rem] w-64 lg:w-72">
+                </form>
+                <a href="{{ route('buscar') }}" class="md:hidden p-2 rounded-lg" style="background: var(--surface2); color: var(--text-muted);" aria-label="Buscar">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                </a>
+
+                {{-- Acciones rápidas según permisos --}}
+                @php
+                    $accionesRapidas = array_filter([
+                        auth()->user()->can('ventas.crear')    ? ['Nueva venta', route('ventas.create')] : null,
+                        auth()->user()->can('vehiculos.ver')   ? ['Registrar gasto', route('vehicles.index')] : null,
+                        auth()->user()->can('clientes.crear')  ? ['Nuevo cliente', route('clientes.create')] : null,
+                        auth()->user()->can('vehiculos.crear') ? ['Nuevo vehículo', route('vehicles.create')] : null,
+                    ]);
+                @endphp
+                @if($accionesRapidas)
+                    <details class="relative" id="quickActions">
+                        <summary class="btn btn-primary !py-1.5 list-none cursor-pointer [&::-webkit-details-marker]:hidden" aria-label="Acciones rápidas">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                            <span class="hidden sm:inline">Nuevo</span>
+                        </summary>
+                        <div class="absolute right-0 mt-2 w-48 rounded-xl border shadow-lg py-1 z-[120]" style="background: var(--surface); border-color: var(--border);">
+                            @foreach($accionesRapidas as [$texto, $url])
+                                <a href="{{ $url }}" class="block px-4 py-2 text-sm no-underline hover:bg-surface-2" style="color: var(--text);">{{ $texto }}</a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
+
                 {{-- Notificaciones bell --}}
                 @can('cuotas.ver')
                     <div id="notifWrapper" class="relative">
-                        <button onclick="toggleNotifDropdown()"
+                        <button type="button" onclick="toggleNotifDropdown()" aria-label="Notificaciones" aria-haspopup="true"
                             class="relative p-2 rounded-lg transition-colors duration-200 hover:opacity-80"
                             style="background: var(--surface2); color: var(--text-muted);">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -645,7 +706,7 @@
                 
                 {{-- Cotizaciones --}}
                 <div id="cotizWrapper" class="relative">
-                    <button onclick="toggleCotizDropdown()" class="p-2 rounded-lg transition-colors duration-200 hover:opacity-80"
+                    <button type="button" onclick="toggleCotizDropdown()" aria-label="Cotizaciones del día" aria-haspopup="true" class="p-2 rounded-lg transition-colors duration-200 hover:opacity-80"
                         style="background: var(--surface2); color: var(--text-muted);" title="Cotizaciones">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -671,7 +732,7 @@
                 </div>
 
                 {{-- Dark / Light toggle --}}
-                <button id="themeToggle" class="p-2 rounded-lg transition-colors duration-200 hover:opacity-80"
+                <button type="button" id="themeToggle" aria-label="Cambiar tema claro u oscuro" class="p-2 rounded-lg transition-colors duration-200 hover:opacity-80"
                     style="background: var(--surface2); color: var(--text-muted);" title="Cambiar tema">
                     {{-- Sol (light mode active → show moon) --}}
                     <svg id="iconMoon" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -696,7 +757,10 @@
         </header>
 
         {{-- Content --}}
-        <div class="flex-1 px-6 py-6 lg:px-8 lg:py-7">
+        <div class="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-7">
+            @unless(View::hasSection('flash-propio'))
+                @include('partials.flash')
+            @endunless
             @yield('content')
         </div>
     </div>
@@ -705,6 +769,21 @@
     @include('partials.danger-confirm-modal')
 
     <script>
+            /* ── Atajos: "/" o Ctrl+K enfoca la búsqueda; Escape cierra "+ Nuevo" ── */
+            document.addEventListener('keydown', function (e) {
+                const enCampo = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+                const buscar = document.getElementById('globalSearch');
+                if (buscar && buscar.offsetParent && ((e.key === '/' && !enCampo) || (e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey)))) {
+                    e.preventDefault();
+                    buscar.focus();
+                }
+                if (e.key === 'Escape') document.getElementById('quickActions')?.removeAttribute('open');
+            });
+            document.addEventListener('click', function (e) {
+                const menu = document.getElementById('quickActions');
+                if (menu && !menu.contains(e.target)) menu.removeAttribute('open');
+            });
+
             /* ── Theme toggle ──────────────────────────────────────────────── */
             (function () {
                 const html = document.documentElement;

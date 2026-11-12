@@ -3,20 +3,18 @@
 @section('page-title', 'Detalle de Venta')
 
 @section('content')
-    @if(session('success'))
-        <div class="flash-success">{{ session('success') }}</div>@endif
 
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-4">
-            <a href="{{ route('ventas.index') }}" class="p-2.5 rounded-xl bg-surface2 border border-white/5 text-muted-foreground hover:text-primary transition-all">
+            <a href="{{ route('ventas.index') }}" class="p-2.5 rounded-xl bg-surface2 border border-border text-muted-foreground hover:text-primary transition-all">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
             </a>
             <div class="flex flex-col">
                 <div class="flex items-center gap-2 mb-1">
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Operación #{{ $venta->numero_venta }}</h1>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Operación #{{ $venta->numero_venta }}</h1>
                     @php $cls = match ($venta->estado) { 'COMPLETADO' => 'badge-disponible', 'CANCELADO' => 'badge-vendido', 'RESERVADO' => 'badge-preparacion', default => 'badge-toma'}; @endphp
                     <span class="badge-status {{ $cls }} !text-[0.6rem] !px-2 !font-black uppercase tracking-widest shadow-lg">{{ $venta->estado }}</span>
                 </div>
@@ -62,17 +60,17 @@
             <div class="flex-1 min-w-0">
                 <h3 class="text-sm font-black text-red-300 uppercase tracking-widest mb-1">Venta Anulada</h3>
                 @if($cancelacion && $cancelacion->motivo)
-                    <p class="text-sm text-white/90 mb-3">{{ $cancelacion->motivo }}</p>
+                    <p class="text-sm text-foreground mb-3">{{ $cancelacion->motivo }}</p>
                 @else
                     <p class="text-sm text-muted-foreground italic mb-3">Sin motivo registrado.</p>
                 @endif
                 @if($cancelacion)
                 <div class="flex flex-wrap gap-x-6 gap-y-1 text-[0.65rem] text-muted-foreground uppercase tracking-wider font-bold">
                     @if($cancelacion->fecha)
-                        <span>Fecha: <span class="text-white/70">{{ \Carbon\Carbon::parse($cancelacion->fecha)->format('d/m/Y H:i') }}</span></span>
+                        <span>Fecha: <span class="text-muted-foreground">{{ \Carbon\Carbon::parse($cancelacion->fecha)->format('d/m/Y H:i') }}</span></span>
                     @endif
                     @if($cancelacion->usuario)
-                        <span>Anulada por: <span class="text-white/70">{{ $cancelacion->usuario }}</span></span>
+                        <span>Anulada por: <span class="text-muted-foreground">{{ $cancelacion->usuario }}</span></span>
                     @endif
                 </div>
                 @endif
@@ -86,13 +84,13 @@
         <div class="lg:col-span-2 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {{-- Info Vehículo --}}
-                <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 relative overflow-hidden group">
+                <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <svg class="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.129-1.125v-10.5a1.125 1.125 0 0 0-1.125-1.125H3.375a1.125 1.125 0 0 0-1.125 1.125v4.5m17.25 2.25h-5.625c-.621 0-1.125.504-1.125 1.125v3.375m7.5-3.375h-7.5m7.5-1.125h-7.5" />
                         </svg>
                     </div>
-                    <div class="erp-card-header !bg-transparent border-b border-white/5">
+                    <div class="erp-card-header !bg-transparent border-b border-border">
                         <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Unidad Principal</h2>
                     </div>
                     <div class="erp-card-body">
@@ -105,11 +103,11 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="text-xs font-black text-white uppercase tracking-tight">{{ $venta->vehiculo->marca }} {{ $venta->vehiculo->modelo }}</div>
+                                        <div class="text-xs font-black text-foreground uppercase tracking-tight">{{ $venta->vehiculo->marca }} {{ $venta->vehiculo->modelo }}</div>
                                         <div class="text-[0.6rem] font-black text-muted-foreground uppercase opacity-60">Año {{ $venta->vehiculo->anio }}</div>
                                     </div>
                                 </div>
-                                <div class="p-3 rounded-xl bg-surface2 border border-white/5">
+                                <div class="p-3 rounded-xl bg-surface2 border border-border">
                                     <span class="text-[0.55rem] text-muted-foreground uppercase font-black tracking-widest block mb-1">Número de Chasis</span>
                                     <span class="text-sm font-mono font-black text-accent">{{ $venta->vehiculo->numero_chasis ?? '—' }}</span>
                                 </div>
@@ -126,13 +124,13 @@
                 </div>
 
                 {{-- Info Cliente --}}
-                <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 relative overflow-hidden group">
+                <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <svg class="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                         </svg>
                     </div>
-                    <div class="erp-card-header !bg-transparent border-b border-white/5">
+                    <div class="erp-card-header !bg-transparent border-b border-border">
                         <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Comprador</h2>
                     </div>
                     <div class="erp-card-body">
@@ -144,7 +142,7 @@
                                     </svg>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <div class="text-xs font-black text-white uppercase tracking-tight truncate">{{ $venta->cliente->razon_social }}</div>
+                                    <div class="text-xs font-black text-foreground uppercase tracking-tight truncate">{{ $venta->cliente->razon_social }}</div>
                                     <div class="text-[0.6rem] font-black text-muted-foreground uppercase opacity-60">RUC: {{ $venta->cliente->ruc ?? '—' }}</div>
                                 </div>
                             </div>
@@ -160,8 +158,8 @@
             </div>
 
             {{-- Items de la Venta --}}
-            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5">
-                <div class="erp-card-header !bg-transparent border-b border-white/5">
+            <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border">
+                <div class="erp-card-header !bg-transparent border-b border-border">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Desglose de Productos / Servicios</h2>
                 </div>
                 <div class="overflow-x-auto">
@@ -176,18 +174,18 @@
                         </thead>
                         <tbody>
                             @foreach($items as $item)
-                                <tr class="border-b border-white/5 last:border-0">
+                                <tr class="border-b border-border last:border-0">
                                     <td class="!pl-6">
-                                        <div class="text-xs font-bold text-white tracking-tight">{{ $item->descripcion }}</div>
+                                        <div class="text-xs font-bold text-foreground tracking-tight">{{ $item->descripcion }}</div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="text-[0.65rem] font-black bg-surface2 px-2 py-0.5 rounded-lg border border-white/5">{{ number_format($item->cantidad, 0) }}</span>
+                                        <span class="text-[0.65rem] font-black bg-surface2 px-2 py-0.5 rounded-lg border border-border">{{ number_format($item->cantidad, 0) }}</span>
                                     </td>
                                     <td class="text-right">
                                         <span class="text-xs text-muted-foreground">${{ number_format($item->precio_unitario_usd, 2, ',', '.') }}</span>
                                     </td>
                                     <td class="text-right !pr-6">
-                                        <span class="text-xs font-black text-white">${{ number_format($item->subtotal_usd, 2, ',', '.') }}</span>
+                                        <span class="text-xs font-black text-foreground">${{ number_format($item->subtotal_usd, 2, ',', '.') }}</span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -196,11 +194,11 @@
                 </div>
                 
                 {{-- Versión Móvil de los Items --}}
-                <div class="md:hidden divide-y divide-white/5">
+                <div class="md:hidden divide-y divide-border">
                     @foreach($items as $item)
                         <div class="p-4 flex items-center justify-between">
                             <div class="min-w-0 flex-1">
-                                <div class="text-xs font-black text-white uppercase truncate">{{ $item->descripcion }}</div>
+                                <div class="text-xs font-black text-foreground uppercase truncate">{{ $item->descripcion }}</div>
                                 <div class="text-[0.6rem] text-muted-foreground font-black mt-1">{{ number_format($item->cantidad, 0) }} x ${{ number_format($item->precio_unitario_usd, 2, ',', '.') }}</div>
                             </div>
                             <div class="text-right">
@@ -216,14 +214,14 @@
         <div class="space-y-6">
             <div class="erp-card !bg-primary/5 !border-primary/20 relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-                <div class="erp-card-header !bg-transparent border-b border-white/5">
+                <div class="erp-card-header !bg-transparent border-b border-border">
                     <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-primary">Liquidación Final</h2>
                 </div>
                 <div class="erp-card-body space-y-4">
                     <div class="text-center py-4">
                         <span class="text-[0.55rem] text-muted-foreground uppercase font-black tracking-widest block mb-1">Monto Total de Operación</span>
                         <div class="flex items-baseline justify-center gap-1.5">
-                            <span class="text-3xl font-black text-white tracking-tighter">$ {{ number_format($venta->precio_venta_usd, 2, ',', '.') }}</span>
+                            <span class="text-3xl font-black text-foreground tracking-tighter">$ {{ number_format($venta->precio_venta_usd, 2, ',', '.') }}</span>
                             <span class="text-xs font-black text-primary uppercase">USD</span>
                         </div>
                         @if($venta->moneda_venta !== 'USD')
@@ -233,10 +231,10 @@
                         @endif
                     </div>
 
-                    <div class="space-y-2 border-t border-white/5 pt-4">
+                    <div class="space-y-2 border-t border-border pt-4">
                         <div class="flex items-center justify-between text-[0.65rem]">
                             <span class="text-muted-foreground font-black uppercase tracking-tighter">Valor en Libros</span>
-                            <span class="text-white font-mono font-bold">$ {{ number_format($venta->valor_libro_snapshot, 2, ',', '.') }}</span>
+                            <span class="text-foreground font-mono font-bold">$ {{ number_format($venta->valor_libro_snapshot, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex items-center justify-between p-3 rounded-xl {{ $rentabilidad >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-500' }} border">
                             <span class="text-[0.55rem] font-black uppercase tracking-widest">Utilidad Estimada</span>
@@ -248,8 +246,8 @@
 
             {{-- Planes de Pago --}}
             @if($plan)
-                <div class="erp-card !bg-surface/60 !backdrop-blur border-white/5">
-                    <div class="erp-card-header !bg-transparent border-b border-white/5 flex items-center justify-between">
+                <div class="erp-card !bg-surface/60 !backdrop-blur border-border">
+                    <div class="erp-card-header !bg-transparent border-b border-border flex items-center justify-between">
                         <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-accent">Línea de Crédito</h2>
                         <span class="badge-status badge-preparacion !text-[0.55rem] !px-1.5 uppercase font-black leading-none">{{ $plan->tipo_plan }}</span>
                     </div>
@@ -257,9 +255,9 @@
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <span class="text-[0.5rem] text-muted-foreground uppercase font-black block leading-none mb-1">Estado Plan</span>
-                                <span class="text-xs font-black text-white uppercase tracking-tighter">Activo con {{ $cuotas->count() }} cuotas</span>
+                                <span class="text-xs font-black text-foreground uppercase tracking-tighter">Activo con {{ $cuotas->count() }} cuotas</span>
                             </div>
-                            <a href="{{ route('planes_cuotas.show', $plan->id) }}" class="p-2 rounded-lg bg-surface3/50 text-white hover:text-accent transition-all">
+                            <a href="{{ route('planes_cuotas.show', $plan->id) }}" class="p-2 rounded-lg bg-surface3/50 text-foreground hover:text-accent transition-all">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                     <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
@@ -267,12 +265,12 @@
                         </div>
                         <div class="space-y-2">
                              @foreach($cuotas->take(3) as $c)
-                                <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface2/50 border border-white/5">
+                                <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface2/50 border border-border">
                                     <div class="text-[0.6rem] font-black text-muted-foreground uppercase leading-none">
                                         Cuota {{ $c->numero_cuota }}
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-[0.65rem] font-black text-white leading-none mb-0.5">${{ number_format($c->capital + $c->interes, 2, ',', '.') }}</div>
+                                        <div class="text-[0.65rem] font-black text-foreground leading-none mb-0.5">${{ number_format($c->capital + $c->interes, 2, ',', '.') }}</div>
                                         @php $cs = match ($c->estado) { 'PAGADA' => 'text-green-500', 'VENCIDA', 'EN_MORA' => 'text-red-500', default => 'text-amber-500'}; @endphp
                                         <div class="text-[0.5rem] font-black uppercase tracking-widest {{ $cs }}">{{ $c->estado }}</div>
                                     </div>
@@ -285,7 +283,7 @@
                     </div>
                 </div>
             @else
-                <div class="p-5 rounded-3xl border border-dashed border-white/10 flex flex-col items-center gap-3">
+                <div class="p-5 rounded-3xl border border-dashed border-border flex flex-col items-center gap-3">
                     <div class="w-12 h-12 rounded-full bg-surface2 flex items-center justify-center text-muted-foreground/30">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
@@ -300,8 +298,8 @@
 
     {{-- Pagos Iniciales --}}
     @if($pagos->where('tipo_pago', '!=', 'PLAN_CUOTAS')->count() > 0)
-        <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-white/5 mb-8">
-            <div class="erp-card-header !bg-transparent border-b border-white/5">
+        <div class="erp-card !bg-surface/40 !backdrop-blur-md !border-border mb-8">
+            <div class="erp-card-header !bg-transparent border-b border-border">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground">Flujos de Caja Iniciales</h2>
             </div>
             <div class="overflow-x-auto">
@@ -316,16 +314,28 @@
                     </thead>
                     <tbody>
                         @foreach($pagos->where('tipo_pago', '!=', 'PLAN_CUOTAS') as $p)
-                            <tr class="border-b border-white/5 last:border-0 hover:bg-white/5">
+                            <tr class="border-b border-border last:border-0 hover:bg-surface-3">
                                 <td class="!pl-6">
                                     <div class="flex items-center gap-2">
                                         <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
-                                        <span class="text-xs font-black text-white uppercase tracking-tighter">{{ str_replace('_', ' ', $p->tipo_pago) }}</span>
+                                        <span class="text-xs font-black text-foreground uppercase tracking-tighter">{{ str_replace('_', ' ', $p->tipo_pago) }}</span>
                                     </div>
                                 </td>
                                 <td><span class="text-xs font-black text-accent">${{ number_format($p->monto_usd, 2, ',', '.') }}</span></td>
                                 <td><span class="text-[0.7rem] font-bold text-muted-foreground">{{ \Carbon\Carbon::parse($p->fecha_pago)->format('d/m/Y') }}</span></td>
-                                <td class="!pr-6"><span class="text-[0.7rem] text-muted-foreground opacity-60 italic">{{ $p->referencia_bancaria ?: $p->observaciones ?: 'Sin referencias' }}</span></td>
+                                <td class="!pr-6">
+                                    @if($p->vehiculo_canje_id && ($vc = $vehiculosCanje[$p->vehiculo_canje_id] ?? null))
+                                        @if($vc->deleted_at)
+                                            <span class="text-[0.7rem] text-muted-foreground">Recibido: {{ $vc->marca }} {{ $vc->modelo }} {{ $vc->anio }} ({{ $vc->numero_chasis }}) — dado de baja</span>
+                                        @else
+                                            <a href="{{ route('vehicles.show', $vc->id) }}" class="text-[0.7rem] text-accent hover:underline">
+                                                Recibido: {{ $vc->marca }} {{ $vc->modelo }} {{ $vc->anio }} ({{ $vc->numero_chasis }}) · {{ ucfirst(strtolower(str_replace('_', ' ', $vc->estado))) }}
+                                            </a>
+                                        @endif
+                                    @else
+                                        <span class="text-[0.7rem] text-muted-foreground opacity-60 italic">{{ $p->referencia_bancaria ?: $p->observaciones ?: 'Sin referencias' }}</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -344,17 +354,25 @@
     </div>
 
     @if(session('show_print_modal'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (confirm('¿Desea imprimir la Nota de Venta ahora?')) {
-                    window.open('{{ route('ventas.imprimir', $venta->id) }}', '_blank');
-                }
-            });
-        </script>
+        {{-- Aviso no bloqueante para imprimir la nota de venta --}}
+        <div id="printNotaToast" role="status"
+            class="fixed top-5 right-5 left-5 sm:left-auto z-50 sm:max-w-md flex flex-wrap items-center gap-3 bg-surface-2 border border-border border-l-4 rounded-xl shadow-2xl p-4"
+            style="border-left-color:var(--success)">
+            <div class="flex-1 min-w-0">
+                <strong class="block text-sm text-foreground">Venta registrada</strong>
+                <span class="text-xs text-muted-foreground">La nota de venta está lista para imprimir.</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('ventas.imprimir', $venta->id) }}" target="_blank" class="btn btn-primary text-xs"
+                    onclick="document.getElementById('printNotaToast').remove()">Imprimir nota</a>
+                <button type="button" class="btn btn-ghost text-xs" onclick="document.getElementById('printNotaToast').remove()">Descartar</button>
+            </div>
+        </div>
+        <script>setTimeout(() => document.getElementById('printNotaToast')?.remove(), 15000);</script>
     @endif
 {{-- ── Modal Cancelar Venta ── --}}
 <div id="modal-cancelar-venta" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md bg-surface2 border border-white/10 rounded-2xl shadow-2xl p-6">
+    <div class="w-full max-w-md bg-surface2 border border-border rounded-2xl shadow-2xl p-6">
         <div class="flex items-center gap-3 mb-5">
             <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 flex-shrink-0">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -362,7 +380,7 @@
                 </svg>
             </div>
             <div>
-                <h3 class="text-sm font-black text-white uppercase tracking-widest">Cancelar Venta</h3>
+                <h3 class="text-sm font-black text-foreground uppercase tracking-widest">Cancelar Venta</h3>
                 <p class="text-[0.65rem] text-muted-foreground mt-0.5">Operación #{{ $venta->numero_venta }}</p>
             </div>
         </div>
@@ -385,11 +403,11 @@
             <div class="mb-5">
                 <label class="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Motivo de cancelación <span class="text-red-400">*</span></label>
                 <textarea name="motivo" required rows="3" placeholder="Describe brevemente el motivo de la cancelación..."
-                    class="w-full bg-surface border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary/50 resize-none"></textarea>
+                    class="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 resize-none"></textarea>
             </div>
             <div class="flex gap-3">
                 <button type="button" onclick="document.getElementById('modal-cancelar-venta').classList.add('hidden')"
-                    class="flex-1 py-2.5 rounded-xl border border-white/10 text-muted-foreground hover:text-white hover:border-white/20 transition-all text-xs font-black uppercase tracking-wider">
+                    class="flex-1 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-border transition-all text-xs font-black uppercase tracking-wider">
                     Volver
                 </button>
                 <button type="submit"

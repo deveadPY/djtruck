@@ -19,6 +19,12 @@ return [
             'USD_PYG' => (float) env('ERP_TASA_USD_PYG', 7800),
             'USD_BRL' => (float) env('ERP_TASA_USD_BRL', 5.05),
         ],
+        // Cotización automática desde la portada de La Moneda (sucursal = id del panel en su web).
+        'lamoneda' => [
+            'url'               => env('LAMONEDA_URL', 'https://www.lamoneda.com.py/'),
+            'sucursal'          => env('LAMONEDA_SUCURSAL', 'casa_matriz'),
+            'intervalo_minutos' => (int) env('LAMONEDA_INTERVALO_MINUTOS', 30),
+        ],
     ],
 
     // ── Numeración de documentos ───────────────────────────────────────

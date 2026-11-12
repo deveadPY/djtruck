@@ -148,7 +148,7 @@ $documentableId — ID del registro
                                         </svg>
                                     </a>
                                     @if(str_contains($doc->mime_type ?? '', 'image') || str_contains($doc->mime_type ?? '', 'pdf'))
-                                        <a href="{{ asset($doc->ruta) }}" target="_blank" class="btn btn-ghost text-xs px-2 py-1"
+                                        <a href="{{ route('documentos.download', [$doc->id, 'inline' => 1]) }}" target="_blank" rel="noopener" class="btn btn-ghost text-xs px-2 py-1"
                                             title="Ver">
                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor">

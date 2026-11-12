@@ -26,13 +26,7 @@ class NotificacionesWebController extends Controller
         $mesInic = Carbon::today()->startOfMonth()->toDateString();
         $mesFin  = Carbon::today()->endOfMonth()->toDateString();
 
-        // ── IDs descartados por este usuario ─────────────────────────────────
-        $descartados = DB::table('notificaciones_descartadas')
-            ->where('user_id', $userId)
-            ->select('tipo', 'referencia_id')
-            ->get()
-            ->groupBy('tipo')
-            ->map(fn($rows) => $rows->pluck('referencia_id')->toArray());
+        $descartados = $this->descartados($userId);
 
         $excluirCuotasMora  = $descartados->get('mora',     []);
         $excluirCuotasHoy   = $descartados->get('hoy',      []);
@@ -176,6 +170,9 @@ class NotificacionesWebController extends Controller
      */
     public function index(): View
     {
+        // Las deudas (cuotas y facturas) se muestran siempre aunque se hayan descartado de la campana;
+        // solo las alertas de stock respetan el descarte.
+        $descartados = $this->descartados(Auth::id());
         $hoy = Carbon::today()->toDateString();
         $en7dias = Carbon::today()->addDays(7)->toDateString();
         $mesInic = Carbon::today()->startOfMonth()->toDateString();
@@ -201,15 +198,16 @@ class NotificacionesWebController extends Controller
                 'v.id as venta_id',
                 DB::raw('COALESCE(cl.razon_social, cl.nombre_fantasia) as cliente_nombre'),
                 'cl.email as cliente_email',
+                'cl.telefono as cliente_telefono',
             ]);
 
         $cuotasHoy = (clone $baseCuotas)->where('c.estado', 'PENDIENTE')
             ->where('c.fecha_vencimiento', '=', $hoy)
-            ->orderBy('c.fecha_vencimiento')->paginate(50, pageName: 'hoy_page');
+            ->orderBy('c.fecha_vencimiento')->paginate(50, pageName: 'hoy_page')->appends(['tab' => 'hoy']);
 
         $cuotasProximas = (clone $baseCuotas)->where('c.estado', 'PENDIENTE')
             ->whereBetween('c.fecha_vencimiento', [Carbon::today()->addDay()->toDateString(), $en7dias])
-            ->orderBy('c.fecha_vencimiento')->paginate(50, pageName: 'prox_page');
+            ->orderBy('c.fecha_vencimiento')->paginate(50, pageName: 'prox_page')->appends(['tab' => 'proximas']);
 
         $cuotasMora = (clone $baseCuotas)
             ->where(function ($q) use ($hoy) {
@@ -218,7 +216,7 @@ class NotificacionesWebController extends Controller
                         $q2->where('c.estado', 'PENDIENTE')->where('c.fecha_vencimiento', '<', $hoy);
                     });
             })
-            ->orderBy('c.fecha_vencimiento')->paginate(50, pageName: 'mora_page');
+            ->orderBy('c.fecha_vencimiento')->paginate(50, pageName: 'mora_page')->appends(['tab' => 'mora']);
 
         $facturasPagar = DB::table('facturas_proveedores as f')
             ->join('proveedores as p', 'f.proveedor_id', '=', 'p.id')
@@ -233,7 +231,7 @@ class NotificacionesWebController extends Controller
                 DB::raw('COALESCE(p.razon_social, p.nombre_fantasia) as proveedor_nombre'),
             ])
             ->orderBy('f.fecha_factura', 'asc')
-            ->paginate(50, pageName: 'pagar_page');
+            ->paginate(50, pageName: 'pagar_page')->appends(['tab' => 'facturas_pagar']);
 
         $facturasDeclarar = DB::table('facturas_proveedores as f')
             ->join('proveedores as p', 'f.proveedor_id', '=', 'p.id')
@@ -248,7 +246,7 @@ class NotificacionesWebController extends Controller
                 DB::raw('COALESCE(p.razon_social, p.nombre_fantasia) as proveedor_nombre'),
             ])
             ->orderBy('f.fecha_factura', 'desc')
-            ->paginate(50, pageName: 'declarar_page');
+            ->paginate(50, pageName: 'declarar_page')->appends(['tab' => 'facturas_declarar']);
 
         // ── Stock Bajo Mínimo ─────────────────────────────────────────────
         $repuestosBajos = DB::table('stock_repuestos')
@@ -256,8 +254,9 @@ class NotificacionesWebController extends Controller
             ->where('activo', true)
             ->where('stock_minimo', '>', 0)
             ->whereRaw('stock_actual <= stock_minimo')
+            ->when($descartados->get('stock'), fn($q, $ids) => $q->whereNotIn('id', $ids))
             ->select(['id', 'codigo', 'descripcion', 'stock_actual', 'stock_minimo'])
-            ->paginate(50, pageName: 'stock_page');
+            ->paginate(50, pageName: 'stock_page')->appends(['tab' => 'stock']);
 
         return view('notificaciones.index', compact(
             'cuotasHoy',
@@ -267,5 +266,16 @@ class NotificacionesWebController extends Controller
             'facturasDeclarar',
             'repuestosBajos'
         ));
+    }
+
+    /** IDs descartados por el usuario, agrupados por tipo (mora, hoy, prox, pagar, declarar, stock). */
+    private function descartados(?int $userId): \Illuminate\Support\Collection
+    {
+        return DB::table('notificaciones_descartadas')
+            ->where('user_id', $userId)
+            ->select('tipo', 'referencia_id')
+            ->get()
+            ->groupBy('tipo')
+            ->map(fn($rows) => $rows->pluck('referencia_id')->toArray());
     }
 }

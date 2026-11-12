@@ -115,6 +115,7 @@
                     <div class="form-group">
                         <label class="form-label">Tasa de Cambio (a USD)</label>
                         <input type="number" name="tasa_cambio" id="tasa_cambio" value="{{ $compra->tasa_cambio }}" step="0.0001" class="form-input" oninput="calculateAll()">
+                        <p id="tasaAviso" class="hidden text-xs text-amber-500 mt-1" role="status">No hay cotización cargada para esta moneda: se usó una tasa de referencia. Verifíquela antes de guardar.</p>
                     </div>
 
                     <div class="pt-4 border-t border-border space-y-2">
@@ -189,7 +190,7 @@
     let itemIndex = 0;
     const itemsBody = document.getElementById('itemsBody');
     const template = document.getElementById('itemRowTemplate').innerHTML;
-    let currentRates = { PYG: 1, BRL: 1 };
+    let currentRates = {};
 
     // Preload existing items
     const existingItems = @json($items);
@@ -249,12 +250,12 @@
             allowEmptyOption: true,
             render: {
                 option: function(data, escape) {
-                    return `<div class="py-3 px-4 border-b border-white/5 hover:bg-primary/10 transition-all group">
+                    return `<div class="py-3 px-4 border-b border-border hover:bg-primary/10 transition-all group">
                         <div class="flex items-center justify-between mb-1.5">
                             <span class="font-bold text-accent-light text-[0.75rem] font-mono tracking-wider group-hover:translate-x-1 transition-transform origin-left">${escape(data.codigo || data.text.split(' - ')[0])}</span>
-                            <span class="text-[0.6rem] px-2 py-0.5 rounded-full bg-surface3 text-white border border-white/10 font-bold uppercase tracking-wider">STOCK: ${escape(data.stock || '0')}</span>
+                            <span class="text-[0.6rem] px-2 py-0.5 rounded-full bg-surface3 text-foreground border border-border font-bold uppercase tracking-wider">STOCK: ${escape(data.stock || '0')}</span>
                         </div>
-                        <div class="text-[0.8rem] leading-snug text-slate-300 group-hover:text-white transition-colors">
+                        <div class="text-[0.8rem] leading-snug text-slate-300 group-hover:text-foreground transition-colors">
                             ${escape(data.descripcion || data.text.split(' - ')[1] || '')}
                         </div>
                     </div>`;
@@ -262,7 +263,7 @@
                 item: function(data, escape) {
                     return `<div class="flex items-center gap-2 py-0.5">
                         <span class="bg-accent/20 text-accent-light px-2 py-0.5 rounded text-[0.7rem] font-mono font-bold border border-accent/30">${escape(data.codigo || data.text.split(' - ')[0])}</span>
-                        <span class="text-[0.75rem] font-semibold text-white truncate max-w-[200px]">${escape((data.descripcion || data.text.split(' - ')[1] || '').substring(0, 40))}</span>
+                        <span class="text-[0.75rem] font-semibold text-foreground truncate max-w-[200px]">${escape((data.descripcion || data.text.split(' - ')[1] || '').substring(0, 40))}</span>
                     </div>`;
                 }
             }
@@ -315,7 +316,7 @@
                 options.forEach(opt => {
                     if (!opt.value) return;
                     const optProvId = opt.getAttribute('data-proveedor');
-                    if (!proveedorId || optProvId == proveedorId) {
+                    if (!proveedorId || !optProvId || optProvId == proveedorId) {
                         ts.addOption({ value: opt.value, text: opt.text });
                     }
                 });
@@ -329,11 +330,16 @@
         const tasaInput = document.getElementById('tasa_cambio');
         if (moneda === 'USD') {
             tasaInput.value = 1;
+            document.getElementById('tasaAviso').classList.add('hidden');
             tasaInput.readOnly = true;
             tasaInput.classList.add('bg-surface3', 'opacity-70');
         } else {
             if (!tasaInput.value || tasaInput.value == '1') {
-                tasaInput.value = currentRates[moneda] || (moneda === 'PYG' ? 7300 : 5);
+                const tasaHoy = parseFloat(currentRates[moneda]);
+                // La API devuelve 1 cuando no hay cotización: se usa una referencia y se avisa.
+                const sinCotizacion = !(tasaHoy > 1);
+                tasaInput.value = sinCotizacion ? (moneda === 'PYG' ? 7300 : 5) : tasaHoy;
+                document.getElementById('tasaAviso').classList.toggle('hidden', !sinCotizacion);
             }
             tasaInput.readOnly = false;
             tasaInput.classList.remove('bg-surface3', 'opacity-70');
@@ -398,23 +404,23 @@
         @apply bg-surface2 border border-border rounded-xl text-sm px-4 py-3 transition-all !important;
         background-color: var(--surface2) !important;
         border-color: var(--border) !important;
-        color: #ffffff !important;
+        color: var(--text) !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     }
-    .ts-control input { color: #ffffff !important; font-size: 0.875rem !important; }
-    .ts-control input::placeholder { color: #94a3b8 !important; }
+    .ts-control input { color: var(--text) !important; font-size: 0.875rem !important; }
+    .ts-control input::placeholder { color: var(--text-muted) !important; }
     .ts-wrapper.focus .ts-control {
         @apply border-primary ring-4 ring-primary/20 !important;
         border-color: var(--primary) !important;
     }
     .ts-dropdown {
-        @apply bg-[#1e2230] border-white/10 rounded-2xl mt-2 overflow-hidden shadow-2xl z-[1000] !important;
-        background-color: #1e2230 !important;
-        border-color: rgba(255,255,255,0.1) !important;
+        @apply bg-surface border-border rounded-2xl mt-2 overflow-hidden shadow-2xl z-[1000] !important;
+        background-color: var(--surface) !important;
+        border-color: var(--border) !important;
         animation: ts-dropdown-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .ts-dropdown .option.active { background-color: rgba(108, 99, 255, 0.15) !important; color: #ffffff !important; }
-    .ts-dropdown .option { color: #e2e8f0 !important; }
+    .ts-dropdown .option.active { background-color: rgba(108, 99, 255, 0.15) !important; color: var(--text) !important; }
+    .ts-dropdown .option { color: var(--text) !important; }
     .item-row td { vertical-align: middle; }
 </style>
 @endpush

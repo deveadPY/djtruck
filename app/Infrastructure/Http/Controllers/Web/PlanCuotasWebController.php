@@ -288,7 +288,20 @@ class PlanCuotasWebController extends Controller
 
         $pagado = $cuotas->where('estado', 'PAGADA')->count();
         $pendiente = $cuotas->where('estado', 'PENDIENTE')->count();
-        $vencidas = $cuotas->where('estado', 'VENCIDA')->count();
+        $vencidas = $cuotas->whereIn('estado', ['VENCIDA', 'EN_MORA'])->count();
+
+        // Saldo real de cada cuota (mismo criterio que el cobro y el estado de cuenta)
+        $cuotas->each(fn($c) => $c->saldo = in_array($c->estado, ['PAGADA', 'ANULADA'])
+            ? 0.0
+            : round(max(0, $c->capital + $c->interes + $c->interes_mora - $c->monto_pagado), 2));
+        $saldoPendiente = $cuotas->sum('saldo');
+        $proxima = $cuotas->where('saldo', '>', 0)->sortBy('fecha_vencimiento')->first();
+
+        // Recibo por WhatsApp para cada cuota con pago registrado (sin teléfono, sin botón)
+        $telefonoWa = $this->telefonoWhatsapp($cliente->telefono ?? null);
+        $cuotas->each(fn($c) => $c->whatsapp_url = ($telefonoWa && in_array($c->estado, ['PAGADA', 'PAGADA_PARCIAL']))
+            ? 'https://wa.me/' . $telefonoWa . '?text=' . rawurlencode($this->textoReciboWhatsapp($c, $venta, $cliente))
+            : null);
 
         // También cargar las entregas
         $entregas = DB::table('detalles_pago')
@@ -297,7 +310,30 @@ class PlanCuotasWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('planes_cuotas.show', compact('plan', 'cuotas', 'venta', 'cliente', 'pagado', 'pendiente', 'vencidas', 'entregas'));
+        return view('planes_cuotas.show', compact('plan', 'cuotas', 'venta', 'cliente', 'pagado', 'pendiente', 'vencidas', 'entregas', 'saldoPendiente', 'proxima'));
+    }
+
+    /** Teléfono paraguayo para wa.me: solo dígitos; 0981... → 595981... */
+    private function telefonoWhatsapp(?string $telefono): ?string
+    {
+        $digitos = preg_replace('/\D+/', '', (string) $telefono);
+        if (str_starts_with($digitos, '0')) {
+            $digitos = '595' . substr($digitos, 1);
+        }
+
+        return strlen($digitos) >= 8 ? $digitos : null;
+    }
+
+    private function textoReciboWhatsapp(object $cuota, ?object $venta, ?object $cliente): string
+    {
+        // shortcut: sin enlace al PDF, cuotas.recibo-pdf exige sesión iniciada; agregar una ruta firmada pública si se quiere adjuntar
+        $fecha = $cuota->fecha_pago_efectivo ? \Carbon\Carbon::parse($cuota->fecha_pago_efectivo)->format('d/m/Y') : now()->format('d/m/Y');
+
+        return 'Hola ' . ($cliente->razon_social ?? '') . ', confirmamos el pago de la cuota '
+            . $cuota->numero_cuota . '/' . $cuota->total_cuotas
+            . ' de la venta #' . ($venta->numero_venta ?? $cuota->venta_id)
+            . ' por $ ' . number_format((float) $cuota->monto_pagado, 2, ',', '.') . ' ' . ($cuota->moneda ?? 'USD')
+            . ' el ' . $fecha . '. ¡Gracias!';
     }
 
     public function downloadRecibo($cuotaId)

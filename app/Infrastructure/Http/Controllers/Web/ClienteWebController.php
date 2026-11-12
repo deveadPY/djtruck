@@ -16,19 +16,38 @@ class ClienteWebController extends Controller
     public function index(Request $request)
     {
         $q = $request->input('q');
+        $orden = $request->input('orden') === 'deuda' ? 'deuda' : '';
 
-        $query = DB::table('clientes')->whereNull('deleted_at');
+        // Deuda y cuotas vencidas por cliente (cuotas no pagadas) en una sola consulta agrupada
+        $deuda = DB::table('cuotas')
+            ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
+            ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('cuotas.deleted_at')
+            ->groupBy('planes_cuotas.cliente_id')
+            ->select('planes_cuotas.cliente_id')
+            ->selectRaw('SUM(cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado) as saldo')
+            ->selectRaw('SUM(CASE WHEN cuotas.fecha_vencimiento < ? THEN 1 ELSE 0 END) as vencidas', [now()->toDateString()]);
+
+        $query = DB::table('clientes')
+            ->whereNull('clientes.deleted_at')
+            ->leftJoinSub($deuda, 'deuda', 'deuda.cliente_id', '=', 'clientes.id')
+            ->select('clientes.*')
+            ->selectRaw('COALESCE(deuda.saldo, 0) as deuda_usd, COALESCE(deuda.vencidas, 0) as cuotas_vencidas');
 
         if ($q) {
             $query->where(function ($query) use ($q) {
-                $query->where('razon_social', 'like', "%{$q}%")
-                      ->orWhere('ruc', 'like', "%{$q}%")
-                      ->orWhere('nombre_fantasia', 'like', "%{$q}%");
+                $query->where('clientes.razon_social', 'like', "%{$q}%")
+                      ->orWhere('clientes.ruc', 'like', "%{$q}%")
+                      ->orWhere('clientes.nombre_fantasia', 'like', "%{$q}%");
             });
         }
 
-        $clientes = $query->latest()->paginate(25)->withQueryString();
-        return view('clientes.index', compact('clientes', 'q'));
+        $orden === 'deuda'
+            ? $query->orderByDesc('deuda_usd')->orderBy('clientes.razon_social')
+            : $query->latest('clientes.created_at');
+
+        $clientes = $query->paginate(25)->withQueryString();
+        return view('clientes.index', compact('clientes', 'q', 'orden'));
     }
 
     public function create()
@@ -95,17 +114,34 @@ class ClienteWebController extends Controller
 
         // Obtener historial de ventas
         $ventas = DB::table('ventas')
-            ->join('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
+            ->leftJoin('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
             ->where('ventas.cliente_id', $id)
             ->whereNull('ventas.deleted_at')
             ->select('ventas.*', 'vehiculos.marca', 'vehiculos.modelo', 'vehiculos.numero_chasis')
             ->orderBy('ventas.fecha_venta', 'desc')
             ->get();
 
-        // Obtener planes de cuotas activos
+        // Planes de cuotas con su cobranza: saldo, vencidas y próxima cuota (una consulta de cuotas)
         $planes = DB::table('planes_cuotas')
-            ->where('cliente_id', $id)
+            ->leftJoin('ventas', 'planes_cuotas.venta_id', '=', 'ventas.id')
+            ->where('planes_cuotas.cliente_id', $id)
+            ->select('planes_cuotas.*', 'ventas.numero_venta')
             ->get();
+        $cuotasPorPlan = DB::table('cuotas')
+            ->whereIn('plan_cuotas_id', $planes->pluck('id'))
+            ->whereIn('estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('deleted_at')
+            ->orderBy('fecha_vencimiento')
+            ->get()
+            ->each(fn($c) => $c->saldo = max(0, $c->capital + $c->interes + $c->interes_mora - $c->monto_pagado))
+            ->groupBy('plan_cuotas_id');
+        $hoy = now()->toDateString();
+        $planes->each(function ($p) use ($cuotasPorPlan, $hoy) {
+            $cuotas = $cuotasPorPlan->get($p->id, collect());
+            $p->saldo = $cuotas->sum('saldo');
+            $p->vencidas = $cuotas->where('fecha_vencimiento', '<', $hoy)->count();
+            $p->proxima = $cuotas->first();
+        });
 
         // Calcular saldo deudor en planes activos (solo cuotas pendientes/mora)
         $saldo_deudor = DB::table('cuotas')

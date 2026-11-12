@@ -10,10 +10,11 @@ Artisan::command('inspire', function () {
 
 // ── Schedulers automáticos ──────────────────────────────────────────────
 Schedule::command('erp:update-exchange-rates')
-    ->dailyAt('08:00')
+    ->hourly()
+    ->between('7:00', '19:00')
     ->timezone('America/Asuncion')
     ->withoutOverlapping()
-    ->description('Actualiza tasas de cambio desde BCN Paraguay');
+    ->description('Actualiza tasas de cambio desde La Moneda');
 
 Schedule::command('erp:check-overdue-installments')
     ->dailyAt('07:00')

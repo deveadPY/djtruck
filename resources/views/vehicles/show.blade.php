@@ -8,16 +8,30 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
             Volver
         </a>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 justify-end">
+            @if(in_array($vehiculo->estado, ['DISPONIBLE', 'EN_PREPARACION'], true))
+                @can('ventas.crear')
+                    <a href="{{ route('ventas.create', ['vehiculo_id' => $vehiculo->id]) }}" class="btn btn-primary">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        Vender
+                    </a>
+                @endcan
+            @endif
+            <a href="{{ route('gastos.create', $vehiculo->id) }}" class="btn btn-ghost text-accent">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                Registrar gasto
+            </a>
             <a href="{{ route('vehicles.edit', $vehiculo->id) }}" class="btn btn-ghost">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                 Editar
             </a>
-            <a href="{{ route('facturas.create', ['vehiculo_id' => $vehiculo->id]) }}" class="btn btn-ghost text-accent">
+            <a href="{{ route('facturas.create', ['vehiculo_id' => $vehiculo->id]) }}" class="btn btn-ghost">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
-                Registrar Gasto
+                Factura de proveedor
             </a>
-            <form method="POST" action="{{ route('vehicles.destroy', $vehiculo->id) }}" class="inline" onsubmit="return confirm('¿Eliminar vehículo de forma permanente?')">
+            <form method="POST" action="{{ route('vehicles.destroy', $vehiculo->id) }}" class="inline"
+                data-danger-confirm="Se eliminará el vehículo {{ $vehiculo->marca }} {{ $vehiculo->modelo }} (chasis {{ $vehiculo->numero_chasis }}) del inventario."
+                data-danger-title="Eliminar vehículo">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">
@@ -32,20 +46,37 @@
         <div class="erp-card-header">
             <div class="flex items-center gap-3">
                 <h2>{{ $vehiculo->marca }} {{ $vehiculo->modelo }} — {{ $vehiculo->anio }}</h2>
-                @php $cls = match ($vehiculo->estado) { 'DISPONIBLE' => 'badge-disponible', 'EN_PREPARACION' => 'badge-preparacion', 'TOMA' => 'badge-toma', default => 'badge-vendido'}; @endphp
-                <span class="badge-status {{ $cls }}">{{ $vehiculo->estado }}</span>
+                @php
+                    $badgeEstado = [
+                        'DISPONIBLE' => 'bg-green-500/15 text-green-500', 'RESERVADO' => 'bg-sky-500/15 text-sky-500',
+                        'EN_PREPARACION' => 'bg-amber-500/15 text-amber-500', 'EN_TRANSITO' => 'bg-indigo-500/15 text-indigo-400',
+                        'EN_ADUANA' => 'bg-violet-500/15 text-violet-400', 'TOMA' => 'bg-slate-500/15 text-slate-400',
+                        'VENDIDO' => 'bg-red-500/15 text-red-500', 'BAJA' => 'bg-zinc-500/20 text-muted-foreground line-through',
+                    ];
+                @endphp
+                <span class="badge-status {{ $badgeEstado[$vehiculo->estado] ?? 'bg-slate-500/15 text-slate-400' }}">{{ $estados[$vehiculo->estado] ?? $vehiculo->estado }}</span>
             </div>
         </div>
         <div class="erp-card-body">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-xs font-semibold uppercase tracking-wider mb-4" style="color: var(--text-muted);">Datos del vehículo</h3>
-                    @foreach([
+                    @php
+                        $motor = trim(($vehiculo->motor_descripcion ?? '') . ($vehiculo->potencia_hp ? " · {$vehiculo->potencia_hp} HP" : ''), ' ·');
+                        $enStock = !in_array($vehiculo->estado, ['VENDIDO', 'BAJA'], true) && $vehiculo->created_at;
+                        $diasStock = $enStock ? (int) $vehiculo->created_at->diffInDays(now()) : null;
+                    @endphp
+                    @foreach(array_filter([
                             'Chasis' => $vehiculo->numero_chasis,
+                            'Año' => $vehiculo->anio,
                             'Color' => $vehiculo->color,
                             'Tipo' => $vehiculo->tipo_vehiculo,
-                            'Kilometraje' => number_format($vehiculo->kilometraje, 2, ',', '.') . ' km',
-                        ] as $label => $value)
+                            'Motor' => $motor ?: null,
+                            'N.º motor' => $vehiculo->numero_motor,
+                            'Ubicación' => $vehiculo->ubicacion,
+                            'Kilometraje' => number_format((float) $vehiculo->kilometraje, 0, ',', '.') . ' km',
+                            'Días en stock' => $diasStock !== null ? $diasStock . ($diasStock === 1 ? ' día' : ' días') : null,
+                        ], fn ($v) => filled($v)) as $label => $value)
                         <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
                             <span style="color: var(--text-muted);">{{ $label }}</span>
                             <span>{{ $value }}</span>
@@ -67,6 +98,19 @@
                             <span class="text-accent">{{ $value }}</span>
                         </div>
                     @endforeach
+                    @php
+                        $valorLibro = (float) $vehiculo->costo_origen_usd + (float) ($vehiculo->total_gastos_usd ?? 0);
+                        $margen = $vehiculo->precio_contado_usd ? (float) $vehiculo->precio_contado_usd - $valorLibro : null;
+                    @endphp
+                    <div class="flex justify-between py-2.5 border-b text-sm" style="border-color: var(--border);">
+                        <span style="color: var(--text-muted);" title="Precio contado menos valor libro (costo + gastos)">Margen estimado</span>
+                        @if($margen === null)
+                            <span class="text-muted-foreground">— <span class="text-xs">(sin precio contado)</span></span>
+                        @else
+                            <span class="font-semibold {{ $margen >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                                {{ $margen < 0 ? '−' : '' }}$ {{ number_format(abs($margen), 2, ',', '.') }}                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -94,6 +138,7 @@
                                 <th class="pb-3 font-semibold text-xs uppercase tracking-wider text-right">Monto</th>
                                 <th class="pb-3 font-semibold text-xs uppercase tracking-wider text-center">Aplicado</th>
                                 <th class="pb-3 font-semibold text-xs uppercase tracking-wider">Registrado por</th>
+                                @can('vehiculos.editar')<th class="pb-3"><span class="sr-only">Acciones</span></th>@endcan
                             </tr>
                         </thead>
                         <tbody>
@@ -104,6 +149,12 @@
                                     <div class="font-medium">{{ $g->concepto }}</div>
                                     @if($g->descripcion)<div class="text-xs" style="color: var(--text-muted);">{{ \Illuminate\Support\Str::limit($g->descripcion, 60) }}</div>@endif
                                     @if($g->numero_remision)<div class="text-xs" style="color: var(--text-muted);">Rem.: {{ $g->numero_remision }}</div>@endif
+                                    @if($g->comprobante_id)
+                                        <a href="{{ route('documentos.download', [$g->comprobante_id, 'inline' => 1]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs text-accent hover:underline mt-0.5">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" /></svg>
+                                            Ver comprobante
+                                        </a>
+                                    @endif
                                 </td>
                                 <td class="py-3">
                                     <span class="inline-flex px-2 py-0.5 rounded-full text-[0.65rem] font-semibold" style="background: var(--border); color: var(--text-muted);">{{ ucfirst(strtolower(str_replace('_', ' ', $g->categoria))) }}</span>
@@ -121,6 +172,19 @@
                                     @endif
                                 </td>
                                 <td class="py-3 text-xs" style="color: var(--text-muted);">{{ $g->registrado_por ?? '—' }}</td>
+                                @can('vehiculos.editar')
+                                    <td class="py-3 text-right">
+                                        <form method="POST" action="{{ route('gastos.destroy', [$vehiculo->id, $g->id]) }}"
+                                            data-danger-confirm="Se eliminará el gasto «{{ $g->concepto }}» y se recalculará el costo del vehículo."
+                                            data-danger-title="Eliminar gasto">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10" title="Eliminar gasto" aria-label="Eliminar gasto {{ $g->concepto }}">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                                            </button>
+                                        </form>
+                                    </td>
+                                @endcan
                             </tr>
                             @endforeach
                         </tbody>
@@ -128,7 +192,7 @@
                             <tr class="border-t-2" style="border-color: var(--border);">
                                 <td colspan="4" class="pt-3 text-right font-semibold text-xs uppercase tracking-wider" style="color: var(--text-muted);">Total gastos</td>
                                 <td class="pt-3 text-right font-bold text-accent">$ {{ number_format($gastos->sum('monto_usd'), 2, ',', '.') }}</td>
-                                <td colspan="2"></td>
+                                <td colspan="{{ auth()->user()->can('vehiculos.editar') ? 3 : 2 }}"></td>
                             </tr>
                         </tfoot>
                     </table>

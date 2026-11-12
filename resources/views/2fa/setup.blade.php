@@ -16,7 +16,7 @@
     @endif
 
     <div class="auth-alert auth-alert-warn">
-        <strong>⚠️ Su rol requiere 2FA.</strong><br>
+        <strong>Su rol requiere 2FA.</strong><br>
         Para continuar usando el sistema, debe activar la autenticación de dos factores.
     </div>
 

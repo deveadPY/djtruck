@@ -7,12 +7,12 @@
     {{-- ── Cabecera Premium ── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-1">
         <div class="flex flex-col">
-            <h1 class="text-xl md:text-2xl font-black tracking-tight text-white uppercase italic">Refinar Perfil</h1>
+            <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase italic">Refinar Perfil</h1>
             <p class="text-[0.65rem] text-muted-foreground uppercase tracking-[0.2em] font-bold italic">Modificando privilegios de: {{ $usuario->name }}</p>
         </div>
         
         <div class="flex items-center gap-3">
-             <a href="{{ route('usuarios.index') }}" class="h-10 px-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/5 text-[0.6rem] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2">
+             <a href="{{ route('usuarios.index') }}" class="h-10 px-4 bg-surface-2 hover:bg-surface-3 text-foreground rounded-xl border border-border text-[0.6rem] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
                 Regresar
             </a>
@@ -20,12 +20,6 @@
     </div>
 
     <div class="max-w-3xl mx-auto">
-        @if(session('success'))
-            <div class="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-fade-in text-center">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                {{ session('success') }}
-            </div>
-        @endif
 
         @if($errors->any())
             <div class="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-black uppercase tracking-widest space-y-2 animate-fade-in">
@@ -43,16 +37,16 @@
             @csrf @method('PUT')
 
             {{-- Card: Datos Maestros --}}
-            <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden group">
+            <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border relative overflow-hidden group">
                 <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/50 via-accent/50 to-transparent opacity-30"></div>
                 
-                <div class="erp-card-header !bg-transparent border-b border-white/5 p-6">
+                <div class="erp-card-header !bg-transparent border-b border-border p-6">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-primary border border-white/5">
+                        <div class="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center text-primary border border-border">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-white italic">Identidad Digital</h2>
+                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-foreground italic">Identidad Digital</h2>
                             <p class="text-[0.55rem] text-muted-foreground font-bold uppercase tracking-widest mt-1">Usuario ID: #{{ $usuario->id }}</p>
                         </div>
                     </div>
@@ -64,42 +58,42 @@
                         <div class="col-span-1 md:col-span-2 space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Nombre Completo <span class="text-primary">*</span></label>
                             <input type="text" name="name" value="{{ old('name', $usuario->name) }}" required
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase px-4 w-full">
+                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-border focus:ring-primary/20 transition-all text-foreground uppercase px-4 w-full">
                         </div>
 
                         {{-- Email --}}
                         <div class="col-span-1 md:col-span-2 space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Email Registrado <span class="text-primary">*</span></label>
                             <input type="email" name="email" value="{{ old('email', $usuario->email) }}" required
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4 w-full">
+                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-border focus:ring-primary/20 transition-all text-foreground px-4 w-full">
                         </div>
 
                         {{-- Password --}}
                         <div class="space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Nueva Contraseña <small class="opacity-40">(Opcional)</small></label>
                             <input type="password" name="password" minlength="8" autocomplete="new-password" placeholder="••••••••••••"
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
+                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-border focus:ring-primary/20 transition-all text-foreground px-4">
                         </div>
 
                         {{-- Password Conf --}}
                         <div class="space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Confirmar Contraseña</label>
                             <input type="password" name="password_confirmation" placeholder="••••••••••••"
-                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white px-4">
+                                class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black font-mono rounded-xl border-border focus:ring-primary/20 transition-all text-foreground px-4">
                         </div>
                     </div>
                 </div>
             </div>
 
             {{-- Card: Gobernanza y Accesos --}}
-            <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-white/5 relative overflow-hidden group">
-                <div class="erp-card-header !bg-transparent border-b border-white/5 p-6">
+            <div class="erp-card !bg-surface/30 !backdrop-blur-xl !border-border relative overflow-hidden group">
+                <div class="erp-card-header !bg-transparent border-b border-border p-6">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-accent border border-white/5">
+                        <div class="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center text-accent border border-border">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75m-3-10.457L17.5 1.5l5.25 3v10.5a10.5 10.5 0 0 1-5.25 9L12 25.5l-5.25-3a10.5 10.5 0 0 1-5.25-9V3.5l5.25-2 5.25 1.043Z" /></svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-white italic">Niveles de Privilegio</h2>
+                            <h2 class="text-[0.7rem] font-black uppercase tracking-[0.2em] text-foreground italic">Niveles de Privilegio</h2>
                             <p class="text-[0.55rem] text-muted-foreground font-bold uppercase tracking-widest mt-1">Gobernanza de seguridad y estatus</p>
                         </div>
                     </div>
@@ -110,7 +104,7 @@
                         {{-- Rol --}}
                         <div class="space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Perfil Operativo <span class="text-primary">*</span></label>
-                            <select name="role" required class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase">
+                            <select name="role" required class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-border focus:ring-primary/20 transition-all text-foreground uppercase">
                                 @foreach($roles as $rol)
                                     <option value="{{ $rol->name }}"
                                         {{ old('role', $usuario->roles->first()?->name ?? $usuario->role) == $rol->name ? 'selected' : '' }}>
@@ -123,7 +117,7 @@
                         {{-- Estado --}}
                         <div class="space-y-2">
                             <label class="text-[0.6rem] font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Estatus del Usuario</label>
-                            <select name="activo" class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-white/5 focus:ring-primary/20 transition-all text-white uppercase">
+                            <select name="activo" class="form-input !bg-surface !h-12 !text-[0.7rem] !font-black rounded-xl border-border focus:ring-primary/20 transition-all text-foreground uppercase">
                                 <option value="1" {{ old('activo', $usuario->activo ? '1' : '0') == '1' ? 'selected' : '' }}>ACTIVO (ACCESO TOTAL)</option>
                                 <option value="0" {{ old('activo', $usuario->activo ? '1' : '0') == '0' ? 'selected' : '' }}>INACTIVO (ACCESO DENEGADO)</option>
                             </select>
@@ -134,7 +128,7 @@
 
             {{-- Acciones --}}
             <div class="flex items-center justify-end gap-6 pt-4">
-                <a href="{{ route('usuarios.index') }}" class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-white transition-colors">Cancelar Refinamiento</a>
+                <a href="{{ route('usuarios.index') }}" class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors">Cancelar Refinamiento</a>
                 <button type="submit" class="h-12 px-10 bg-primary hover:bg-primary/90 text-[0.65rem] font-black uppercase tracking-[0.2em] text-white rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-3">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4.5 12.75l6 6 9-13.5" /></svg>
                     Sincronizar Cambios

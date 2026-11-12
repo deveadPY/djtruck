@@ -135,7 +135,7 @@ class ProcessHybridSaleUseCase
             'moneda_venta'         => $monedaVenta->value,
             'precio_venta_moneda'  => $dto->precioVenta,
             'precio_venta_usd'     => $precioUsd,
-            'valor_libro_snapshot' => $vehiculo->valor_libro_usd,
+            'valor_libro_snapshot' => $vehiculo->valor_libro,
             'observaciones'        => $dto->observaciones,
             'fecha_venta'          => now()->toDateString(),
             'created_by'           => Auth::id(),

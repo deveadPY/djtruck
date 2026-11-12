@@ -167,6 +167,15 @@ class AppServiceProvider extends ServiceProvider
         // Detectar lazy loading (N+1) en entornos no productivos
         Model::preventLazyLoading(! app()->isProduction());
 
+        // shortcut: funciones MySQL usadas por reportes/dashboard emuladas en SQLite (solo tests y entorno local).
+        if (! app()->isProduction() && config('database.default') === 'sqlite') {
+            \Illuminate\Support\Facades\DB::connection()->getPdo()->sqliteCreateFunction('DATE_FORMAT',
+                fn ($fecha, $formato) => $fecha ? date(strtr($formato, ['%Y' => 'Y', '%m' => 'm', '%d' => 'd']), strtotime($fecha)) : null, 2);
+            \Illuminate\Support\Facades\DB::connection()->getPdo()->sqliteCreateFunction('CURDATE', fn () => date('Y-m-d'), 0);
+            \Illuminate\Support\Facades\DB::connection()->getPdo()->sqliteCreateFunction('DATEDIFF',
+                fn ($a, $b) => ($a && $b) ? (int) ((strtotime($a) - strtotime($b)) / 86400) : null, 2);
+        }
+
         // ── Configuración de empresa — compartida cuando la app ya está lista ──
         // booted() garantiza que la BD y todos los providers están listos
         $this->app->booted(function () {

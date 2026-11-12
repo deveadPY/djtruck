@@ -6,7 +6,7 @@
 
     {{-- ── Stats resumen ──────────────────────────────────────────────────── --}}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#ef4444">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -14,8 +14,8 @@
                 En Mora
             </div>
             <div class="text-2xl font-bold" style="color:#ef4444">{{ $cuotasMora->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'hoy'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#f59e0b">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -23,8 +23,8 @@
                 Cobrar Hoy
             </div>
             <div class="text-2xl font-bold" style="color:#f59e0b">{{ $cuotasHoy->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'proximas'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#3b82f6">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -32,8 +32,8 @@
                 Próx. 7 días
             </div>
             <div class="text-2xl font-bold" style="color:#3b82f6">{{ $cuotasProximas->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'facturas_pagar'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#8b5cf6">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -41,8 +41,8 @@
                 Facturas Pagar
             </div>
             <div class="text-2xl font-bold" style="color:#8b5cf6">{{ $facturasPagar->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4 col-span-2 sm:col-span-1" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'facturas_declarar'])" class="rounded-xl border p-3 sm:p-4 col-span-2 sm:col-span-1 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#10b981">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
@@ -50,8 +50,8 @@
                 A Declarar
             </div>
             <div class="text-2xl font-bold" style="color:#10b981">{{ $facturasDeclarar->total() }}</div>
-        </div>
-        <div class="rounded-xl border p-3 sm:p-4" style="background:var(--surface2);border-color:var(--border)">
+        </x-kpi-link>
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'stock'])" class="rounded-xl border p-3 sm:p-4 hover:opacity-90 transition" style="background:var(--surface2);border-color:var(--border)">
             <div class="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-wider mb-1.5" style="color:#f59e0b">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -59,12 +59,12 @@
                 Stock Bajo
             </div>
             <div class="text-2xl font-bold" style="color:#f59e0b">{{ $repuestosBajos->total() }}</div>
-        </div>
+        </x-kpi-link>
     </div>
 
     {{-- ── Tabs ────────────────────────────────────────────────────────────── --}}
-    <div class="notif-tabs" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
-        <button class="notif-tab-btn active"
+    <div class="notif-tabs" role="tablist" aria-label="Tipos de notificación" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+        <button type="button" role="tab" aria-selected="true" aria-controls="panel-mora" class="notif-tab-btn active"
             style="border:1px solid #ef4444; color:#ef4444; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('mora',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -73,7 +73,7 @@
             </svg>
             En Mora ({{ $cuotasMora->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-hoy" class="notif-tab-btn"
             style="border:1px solid #f59e0b; color:#f59e0b; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('hoy',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -82,7 +82,7 @@
             </svg>
             Cobros de Hoy ({{ $cuotasHoy->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-proximas" class="notif-tab-btn"
             style="border:1px solid #3b82f6; color:#3b82f6; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('proximas',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -90,7 +90,7 @@
             </svg>
             Próx. 7 Días ({{ $cuotasProximas->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-facturas_pagar" class="notif-tab-btn"
             style="border:1px solid #8b5cf6; color:#8b5cf6; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('facturas_pagar',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -99,7 +99,7 @@
             </svg>
             Facturas Pagar ({{ $facturasPagar->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-facturas_declarar" class="notif-tab-btn"
             style="border:1px solid #10b981; color:#10b981; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('facturas_declarar',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -108,7 +108,7 @@
             </svg>
             A Declarar ({{ $facturasDeclarar->total() }})
         </button>
-        <button class="notif-tab-btn"
+        <button type="button" role="tab" aria-selected="false" aria-controls="panel-stock" class="notif-tab-btn"
             style="border:1px solid #f59e0b; color:#f59e0b; background:transparent; padding:0.5rem 1rem; border-radius:6px; font-weight:600"
             onclick="showTab('stock',this)">
             <svg class="w-4 h-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -119,7 +119,7 @@
     </div>
 
     {{-- ── Tab: En Mora ────────────────────────────────────────────────────── --}}
-    <div id="panel-mora" class="notif-panel active">
+    <div id="panel-mora" role="tabpanel" class="notif-panel active">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#ef4444; display: flex; align-items: center; gap: 0.5rem;">
@@ -159,6 +159,14 @@
                                 @php
                                     $dias = \Carbon\Carbon::parse($row->fecha_vencimiento)->diffInDays(\Carbon\Carbon::today());
                                     $monto = (float) $row->capital + (float) $row->interes + (float) $row->interes_mora;
+                                    // Teléfono paraguayo para wa.me: solo dígitos; 0981… → 595981…
+                                    $tel = preg_replace('/\D/', '', (string) $row->cliente_telefono);
+                                    if (str_starts_with($tel, '0')) {
+                                        $tel = '595' . substr($tel, 1);
+                                    }
+                                    $waTexto = "Hola {$row->cliente_nombre}, le recordamos que la cuota {$row->numero_cuota}/{$row->total_cuotas} "
+                                        . "de la venta {$row->numero_venta} está vencida hace {$dias} días. "
+                                        . "Monto vencido: {$row->moneda} " . number_format($monto, 2, ',', '.') . ". Gracias.";
                                 @endphp
                                 <tr>
                                     <td style="font-weight:600">{{ $row->cliente_nombre }}</td>
@@ -174,21 +182,28 @@
                                         {{ number_format($monto, 2, ',', '.') }}
                                     </td>
                                     <td>
-                                        <a href="{{ route('planes_cuotas.show', $row->plan_id) }}" class="btn btn-ghost"
-                                            style="font-size:.72rem;padding:.3rem .7rem">Ver Plan</a>
+                                        <div style="display:flex;gap:.35rem;flex-wrap:wrap">
+                                            @if($tel !== '')
+                                                <a href="https://wa.me/{{ $tel }}?text={{ rawurlencode($waTexto) }}" target="_blank" rel="noopener"
+                                                    class="btn btn-ghost" style="font-size:.72rem;padding:.3rem .7rem;color:#16a34a"
+                                                    aria-label="Enviar WhatsApp a {{ $row->cliente_nombre }}">WhatsApp</a>
+                                            @endif
+                                            <a href="{{ route('planes_cuotas.show', $row->plan_id) }}" class="btn btn-primary"
+                                                style="font-size:.72rem;padding:.3rem .7rem">Registrar pago</a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $cuotasMora->appends(request()->except('mora_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $cuotasMora->appends(request()->except('mora_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Hoy ────────────────────────────────────────────────────────── --}}
-    <div id="panel-hoy" class="notif-panel" style="display:none">
+    <div id="panel-hoy" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#f59e0b; display: flex; align-items: center; gap: 0.5rem;">
@@ -238,13 +253,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $cuotasHoy->appends(request()->except('hoy_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $cuotasHoy->appends(request()->except('hoy_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Próximas ───────────────────────────────────────────────────── --}}
-    <div id="panel-proximas" class="notif-panel" style="display:none">
+    <div id="panel-proximas" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#3b82f6; display: flex; align-items: center; gap: 0.5rem;">
@@ -303,13 +318,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $cuotasProximas->appends(request()->except('prox_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $cuotasProximas->appends(request()->except('prox_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Facturas a Pagar ───────────────────────────────────────────── --}}
-    <div id="panel-facturas_pagar" class="notif-panel" style="display:none">
+    <div id="panel-facturas_pagar" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#8b5cf6; display: flex; align-items: center; gap: 0.5rem;">
@@ -348,7 +363,7 @@
                                     <td style="font-weight:600">{{ $row->proveedor_nombre }}</td>
                                     <td>{{ $row->numero_factura }}</td>
                                     <td>{{ \Carbon\Carbon::parse($row->fecha_factura)->format('d/m/Y') }}</td>
-                                    <td style="font-weight:600;color:#8b5cf6">{{ $row->moneda }}
+                                    <td style="font-weight:600;color:#8b5cf6">USD
                                         {{ number_format($row->total_usd, 2, ',', '.') }}
                                     </td>
                                     <td><a href="{{ route('facturas.show', $row->factura_id) }}" class="btn btn-ghost"
@@ -358,13 +373,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $facturasPagar->appends(request()->except('pagar_page'))->links() }}</div>
+                <div style="padding:.75rem 1rem">{{ $facturasPagar->appends(request()->except('pagar_page', 'tab'))->links() }}</div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Facturas a Declarar ────────────────────────────────────────── --}}
-    <div id="panel-facturas_declarar" class="notif-panel" style="display:none">
+    <div id="panel-facturas_declarar" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#10b981; display: flex; align-items: center; gap: 0.5rem;">
@@ -403,7 +418,7 @@
                                     <td style="font-weight:600">{{ $row->proveedor_nombre }}</td>
                                     <td>{{ $row->numero_factura }}</td>
                                     <td>{{ \Carbon\Carbon::parse($row->fecha_factura)->format('d/m/Y') }}</td>
-                                    <td style="font-weight:600">{{ $row->moneda }} {{ number_format($row->total_usd, 2, ',', '.') }}
+                                    <td style="font-weight:600">USD {{ number_format($row->total_usd, 2, ',', '.') }}
                                     </td>
                                     <td><a href="{{ route('facturas.show', $row->factura_id) }}" class="btn btn-ghost"
                                             style="font-size:.72rem;padding:.3rem .7rem">Ver</a></td>
@@ -412,14 +427,14 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $facturasDeclarar->appends(request()->except('declarar_page'))->links() }}
+                <div style="padding:.75rem 1rem">{{ $facturasDeclarar->appends(request()->except('declarar_page', 'tab'))->links() }}
                 </div>
             @endif
         </div>
     </div>
 
     {{-- ── Tab: Stock Bajo ────────────────────────────────────────────────── --}}
-    <div id="panel-stock" class="notif-panel" style="display:none">
+    <div id="panel-stock" role="tabpanel" class="notif-panel" style="display:none">
         <div class="erp-card">
             <div class="erp-card-header">
                 <h2 style="color:#f59e0b; display: flex; align-items: center; gap: 0.5rem;">
@@ -440,10 +455,19 @@
                     Todos los repuestos tienen stock suficiente
                 </div>
             @else
+                <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;flex-wrap:wrap">
+                    <button type="button" id="stock-descartar" class="btn btn-ghost" style="font-size:.75rem" disabled
+                        onclick="descartarStockSeleccionadas(this)">Descartar seleccionadas</button>
+                    <span id="stock-estado" role="status" aria-live="polite" style="font-size:.75rem;color:var(--text-muted)"></span>
+                </div>
                 <div style="overflow-x:auto">
                     <table class="erp-table">
                         <thead>
                             <tr>
+                                <th style="width:2rem">
+                                    <input type="checkbox" id="stock-todas" aria-label="Seleccionar todas las alertas de stock"
+                                        onchange="document.querySelectorAll('.stock-check').forEach(c => c.checked = this.checked); actualizarStockSeleccion()">
+                                </th>
                                 <th>Código</th>
                                 <th>Descripción</th>
                                 <th>Stock Actual</th>
@@ -454,6 +478,11 @@
                         <tbody>
                             @foreach($repuestosBajos as $row)
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="stock-check" value="{{ $row->id }}" id="stock-check-{{ $row->id }}"
+                                            onchange="actualizarStockSeleccion()">
+                                        <label for="stock-check-{{ $row->id }}" class="sr-only">Seleccionar {{ $row->codigo }}</label>
+                                    </td>
                                     <td style="font-weight:600; color:var(--accent)">{{ $row->codigo }}</td>
                                     <td>{{ $row->descripcion }}</td>
                                     <td style="font-weight:700; color:#ef4444">
@@ -471,7 +500,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding:.75rem 1rem">{{ $repuestosBajos->appends(request()->except('stock_page'))->links() }}
+                <div style="padding:.75rem 1rem">{{ $repuestosBajos->appends(request()->except('stock_page', 'tab'))->links() }}
                 </div>
             @endif
         </div>
@@ -482,22 +511,68 @@
             document.querySelectorAll('.notif-panel').forEach(function (p) { p.style.display = 'none'; });
             document.querySelectorAll('.notif-tab-btn').forEach(function (b) {
                 b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
                 b.style.background = 'transparent';
+                b.style.color = b.dataset.color; // la pestaña que deja de estar activa recupera su color
             });
 
             document.getElementById('panel-' + name).style.display = 'block';
             btn.classList.add('active');
-            btn.style.background = btn.style.color;
+            btn.setAttribute('aria-selected', 'true');
+            btn.style.background = btn.dataset.color;
             btn.style.color = 'white';
+
+            // La pestaña queda en la URL para recargar/compartir; la paginación ya la conserva.
+            const url = new URL(location.href);
+            url.searchParams.set('tab', name);
+            history.replaceState(null, '', url);
+        }
+
+        function actualizarStockSeleccion() {
+            const n = document.querySelectorAll('.stock-check:checked').length;
+            document.getElementById('stock-descartar').disabled = n === 0;
+            document.getElementById('stock-estado').textContent = n ? n + ' seleccionada(s)' : '';
+        }
+
+        // Usa el endpoint existente de descarte en bloque y recarga para ver la lista actualizada.
+        async function descartarStockSeleccionadas(btn) {
+            const items = [...document.querySelectorAll('.stock-check:checked')]
+                .map(c => ({ tipo: 'stock', referencia_id: Number(c.value) }));
+            if (!items.length) return;
+            btn.disabled = true;
+            const estado = document.getElementById('stock-estado');
+            try {
+                const res = await fetch(@json(route('api.notificaciones.descartar-todas')), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ items }),
+                });
+                if (!res.ok) throw new Error(res.status);
+                estado.textContent = 'Descartadas. Actualizando…';
+                location.reload();
+            } catch (e) {
+                estado.textContent = 'No se pudieron descartar. Intente de nuevo.';
+                btn.disabled = false;
+            }
         }
 
         // Inicializar tab activa
         document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.notif-tab-btn').forEach(b => { b.dataset.color = b.style.color; });
             let activeBtn = document.querySelector('.notif-tab-btn.active');
             if (activeBtn) {
                 activeBtn.style.background = activeBtn.style.color;
                 activeBtn.style.color = 'white';
             }
+            // ?tab=mora|hoy|proximas|… abre esa pestaña (enlaces desde los KPI)
+            const tab = new URLSearchParams(location.search).get('tab');
+            const tabBtn = tab && document.getElementById('panel-' + tab)
+                && [...document.querySelectorAll('.notif-tab-btn')].find(b => (b.getAttribute('onclick') || '').includes(`'${tab}'`));
+            if (tabBtn) showTab(tab, tabBtn);
         });
     </script>
 

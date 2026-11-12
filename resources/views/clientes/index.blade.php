@@ -39,8 +39,13 @@
                 <input type="text" name="q" value="{{ $q }}" placeholder="RUC, razón social o nombre..."
                     class="form-input !pl-11 h-11 text-sm rounded-xl transition-all">
             </div>
-            
-            @if($q)
+            <select name="orden" onchange="this.form.submit()" aria-label="Ordenar clientes"
+                class="form-input h-11 text-sm rounded-xl transition-all w-auto">
+                <option value="">Más recientes</option>
+                <option value="deuda" @selected($orden === 'deuda')>Mayor deuda</option>
+            </select>
+
+            @if($q || $orden)
                 <a href="{{ route('clientes.index') }}" class="btn btn-ghost !bg-red-500/5 !text-red-400 border-red-500/10 px-4 rounded-2xl hover:!bg-red-500/20" title="Limpiar">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -51,12 +56,12 @@
     </div>
 
     {{-- Vista de Escritorio (Table Master) --}}
-    <div class="hidden md:block erp-card !border-white/5">
+    <div class="hidden md:block erp-card !border-border">
         <div class="erp-card-header overflow-hidden !bg-surface3/10">
             <div class="flex items-center gap-3 w-full">
                 <h2 class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Listado de Cartera Activa</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent"></div>
-                <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-white/5 uppercase tracking-tighter">
+                <span class="px-2.5 py-1 rounded-lg bg-surface2 text-[0.6rem] font-black text-accent border border-border uppercase tracking-tighter">
                     {{ $clientes->total() }} Clientes Registrados
                 </span>
             </div>
@@ -69,6 +74,7 @@
                         <th>Razón Social / Fantasía</th>
                         <th>Contacto</th>
                         <th>Línea Crédito</th>
+                        <th>Deuda</th>
                         <th class="text-center">Estado</th>
                         <th class="text-right !pr-6">Acciones</th>
                     </tr>
@@ -89,7 +95,7 @@
                             </td>
                             <td>
                                 <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2 text-[0.7rem] text-muted-foreground font-medium group-hover:text-white transition-colors">
+                                    <div class="flex items-center gap-2 text-[0.7rem] text-muted-foreground font-medium group-hover:text-foreground transition-colors">
                                         <svg class="w-3.5 h-3.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.909A2.25 2.25 0 0 1 2.25 8.993V6.75m19.5 0-9 5.625L2.25 6.75" />
                                         </svg>
@@ -107,6 +113,16 @@
                                 <div class="font-mono font-black text-sm text-accent bg-accent/5 px-2.5 py-1 rounded-lg border border-accent/10 w-fit group-hover:bg-accent/10 transition-all">
                                     $ {{ number_format($c->linea_credito_usd, 2, ',', '.') }}
                                 </div>
+                            </td>
+                            <td>
+                                @if($c->deuda_usd > 0)
+                                    <span class="font-bold text-sm text-foreground">$ {{ number_format($c->deuda_usd, 2, ',', '.') }}</span>
+                                    @if($c->cuotas_vencidas > 0)
+                                        <span class="badge-status badge-vendido ml-1" title="{{ $c->cuotas_vencidas }} cuota(s) vencida(s)">Mora</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-muted-foreground">—</span>
+                                @endif
                             </td>
                             <td class="text-center">
                                 <span class="badge-status {{ $c->activo ? 'badge-disponible' : 'badge-vendido' }}">
@@ -130,7 +146,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-20">
+                            <td colspan="7" class="text-center py-20">
                                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                                     <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
@@ -176,6 +192,14 @@
                         <div class="text-right">
                             <div class="text-xs text-muted-foreground mb-0.5">Línea de Crédito</div>
                             <div class="text-sm font-bold text-accent">$ {{ number_format($c->linea_credito_usd, 2, ',', '.') }}</div>
+                            @if($c->deuda_usd > 0)
+                                <div class="text-xs text-muted-foreground mt-1">
+                                    Deuda: <span class="font-bold text-foreground">$ {{ number_format($c->deuda_usd, 2, ',', '.') }}</span>
+                                    @if($c->cuotas_vencidas > 0)
+                                        <span class="badge-status badge-vendido ml-1">Mora</span>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -190,7 +214,7 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-white/10">
+            <div class="text-center py-20 px-6 rounded-3xl border border-dashed border-border">
                 <div class="flex flex-col items-center gap-2 text-muted-foreground/30">
                     <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />

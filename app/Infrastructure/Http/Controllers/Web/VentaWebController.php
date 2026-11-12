@@ -43,6 +43,8 @@ class VentaWebController extends Controller
         $estado = $request->input('estado', '');
         $desde  = $request->input('desde', '');
         $hasta  = $request->input('hasta', '');
+        $modalidad = in_array($request->input('modalidad'), ['CONTADO', 'CUOTAS'], true) ? $request->input('modalidad') : '';
+        $conSaldo  = $request->boolean('con_saldo');
 
         $ventas = DB::table('ventas')
             // Oculta las canceladas salvo que se filtre explícitamente por estado CANCELADO.
@@ -53,6 +55,7 @@ class VentaWebController extends Controller
             )
             ->leftJoin('clientes', 'ventas.cliente_id', '=', 'clientes.id')
             ->leftJoin('vehiculos', 'ventas.vehiculo_id', '=', 'vehiculos.id')
+            ->leftJoinSub($this->saldoCuotasPorVenta(), 'saldos', 'saldos.venta_id', '=', 'ventas.id')
             ->select(
                 'ventas.*',
                 'clientes.razon_social as cliente_nombre',
@@ -60,6 +63,7 @@ class VentaWebController extends Controller
                 'vehiculos.modelo',
                 'vehiculos.numero_chasis'
             )
+            ->selectRaw('COALESCE(saldos.saldo, 0) as saldo_pendiente, COALESCE(saldos.vencidas, 0) as cuotas_vencidas')
             ->when(filled($q), function ($query) use ($q) {
                 $like = '%' . $q . '%';
                 $query->where(function ($inner) use ($like) {
@@ -80,42 +84,38 @@ class VentaWebController extends Controller
             ->when(filled($estado), fn($query) => $query->where('ventas.estado', $estado))
             ->when(filled($desde), fn($query) => $query->where('ventas.fecha_venta', '>=', $desde))
             ->when(filled($hasta), fn($query) => $query->where('ventas.fecha_venta', '<=', $hasta))
+            ->when(filled($modalidad), fn($query) => $query->where('ventas.modalidad_pago', $modalidad))
+            ->when($conSaldo, fn($query) => $query->where('saldos.saldo', '>', 0))
             ->latest('ventas.created_at')
             ->paginate(20)
             ->withQueryString();
 
-        return view('ventas.index', compact('ventas', 'q', 'estado', 'desde', 'hasta'));
+        return view('ventas.index', compact('ventas', 'q', 'estado', 'desde', 'hasta', 'modalidad', 'conSaldo'));
     }
 
-    public function create()
+    /** Saldo y cuotas vencidas por venta (cuotas no pagadas), en una sola consulta agrupada. */
+    private function saldoCuotasPorVenta()
+    {
+        return DB::table('cuotas')
+            ->whereIn('estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('deleted_at')
+            ->groupBy('venta_id')
+            ->select('venta_id')
+            ->selectRaw('SUM(capital + interes + interes_mora - monto_pagado) as saldo')
+            ->selectRaw('SUM(CASE WHEN fecha_vencimiento < ? THEN 1 ELSE 0 END) as vencidas', [now()->toDateString()]);
+    }
+
+    public function create(Request $request)
     {
         $vehiculos = DB::table('vehiculos')
             ->whereIn('estado', ['DISPONIBLE', 'RESERVADO'])
             ->whereNull('deleted_at')
             ->get();
 
-        $clientes = DB::table('clientes')
-            ->where('activo', true)
-            ->whereNull('deleted_at')
-            ->get()
-            ->map(function ($cliente) {
-                $saldoDeudor = DB::table('cuotas')
-                    ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
-                    ->where('planes_cuotas.cliente_id', $cliente->id)
-                    ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
-                    ->whereNull('cuotas.deleted_at')
-                    ->sum(DB::raw('cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado'));
-
-                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) $saldoDeudor);
-                return $cliente;
-            });
+        $clientes = $this->clientesConCreditoDisponible();
 
         $cajas = DB::table('cajas')->where('activo', true)->get();
 
-        $vehiculos_canje = DB::table('vehiculos')
-            ->whereIn('estado', ['DISPONIBLE', 'EN_PREPARACION', 'TOMA'])
-            ->whereNull('deleted_at')
-            ->get();
 
         $repuestos = DB::table('stock_repuestos')
             ->where('activo', true)
@@ -123,7 +123,15 @@ class VentaWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'vehiculos_canje', 'repuestos'));
+        // Precarga desde otras pantallas (?vehiculo_id= / ?cliente_id=): solo ids que estén en las listas
+        $vehiculoId = filter_var($request->query('vehiculo_id'), FILTER_VALIDATE_INT);
+        $clienteId  = filter_var($request->query('cliente_id'), FILTER_VALIDATE_INT);
+        $precarga = array_filter([
+            'vehiculo_id' => $vehiculos->contains('id', $vehiculoId) ? $vehiculoId : null,
+            'cliente_id'  => $clientes->contains('id', $clienteId) ? $clienteId : null,
+        ]);
+
+        return view('ventas.create', compact('vehiculos', 'clientes', 'cajas', 'repuestos', 'precarga'));
     }
 
     public function store(StoreSaleRequest $request)
@@ -134,9 +142,43 @@ class VentaWebController extends Controller
             return redirect()->route('ventas.show', $venta->id)
                 ->with('success', 'Venta y pagos registrados correctamente.')
                 ->with('show_print_modal', true);
-        } catch (\Exception $e) {
-            return back()->withInput()->withErrors(['error' => 'Error al registrar la venta: ' . $e->getMessage()]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('ventas.store', ['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'No se pudo registrar la venta por un error de datos. Revisá la información e intentá de nuevo.']);
+        } catch (\RuntimeException | \DomainException | \InvalidArgumentException $e) {
+            // Reglas de negocio (stock, crédito, venta duplicada…): el mensaje es para el usuario
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            Log::error('ventas.store', ['error' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Ocurrió un error inesperado al registrar la venta.']);
         }
+    }
+
+    /** Clientes activos con su crédito disponible y cuotas vencidas (una sola consulta agrupada). */
+    private function clientesConCreditoDisponible()
+    {
+        $deuda = DB::table('cuotas')
+            ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
+            ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
+            ->whereNull('cuotas.deleted_at')
+            ->groupBy('planes_cuotas.cliente_id')
+            ->select('planes_cuotas.cliente_id')
+            ->selectRaw('SUM(cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado) as saldo')
+            ->selectRaw('SUM(CASE WHEN cuotas.fecha_vencimiento < ? THEN 1 ELSE 0 END) as vencidas', [now()->toDateString()])
+            ->get()
+            ->keyBy('cliente_id');
+
+        return DB::table('clientes')
+            ->where('activo', true)
+            ->whereNull('deleted_at')
+            ->orderBy('razon_social')
+            ->get()
+            ->map(function ($cliente) use ($deuda) {
+                $d = $deuda[$cliente->id] ?? null;
+                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) ($d->saldo ?? 0));
+                $cliente->cuotas_vencidas = (int) ($d->vencidas ?? 0);
+                return $cliente;
+            });
     }
 
     public function show($id, \App\Application\Installments\InstallmentApplicationService $installmentService)
@@ -153,6 +195,10 @@ class VentaWebController extends Controller
         $plan       = $this->saleService->getInstallmentPlan((int) $id);
         $cuotas     = $plan ? $installmentService->getByPlan((int) $plan->id) : collect();
         $documentos = $this->saleService->getDocuments((int) $id);
+        $vehiculosCanje = DB::table('vehiculos')
+            ->whereIn('id', $pagos->pluck('vehiculo_canje_id')->filter())
+            ->get(['id', 'marca', 'modelo', 'anio', 'numero_chasis', 'estado', 'deleted_at'])
+            ->keyBy('id');
 
         $rentabilidad = $this->saleService->calculateRentability($venta);
 
@@ -161,7 +207,7 @@ class VentaWebController extends Controller
             ? $this->saleService->getCancellationInfo((int) $id)
             : null;
 
-        return view('ventas.show', compact('venta', 'pagos', 'plan', 'cuotas', 'rentabilidad', 'documentos', 'items', 'cancelacion'));
+        return view('ventas.show', compact('venta', 'pagos', 'plan', 'cuotas', 'rentabilidad', 'documentos', 'items', 'cancelacion', 'vehiculosCanje'));
     }
 
     public function edit($id)
@@ -177,26 +223,13 @@ class VentaWebController extends Controller
             ->whereNull('deleted_at')
             ->get();
 
-        $clientes = DB::table('clientes')
-            ->where('activo', true)
-            ->whereNull('deleted_at')
-            ->get()
-            ->map(function ($cliente) {
-                $saldoDeudor = DB::table('cuotas')
-                    ->join('planes_cuotas', 'cuotas.plan_cuotas_id', '=', 'planes_cuotas.id')
-                    ->where('planes_cuotas.cliente_id', $cliente->id)
-                    ->whereIn('cuotas.estado', ['PENDIENTE', 'VENCIDA', 'EN_MORA', 'PAGADA_PARCIAL'])
-                    ->whereNull('cuotas.deleted_at')
-                    ->sum(DB::raw('cuotas.capital + cuotas.interes + cuotas.interes_mora - cuotas.monto_pagado'));
-                $cliente->credito_disponible_usd = max(0, floatval($cliente->linea_credito_usd ?? 0) - (float) $saldoDeudor);
-                return $cliente;
-            });
+        $clientes = $this->clientesConCreditoDisponible();
 
         $cajas = DB::table('cajas')->where('activo', true)->get();
 
+        // Solo los vehículos ya recibidos en esta venta (los nuevos se cargan con sus datos)
         $vehiculos_canje = DB::table('vehiculos')
-            ->whereIn('estado', ['DISPONIBLE', 'EN_PREPARACION', 'TOMA'])
-            ->whereNull('deleted_at')
+            ->whereIn('id', DB::table('detalles_pago')->where('venta_id', $id)->whereNull('deleted_at')->whereNotNull('vehiculo_canje_id')->select('vehiculo_canje_id'))
             ->get();
 
         $repuestos = DB::table('stock_repuestos')

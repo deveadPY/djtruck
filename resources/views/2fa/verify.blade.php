@@ -15,7 +15,7 @@
         @endif
 
         <h2 style="text-align:center;font-size:1.4rem;margin-bottom:.5rem;color:var(--text);">
-            🔒 Verificación 2FA
+            Verificación 2FA
         </h2>
         <p class="auth-muted" style="text-align:center;margin-bottom:2rem;">
             Ingresá el código de tu app autenticadora.<br>
@@ -39,7 +39,9 @@
         </form>
 
         <p style="margin-top:1.5rem;text-align:center;">
-            <a href="{{ route('logout') }}" class="auth-link">Cerrar sesión</a>
+            <form method="POST" action="{{ route('logout') }}" style="display:inline">@csrf
+                <button type="submit" class="auth-link" style="background:none;border:0;cursor:pointer;font:inherit">Cerrar sesión</button>
+            </form>
         </p>
     </div>
 </div>

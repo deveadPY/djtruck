@@ -34,17 +34,15 @@
     <div style="margin-bottom:1rem"><a href="{{ route('ventas.index') }}" class="btn btn-ghost">← Volver</a></div>
 
     {{-- Step Indicator --}}
-    <div
-        class="flex flex-col sm:flex-row gap-2 sm:gap-0 bg-white dark:bg-slate-800 sm:border border-gray-200 dark:border-slate-700 sm:rounded-xl overflow-hidden mb-6 shadow-sm font-medium">
-        <div class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors bg-primary text-white"
-            id="nav-step-1" data-step="1" onclick="goToStep(1)">1. Vehículo</div>
-        <div class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-            id="nav-step-2" data-step="2" onclick="goToStep(2)">2. Cliente</div>
-        <div class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-            id="nav-step-3" data-step="3" onclick="goToStep(3)">3. Precio y Pago</div>
-        <div class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-            id="nav-step-4" data-step="4" onclick="goToStep(4)">4. Confirmar</div>
-    </div>
+    <nav aria-label="Pasos de la venta"
+        class="flex flex-col sm:flex-row gap-2 sm:gap-0 bg-surface sm:border border-border sm:rounded-xl overflow-hidden mb-6 shadow-sm font-medium">
+        <button type="button" class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors bg-primary text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            id="nav-step-1" data-step="1" aria-current="step" onclick="goToStep(1)">1. Vehículo</button>
+        <button type="button" class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-muted-foreground hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            id="nav-step-2" data-step="2" onclick="goToStep(2)">2. Cliente</button>
+        <button type="button" class="step-item flex-1 text-center py-3 px-4 text-sm cursor-pointer transition-colors text-muted-foreground hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            id="nav-step-3" data-step="3" onclick="goToStep(3)">3. Precio y Pago</button>
+    </nav>
 
     <form method="POST" action="{{ route('ventas.store') }}" id="ventaForm">
         @csrf
@@ -63,9 +61,9 @@
                         </div>
                         
                         {{-- Tabs --}}
-                        <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
-                            <button type="button" onclick="switchItemTab('camiones')" id="tab-camiones" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all bg-white dark:bg-slate-800 shadow-sm text-primary">CAMIONES</button>
-                            <button type="button" onclick="switchItemTab('repuestos')" id="tab-repuestos" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">REPUESTOS</button>
+                        <div class="flex bg-surface-2 p-1 rounded-lg">
+                            <button type="button" onclick="switchItemTab('camiones')" id="tab-camiones" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all bg-surface shadow-sm text-primary">CAMIONES</button>
+                            <button type="button" onclick="switchItemTab('repuestos')" id="tab-repuestos" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-muted-foreground hover:text-foreground">REPUESTOS</button>
                         </div>
                     </div>
                 </div>
@@ -74,13 +72,13 @@
                     {{-- SEARCH BARS --}}
                     <div class="mb-6 flex flex-col md:flex-row gap-4">
                         <div class="relative flex-1" id="search-camiones-container">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             </span>
                             <input type="text" id="buscarVehiculo" class="form-input pl-10 w-full" placeholder="Buscar por marca, modelo o chasis...">
                         </div>
                         <div class="relative flex-1 hidden" id="search-repuestos-container">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             </span>
                             <input type="text" id="buscarRepuesto" class="form-input pl-10 w-full" placeholder="Buscar por código o descripción...">
@@ -97,12 +95,12 @@
                                     default => 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-800/30'
                                 };
                             @endphp
-                            <div class="vehicle-card group relative flex flex-col justify-between p-4 cursor-pointer bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-indigo-50/50 dark:[&.selected]:bg-indigo-900/10 shadow-sm"
+                            <div class="vehicle-card group relative flex flex-col justify-between p-4 cursor-pointer bg-surface border border-border rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-primary/5 shadow-sm"
                                 data-id="{{ $v->id }}" 
                                 data-costo="{{ $v->costo_origen_usd + ($v->total_gastos_usd ?? 0) }}"
-                                data-precio-sugerido="{{ $v->precio_venta_sugerido_usd ?? 0 }}"
-                                data-precio-contado="{{ $v->precio_contado_usd ?? 0 }}"
-                                data-precio-cuotas="{{ $v->precio_cuotas_usd ?? 0 }}"
+                                data-precio-sugerido="{{ number_format((float) ($v->precio_venta_sugerido_usd ?? 0), 2, '.', '') }}"
+                                data-precio-contado="{{ number_format((float) ($v->precio_contado_usd ?? 0), 2, '.', '') }}"
+                                data-precio-cuotas="{{ number_format((float) ($v->precio_cuotas_usd ?? 0), 2, '.', '') }}"
                                 data-marca="{{ $v->marca }}"
                                 data-modelo="{{ $v->modelo }}" data-chasis="{{ $v->numero_chasis }}" data-anio="{{ $v->anio }}"
                                 data-estado="{{ $v->estado }}" data-color="{{ $v->color }}" data-km="{{ $v->kilometraje }}"
@@ -110,26 +108,26 @@
 
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
-                                        <div class="font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors">
+                                        <div class="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                                             {{ $v->marca }} {{ $v->modelo }}
                                         </div>
-                                        <div class="text-[0.65rem] text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider">{{ $v->anio }} · {{ $v->color ?? 'N/D' }}</div>
+                                        <div class="text-[0.65rem] text-muted-foreground mt-0.5 tracking-wider">{{ $v->anio }} · {{ $v->color ?? 'N/D' }}</div>
                                     </div>
                                     <span class="px-2 py-0.5 border rounded-full text-[0.55rem] font-bold tracking-wider {{ $badgeColor }} uppercase">{{ $v->estado }}</span>
                                 </div>
 
-                                <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2.5 mb-3 border border-slate-100 dark:border-slate-700/50">
-                                    <span class="text-[0.6rem] text-slate-500 dark:text-slate-400 block uppercase font-bold mb-0.5">Chasis</span>
-                                    <strong class="text-xs font-mono text-slate-700 dark:text-slate-300">{{ $v->numero_chasis }}</strong>
+                                <div class="bg-surface-2 rounded-lg p-2.5 mb-3 border border-border">
+                                    <span class="text-[0.6rem] text-muted-foreground block uppercase font-bold mb-0.5">Chasis</span>
+                                    <strong class="text-xs font-mono text-foreground">{{ $v->numero_chasis }}</strong>
                                 </div>
 
-                                <div class="flex justify-between items-end pt-3 border-t border-gray-100 dark:border-slate-700/70 mt-auto">
+                                <div class="flex justify-between items-end pt-3 border-t border-border mt-auto">
                                     <div class="flex flex-col">
                                         @if(($v->precio_contado_usd ?? 0) > 0)
                                             <span class="text-emerald-600 dark:text-emerald-400 font-bold text-[0.7rem]" title="Precio Contado">CONT: US$ {{ number_format($v->precio_contado_usd, 0, ',', '.') }}</span>
                                         @endif
                                         @if(($v->precio_cuotas_usd ?? 0) > 0)
-                                            <span class="text-indigo-500 dark:text-indigo-400 font-bold text-[0.7rem]" title="Precio Cuotas">CUOT: US$ {{ number_format($v->precio_cuotas_usd, 0, ',', '.') }}</span>
+                                            <span class="text-primary font-bold text-[0.7rem]" title="Precio Cuotas">CUOT: US$ {{ number_format($v->precio_cuotas_usd, 0, ',', '.') }}</span>
                                         @endif
                                     </div>
                                     <button type="button" class="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
@@ -143,7 +141,7 @@
                     {{-- REPUESTOS GRID --}}
                     <div id="item-grid-repuestos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden transition-all">
                         @foreach($repuestos ?? [] as $r)
-                            <div class="repuesto-card group relative flex flex-col justify-between p-4 cursor-pointer bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl transition-all hover:border-primary hover:shadow-md shadow-sm"
+                            <div class="repuesto-card group relative flex flex-col justify-between p-4 cursor-pointer bg-surface border border-border rounded-xl transition-all hover:border-primary hover:shadow-md shadow-sm"
                                 data-id="{{ $r->id }}" 
                                 data-codigo="{{ $r->codigo }}"
                                 data-descripcion="{{ $r->descripcion }}"
@@ -154,26 +152,26 @@
 
                                 <div class="flex justify-between items-start mb-3">
                                     <div class="min-w-0">
-                                        <div class="font-bold text-xs text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors truncate" title="{{ $r->descripcion }}">
+                                        <div class="font-bold text-xs text-foreground group-hover:text-primary transition-colors truncate" title="{{ $r->descripcion }}">
                                             {{ $r->descripcion }}
                                         </div>
-                                        <div class="text-[0.65rem] font-mono text-slate-500 dark:text-slate-400 mt-0.5 tracking-tight">{{ $r->codigo }}</div>
+                                        <div class="text-[0.65rem] font-mono text-muted-foreground mt-0.5 tracking-tight">{{ $r->codigo }}</div>
                                     </div>
-                                    <span class="px-2 py-0.5 border rounded-full text-[0.55rem] font-bold tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 uppercase">{{ $r->unidad_medida }}</span>
+                                    <span class="px-2 py-0.5 border rounded-full text-[0.55rem] font-bold tracking-wider bg-surface-2 text-muted-foreground uppercase">{{ $r->unidad_medida }}</span>
                                 </div>
 
-                                <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2.5 mb-3 border border-slate-100 dark:border-slate-700/50">
+                                <div class="flex justify-between items-center bg-surface-2 rounded-lg p-2.5 mb-3 border border-border">
                                     <div class="flex flex-col">
-                                        <span class="text-[0.6rem] text-slate-500 dark:text-slate-400 uppercase font-bold">Stock</span>
-                                        <strong class="text-xs {{ $r->stock_actual <= $r->stock_minimo ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300' }}">{{ number_format($r->stock_actual, 2) }}</strong>
+                                        <span class="text-[0.6rem] text-muted-foreground uppercase font-bold">Stock</span>
+                                        <strong class="text-xs {{ $r->stock_actual <= $r->stock_minimo ? 'text-amber-500' : 'text-foreground' }}">{{ number_format($r->stock_actual, 2) }}</strong>
                                     </div>
                                     <div class="text-right">
-                                        <span class="text-[0.6rem] text-slate-500 dark:text-slate-400 uppercase font-bold">Precio</span>
+                                        <span class="text-[0.6rem] text-muted-foreground uppercase font-bold">Precio</span>
                                         <div class="text-sm font-bold text-primary">US$ {{ number_format($r->precio_venta_usd, 2) }}</div>
                                     </div>
                                 </div>
 
-                                <div class="flex justify-end gap-2 pt-1 border-t border-gray-100 dark:border-slate-700/70 mt-auto">
+                                <div class="flex justify-end gap-2 pt-1 border-t border-border mt-auto">
                                     <button type="button" class="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                                     </button>
@@ -183,18 +181,18 @@
                     </div>
 
                     {{-- SHOPPING CART / SELECTED ITEMS --}}
-                    <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700">
+                    <div class="mt-8 pt-8 border-t border-border">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                            <h3 class="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                                 Items Seleccionados
                             </h3>
-                            <div class="text-xs text-slate-400" id="cart-count">0 items añadidos</div>
+                            <div class="text-xs text-muted-foreground" id="cart-count">0 items añadidos</div>
                         </div>
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm border-separate border-spacing-y-2">
-                                <thead class="text-[0.65rem] font-bold text-slate-400 uppercase tracking-wider">
+                                <thead class="text-[0.65rem] font-bold text-muted-foreground uppercase tracking-wider">
                                     <tr>
                                         <th class="px-4 py-2">Descripción</th>
                                         <th class="px-4 py-2 text-center">Cant.</th>
@@ -205,7 +203,7 @@
                                 </thead>
                                 <tbody id="cart-body">
                                     <tr id="cart-empty-row">
-                                        <td colspan="5" class="px-4 py-12 text-center text-slate-400 italic bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                                        <td colspan="5" class="px-4 py-12 text-center text-muted-foreground italic bg-surface-2 rounded-xl border-2 border-dashed border-border">
                                             No se han seleccionado ítems aún. Selecciona un camión o repuestos arriba.
                                         </td>
                                     </tr>
@@ -214,9 +212,9 @@
                         </div>
 
                         <div class="mt-4 flex flex-col items-end">
-                            <div class="flex items-center gap-8 py-4 px-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <div class="flex items-center gap-8 py-4 px-6 bg-surface-2 rounded-2xl border border-border shadow-sm">
                                 <div class="text-right">
-                                    <span class="text-[0.6rem] font-bold text-slate-500 uppercase tracking-widest block mb-1">Total de Venta</span>
+                                    <span class="text-[0.6rem] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Total de Venta</span>
                                     <div class="text-2xl font-black text-primary" id="cart-total-usd">US$ 0,00</div>
                                 </div>
                             </div>
@@ -247,19 +245,19 @@
 
                     <div style="margin-bottom:1.5rem">
                         <input type="text" id="buscarCliente" class="form-input w-full md:w-1/2 lg:w-1/3"
-                            placeholder="🔍 Buscar por nombre, RUC...">
+                            placeholder="Buscar por nombre, RUC...">
                     </div>
 
                     <div id="clientesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         @foreach($clientes as $c)
-                            <div class="client-card group p-4 py-5 cursor-pointer bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-indigo-50/50 dark:[&.selected]:bg-indigo-900/10 shadow-sm"
+                            <div class="client-card group p-4 py-5 cursor-pointer bg-surface border border-border rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-primary/5 shadow-sm"
                                 data-id="{{ $c->id }}" data-nombre="{{ $c->razon_social }}" data-ruc="{{ $c->ruc }}"
                                 data-telefono="{{ $c->telefono }}" data-pais="{{ $c->pais }}"
-                                onclick="seleccionarCliente(this)">
+                                onclick="seleccionarCliente(this, true)">
 
                                 <div class="flex items-start gap-3 mb-2">
                                     <div
-                                        class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-500 dark:text-slate-400 flex-shrink-0 border border-slate-200 dark:border-slate-700 group-[.selected]:bg-primary/10 group-[.selected]:text-primary group-[.selected]:border-primary/30 transition-colors">
+                                        class="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground flex-shrink-0 border border-border group-[.selected]:bg-primary/10 group-[.selected]:text-primary group-[.selected]:border-primary/30 transition-colors">
                                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                             stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -267,16 +265,16 @@
                                         </svg>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-bold text-[1.05rem] text-slate-800 dark:text-slate-100 group-[.selected]:text-primary dark:group-[.selected]:text-indigo-400 transition-colors truncate"
+                                        <div class="font-bold text-[1.05rem] text-foreground group-[.selected]:text-primary transition-colors truncate"
                                             title="{{ $c->razon_social }}">{{ $c->razon_social }}</div>
-                                        <div class="text-[0.75rem] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">RUC:
+                                        <div class="text-[0.75rem] text-muted-foreground mt-0.5 font-mono">RUC:
                                             {{ $c->ruc ?: 'N/A' }}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div
-                                    class="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700/70 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500 dark:text-slate-400">
+                                    class="mt-4 pt-3 border-t border-border flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
                                     <div class="flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                             stroke="currentColor">
@@ -295,6 +293,12 @@
                                             <span>{{ $c->telefono }}</span>
                                         </div>
                                     @endif
+                                    <div class="w-full flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                                        <span class="whitespace-nowrap">Crédito disponible US$ {{ number_format($c->credito_disponible_usd, 2, ',', '.') }}</span>
+                                        @if($c->cuotas_vencidas > 0)
+                                            <span class="badge-status badge-vendido whitespace-nowrap" title="Tiene {{ $c->cuotas_vencidas }} cuota(s) vencida(s)">Cuotas vencidas: {{ $c->cuotas_vencidas }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -320,36 +324,36 @@
                 <div class="erp-card-body">
                     <input type="hidden" name="modalidad_pago" id="modalidad_pago" value="CONTADO">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button type="button" id="btn-modalidad-contado"
+                        <button type="button" id="btn-modalidad-contado" aria-pressed="true"
                             onclick="setPaymentMode('CONTADO')"
-                            class="flex items-center gap-4 p-5 rounded-xl border-2 border-primary bg-indigo-50/60 dark:bg-indigo-900/20 text-left transition-all hover:shadow-md ring-2 ring-primary">
+                            class="flex items-center gap-4 p-5 rounded-xl border-2 border-primary bg-surface-2 text-left transition-all hover:shadow-md ring-2 ring-primary">
                             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
                                 </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <div class="font-bold text-slate-800 dark:text-slate-100 text-base">Contado</div>
-                                <div class="text-sm text-slate-500 dark:text-slate-400 mt-0.5" id="label-precio-contado">Pago total en una sola operación</div>
+                                <div class="font-bold text-foreground text-base">Contado</div>
+                                <div class="text-sm text-muted-foreground mt-0.5" id="label-precio-contado">Pago total en una sola operación</div>
                             </div>
                             <div id="check-contado" class="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                                 <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                             </div>
                         </button>
 
-                        <button type="button" id="btn-modalidad-cuotas"
+                        <button type="button" id="btn-modalidad-cuotas" aria-pressed="false"
                             onclick="setPaymentMode('CUOTAS')"
-                            class="flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left transition-all hover:border-primary hover:shadow-md">
-                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            class="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-surface text-left transition-all hover:border-primary hover:shadow-md">
+                            <div class="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                                 </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <div class="font-bold text-slate-800 dark:text-slate-100 text-base">Plan de Cuotas</div>
-                                <div class="text-sm text-slate-500 dark:text-slate-400 mt-0.5" id="label-precio-cuotas">Financiamiento en cuotas mensuales</div>
+                                <div class="font-bold text-foreground text-base">Plan de Cuotas</div>
+                                <div class="text-sm text-muted-foreground mt-0.5" id="label-precio-cuotas">Financiamiento en cuotas mensuales</div>
                             </div>
-                            <div id="check-cuotas" class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex-shrink-0 hidden"></div>
+                            <div id="check-cuotas" class="w-5 h-5 rounded-full border-2 border-border flex-shrink-0 hidden"></div>
                         </button>
                     </div>
                 </div>
@@ -360,70 +364,70 @@
                     <h2>Precio de Venta</h2>
                 </div>
                 <div class="erp-card-body">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <fieldset class="form-group md:col-span-3">
+                            <legend class="form-label mb-1.5">Moneda de venta <span class="text-red-500">*</span></legend>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                @foreach(['USD' => ['Dólar', 'us'], 'PYG' => ['Guaraní', 'py'], 'BRL' => ['Real', 'br']] as $m => [$nombre, $bandera])
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="moneda_venta" value="{{ $m }}" class="peer sr-only" @checked(old('moneda_venta', 'USD') === $m) required>
+                                        <div class="flex items-center gap-3 p-3 rounded-xl border-2 border-border bg-surface-2 transition-all hover:bg-surface-3 peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
+                                            <img src="https://flagcdn.com/w40/{{ $bandera }}.png" class="w-8 h-6 rounded object-cover" alt="">
+                                            <div class="min-w-0">
+                                                <span class="block text-sm font-bold text-foreground">{{ $m }} <span class="font-normal text-muted-foreground">· {{ $nombre }}</span></span>
+                                                <span class="block text-xs text-muted-foreground" data-tasa-de="{{ $m }}">{{ $m === 'USD' ? 'Moneda base' : 'Cargando cotización…' }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
                         <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Fecha de
-                                venta <span class="text-red-500">*</span></label>
-                            <input type="date" name="fecha_venta" class="form-input"
+                            <label class="form-label" for="precio_moneda">Precio (<span data-moneda-actual>{{ old('moneda_venta', 'USD') }}</span>) <span class="text-red-500">*</span></label>
+                            <input type="number" name="precio_venta_moneda" class="form-input" inputmode="decimal"
+                                value="{{ old('precio_venta_moneda') }}" step="0.01" min="0" required id="precio_moneda"
+                                oninput="sincronizarDesdeMoneda()">
+                            <div class="text-xs text-muted-foreground" id="precio_equiv" aria-live="polite"></div>
+                        </div>
+                        <div class="form-group flex flex-col gap-1.5">
+                            <label class="form-label" for="descuento_moneda">Descuento (<span data-moneda-actual>{{ old('moneda_venta', 'USD') }}</span>)</label>
+                            <input type="number" name="descuento_moneda" class="form-input" inputmode="decimal"
+                                value="{{ old('descuento_moneda', 0) }}" step="0.01" min="0" id="descuento_moneda"
+                                oninput="sincronizarDesdeMoneda()">
+                            <div class="text-xs text-muted-foreground" id="descuento_equiv" aria-live="polite"></div>
+                        </div>
+                        <div class="form-group flex flex-col gap-1.5" id="tasa-group">
+                            <label class="form-label" for="tasa_cambio_venta">Cotización (<span data-moneda-actual>{{ old('moneda_venta', 'USD') }}</span> por 1 USD)</label>
+                            <input type="number" name="tasa_cambio_venta" id="tasa_cambio_venta" class="form-input" inputmode="decimal"
+                                value="{{ old('tasa_cambio_venta', 1) }}" step="any" min="0.0001" oninput="onTasaManual()">
+                            <div class="text-xs text-muted-foreground" id="tasa-fuente" aria-live="polite"></div>
+                        </div>
+                        <div class="form-group flex flex-col gap-1.5">
+                            <label class="form-label" for="fecha_venta">Fecha de venta <span class="text-red-500">*</span></label>
+                            <input type="date" name="fecha_venta" id="fecha_venta" class="form-input"
                                 value="{{ old('fecha_venta', date('Y-m-d')) }}" required>
                         </div>
-                        <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Moneda de
-                                venta <span class="text-red-500">*</span></label>
-                            <select name="moneda_venta" class="form-input" required onchange="calcularTotalVentaUsd()">
-                                @foreach(['USD', 'PYG', 'BRL'] as $m)
-                                    <option value="{{ $m }}" {{ old('moneda_venta', 'USD') == $m ? 'selected' : '' }}>{{ $m }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Precio en
-                                moneda <span class="text-red-500">*</span></label>
-                            <input type="number" name="precio_venta_moneda" class="form-input"
-                                value="{{ old('precio_venta_moneda') }}" step="0.01" min="0" required id="precio_moneda"
-                                oninput="calcularTotalVentaUsd()">
-                        </div>
-                        <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Precio en USD
-                                <span class="text-red-500">*</span></label>
-                            <input type="number" name="precio_venta_usd" class="form-input"
-                                value="{{ old('precio_venta_usd') }}" step="0.01" min="0" required id="precio_usd"
-                                oninput="calcRent()">
-                        </div>
-                        <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Descuento
-                                (moneda)</label>
-                            <input type="number" name="descuento_moneda" class="form-input"
-                                value="{{ old('descuento_moneda', 0) }}" step="0.01" min="0" id="descuento_moneda"
-                                oninput="calcularTotalVentaUsd()">
-                        </div>
-                        <div class="form-group flex flex-col gap-1.5 lg:col-span-3">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Descuento
-                                (USD)</label>
-                            <input type="number" name="descuento_usd" class="form-input lg:w-1/3"
-                                value="{{ old('descuento_usd', 0) }}" step="0.01" min="0" id="descuento_usd"
-                                oninput="calcRent()">
-                        </div>
-                        <input type="hidden" name="tasa_cambio_venta" value="{{ old('tasa_cambio_venta', 1) }}">
+                        {{-- Equivalentes en USD que espera el servidor; se calculan desde los campos en moneda --}}
+                        <input type="hidden" name="precio_venta_usd" id="precio_usd" value="{{ old('precio_venta_usd') }}">
+                        <input type="hidden" name="descuento_usd" id="descuento_usd" value="{{ old('descuento_usd', 0) }}">
                         <input type="hidden" name="estado" value="COMPLETADO">
                     </div>
 
                     <div
-                        class="bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/50 rounded-xl p-5 mt-6 flex justify-between items-center shadow-sm">
-                        <span class="text-sm font-bold text-indigo-700 dark:text-indigo-400 tracking-wider uppercase">Precio
+                        class="bg-primary/5 border border-primary/30 rounded-xl p-5 mt-6 flex justify-between items-center shadow-sm">
+                        <span class="text-sm font-bold text-primary tracking-wider uppercase">Precio
                             Final (USD)</span>
-                        <strong class="text-2xl text-indigo-700 dark:text-indigo-400 font-extrabold"
+                        <strong class="text-2xl text-primary font-extrabold"
                             id="precio_final_display">$ 0.00</strong>
                     </div>
 
                     {{-- Valor libro info --}}
                     <div id="valor_libro_info"
-                        class="mt-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-lg text-sm text-slate-600 dark:text-slate-300 flex items-center gap-3"
+                        class="mt-4 bg-surface-2 border border-border px-4 py-3 rounded-lg text-sm text-muted-foreground flex items-center gap-3"
                         style="display:none;">
-                        <span class="font-medium">Valor libro:</span> <strong class="text-indigo-600 dark:text-indigo-400"
+                        <span class="font-medium">Valor libro:</span> <strong class="text-primary"
                             id="valor_libro_span">—</strong> USD
-                        <span class="mx-1 text-slate-300 dark:text-slate-600">|</span>
+                        <span class="mx-1 text-muted-foreground">|</span>
                         <span class="font-medium">Rentabilidad:</span> <strong id="rent_span">—</strong>
                     </div>
                 </div>
@@ -443,12 +447,12 @@
                         {{-- First payment row (always visible) --}}
                         <div class="payment-entry" id="pago_row_0">
                             <div
-                                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 mb-3">
+                                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-surface-2 p-4 rounded-xl border border-border mb-3">
                                 <div class="form-group flex flex-col gap-1.5">
-                                    <label
-                                        class="form-label text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tipo
+                                    <label for="pago_tipo_0"
+                                        class="form-label text-xs font-bold text-muted-foreground uppercase tracking-wide">Tipo
                                         de pago</label>
-                                    <select name="pagos[0][tipo]" class="form-input"
+                                    <select name="pagos[0][tipo]" id="pago_tipo_0" class="form-input"
                                         onchange="toggleCamposPago(0, this.value)">
                                         <option value="EFECTIVO">Efectivo</option>
                                         <option value="TRANSFERENCIA">Transferencia</option>
@@ -457,56 +461,52 @@
                                     </select>
                                 </div>
                                 <div class="form-group flex flex-col gap-1.5">
-                                    <label
-                                        class="form-label text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Monto
+                                    <label for="pago_monto_0"
+                                        class="form-label text-xs font-bold text-muted-foreground uppercase tracking-wide">Monto
                                         USD</label>
-                                    <input type="number" name="pagos[0][monto_usd]" step="0.01" min="0"
-                                        class="form-input pago-monto" oninput="calcularTotalPagos()">
+                                    <input type="number" name="pagos[0][monto_usd]" id="pago_monto_0" step="0.01" min="0" inputmode="decimal"
+                                        class="form-input pago-monto" oninput="pagoEditado()">
                                 </div>
                                 <div class="form-group flex-col gap-1.5" id="ref_container_0" style="display:none">
-                                    <label
-                                        class="form-label text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Referencia
+                                    <label for="pago_ref_0"
+                                        class="form-label text-xs font-bold text-muted-foreground uppercase tracking-wide">Referencia
                                         / Banco</label>
-                                    <input type="text" name="pagos[0][referencia]" class="form-input"
+                                    <input type="text" name="pagos[0][referencia]" id="pago_ref_0" class="form-input"
                                         placeholder="Nro. transferencia...">
                                 </div>
-                                <div class="form-group flex-col gap-1.5" id="canje_container_0" style="display:none">
-                                    <label
-                                        class="form-label text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Vehículo
-                                        en Canje</label>
-                                    <select name="pagos[0][vehiculo_canje_id]" class="form-input">
-                                        <option value="">— Seleccionar —</option>
-                                        @foreach($vehiculos_canje ?? [] as $vc)
-                                            <option value="{{ $vc->id }}">{{ $vc->marca }} {{ $vc->modelo }} —
-                                                {{ $vc->numero_chasis }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                <div class="md:col-span-4" id="canje_container_0" style="display:none">
+                                    @include('ventas.partials.canje-campos', ['idx' => 0])
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                    <button type="button" id="btnCobrarSaldo" class="btn btn-primary !py-1.5 !px-3 text-xs" onclick="cobrarSaldo()"
+                        title="Completa el monto del pago con el saldo pendiente">
+                        Cobrar saldo completo
+                    </button>
                     <button type="button"
-                        class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-4 flex items-center gap-1"
+                        class="text-sm font-medium text-primary hover:opacity-80 transition-colors flex items-center gap-1"
                         onclick="agregarPago()">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                         Agregar otro pago / entrega
                     </button>
+                    </div>
 
                     <div
-                        class="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl p-5 flex justify-between items-center mb-5 shadow-sm">
+                        class="bg-surface-2 border border-border rounded-xl p-5 flex justify-between items-center mb-5 shadow-sm">
                         <div>
-                            <div class="text-[0.72rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1"
+                            <div class="text-[0.72rem] text-muted-foreground font-bold uppercase tracking-wider mb-1"
                                 id="label_total_pagos">Total pagos registrados</div>
-                            <div class="text-xl font-extrabold text-slate-800 dark:text-slate-100" id="total_pagos_display">
+                            <div class="text-xl font-extrabold text-foreground" id="total_pagos_display">
                                 $
                                 0,00</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[0.72rem] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1"
+                            <div class="text-[0.72rem] text-muted-foreground font-bold uppercase tracking-wider mb-1"
                                 id="label_saldo">
                                 Saldo pendiente</div>
                             <div class="text-xl font-extrabold" id="saldo_pendiente_display">$ 0,00</div>
@@ -514,23 +514,23 @@
                     </div>
 
                     {{-- === PLAN DE CUOTAS CONFIG === --}}
-                    <div id="seccion_plan_cuotas" class="hidden pt-6 mt-2 border-t border-slate-200 dark:border-slate-700">
-                        <h3 class="mt-0 mb-5 text-lg font-bold text-slate-800 dark:text-slate-100">Configuración del Plan de
+                    <div id="seccion_plan_cuotas" class="hidden pt-6 mt-2 border-t border-border">
+                        <h3 class="mt-0 mb-5 text-lg font-bold text-foreground">Configuración del Plan de
                             Cuotas</h3>
 
                         <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-4 mb-6 text-sm flex gap-6 text-slate-600 dark:text-slate-300">
-                            <div>Precio Base: <strong class="text-slate-800 dark:text-white"
+                            class="bg-surface-2 border border-border rounded-lg p-4 mb-6 text-sm flex gap-6 text-muted-foreground">
+                            <div>Precio Base: <strong class="text-foreground"
                                     id="plan_precio_base">—</strong></div>
                             <div class="text-red-500 dark:text-red-400 font-medium">Descuento: <strong
                                     id="plan_descuento">—</strong></div>
-                            <div class="text-indigo-600 dark:text-indigo-400 font-medium">Precio Final: <strong
+                            <div class="text-primary font-medium">Precio Final: <strong
                                     id="plan_precio_final">—</strong></div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                             <div class="form-group flex flex-col gap-1.5">
-                                <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Tipo de
+                                <label for="tipo_plan" class="form-label text-sm font-semibold text-foreground">Tipo de
                                     plan <span class="text-red-500">*</span></label>
                                 <select name="tipo_plan" id="tipo_plan" class="form-input" onchange="onTipoPlanChange()">
                                     <option value="FRANCESA">Cuota Fija</option>
@@ -538,46 +538,46 @@
                                 </select>
                             </div>
                             <div class="form-group flex flex-col gap-1.5">
-                                <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Capital a
+                                <label for="capital_total_usd_visual" class="form-label text-sm font-semibold text-foreground">Capital a
                                     financiar (USD)</label>
                                 <input type="number" id="capital_total_usd_visual"
-                                    class="form-input bg-slate-50 dark:bg-slate-800 text-slate-500 italic" step="0.01"
+                                    class="form-input bg-surface-2 text-muted-foreground italic" step="0.01"
                                     min="0" readonly>
                                 <input type="hidden" name="capital_total_usd" id="capital_usd_input">
                             </div>
                         </div>
 
                         <div id="auto-config"
-                            class="hidden mt-6 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                            class="hidden mt-6 bg-surface-2 p-5 rounded-xl border border-border">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                                 <div class="form-group flex flex-col gap-1.5">
                                     <label
-                                        class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Número
+                                        for="numero_cuotas" class="form-label text-sm font-semibold text-foreground">Número
                                         de cuotas <span class="text-red-500">*</span></label>
                                     <input type="number" name="numero_cuotas" id="numero_cuotas" class="form-input"
                                         value="12" min="1" max="120">
                                 </div>
                                 <div class="form-group flex flex-col gap-1.5">
-                                    <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Tasa
+                                    <label for="tasa_interes_mensual" class="form-label text-sm font-semibold text-foreground">Tasa
                                         de interés mensual (%)</label>
-                                    <input type="number" name="tasa_interes_mensual" class="form-input" value="0"
+                                    <input type="number" name="tasa_interes_mensual" id="tasa_interes_mensual" class="form-input" value="0"
                                         step="0.01" min="0">
                                 </div>
                                 <div class="form-group flex flex-col gap-1.5">
-                                    <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Fecha
+                                    <label for="fecha_primera_cuota" class="form-label text-sm font-semibold text-foreground">Fecha
                                         primera cuota <span class="text-red-500">*</span></label>
-                                    <input type="date" name="fecha_primera_cuota" class="form-input"
+                                    <input type="date" name="fecha_primera_cuota" id="fecha_primera_cuota" class="form-input"
                                         value="{{ \Carbon\Carbon::now()->addMonth()->format('Y-m-d') }}">
                                 </div>
                                 <div class="form-group flex flex-col gap-1.5">
                                     <label
-                                        class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Refuerzo
+                                        for="refuerzo_cada" class="form-label text-sm font-semibold text-foreground">Refuerzo
                                         cada N meses</label>
                                     <input type="number" name="refuerzo_cada" id="refuerzo_cada" class="form-input" min="0"
                                         max="12" value="0" placeholder="0 = sin refuerzo">
                                 </div>
                                 <div class="form-group flex flex-col gap-1.5">
-                                    <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Monto
+                                    <label for="refuerzo_monto" class="form-label text-sm font-semibold text-foreground">Monto
                                         del refuerzo (USD)</label>
                                     <input type="number" name="refuerzo_monto" id="refuerzo_monto" class="form-input"
                                         step="0.01" min="0" value="0">
@@ -586,18 +586,18 @@
                         </div>
 
                         <div id="manual-config" class="mt-6">
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                            <p class="text-sm text-muted-foreground mb-4">
                                 Configura filas de cuotas manualmente. Puedes mezclar cuotas regulares y refuerzos.
                             </p>
                             <div
-                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 grid grid-cols-[30px_1fr_1fr_1fr_auto] gap-2 px-2">
+                                class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 grid grid-cols-[30px_1fr_1fr_1fr_auto] gap-2 px-2">
                                 <span>#</span><span>Fecha Vencimiento</span><span>Tipo</span><span>Monto
                                     (USD)</span><span></span>
                             </div>
                             <div id="cuotas-container" class="flex flex-col gap-2"></div>
                             <div class="flex gap-3 mt-4">
                                 <button type="button"
-                                    class="text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
+                                    class="text-sm font-semibold bg-surface-2 text-foreground hover:bg-surface-3 px-4 py-2 rounded-lg transition-colors border border-border"
                                     onclick="addCuotaManual('REGULAR')">
                                     + Cuota Regular
                                 </button>
@@ -608,12 +608,12 @@
                                 </button>
                             </div>
                             <div
-                                class="bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center mt-6 shadow-sm">
-                                <div class="text-sm text-indigo-900 dark:text-indigo-200">Total Cuotas: <strong
+                                class="bg-surface-2 border border-primary/30 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center mt-6 shadow-sm">
+                                <div class="text-sm text-foreground">Total Cuotas: <strong
                                         id="total_cuotas_sum"
-                                        class="text-lg text-indigo-700 dark:text-indigo-400 font-extrabold ml-1">$
+                                        class="text-lg text-primary font-extrabold ml-1">$
                                         0.00</strong></div>
-                                <div class="text-sm text-slate-500 dark:text-slate-400 mt-2 sm:mt-0">Diferencia VS Capital:
+                                <div class="text-sm text-muted-foreground mt-2 sm:mt-0">Diferencia VS Capital:
                                     <strong id="diferencia_cuotas" class="font-bold ml-1">$ 0.00</strong>
                                 </div>
                             </div>
@@ -623,107 +623,34 @@
             </div>
 
             <div class="form-group flex flex-col gap-1.5 mb-6">
-                <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Observaciones</label>
-                <textarea name="observaciones" rows="2" class="form-input">{{ old('observaciones') }}</textarea>
+                <label for="observaciones" class="form-label text-sm font-semibold text-foreground">Observaciones</label>
+                <textarea name="observaciones" id="observaciones" rows="2" class="form-input">{{ old('observaciones') }}</textarea>
             </div>
 
             <div class="flex justify-between items-center mt-6">
                 <button type="button"
-                    class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    class="px-5 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-surface-3 transition-colors"
                     onclick="goToStep(2)">← Volver a Cliente</button>
                 <button type="button"
-                    class="px-6 py-2.5 rounded-lg text-sm font-medium bg-primary text-white hover:bg-indigo-700 shadow-sm transition-colors"
-                    onclick="goToStep(4)">Siguiente → Confirmar</button>
+                    class="btn btn-primary px-6"
+                    onclick="abrirModalConfirmacion()">Revisar y confirmar</button>
             </div>
         </div>
 
-        {{-- ═══════════════════════════════════ STEP 4: CONFIRMACIÓN ═══════════════════════════════════ --}}
-        <div class="step-content" id="step4">
-            <div class="erp-card">
-                <div class="erp-card-header">
-                    <h2>Resumen de la Venta</h2>
-                </div>
-                <div class="erp-card-body">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                        <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5 md:col-span-1">
-                            <div class="text-[0.7rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                </svg>
-                                Items de la Venta
-                            </div>
-                            <div id="resumen_items_list" class="space-y-3 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
-                                {{-- Se llena vía JS --}}
-                            </div>
-                        </div>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-                            <div
-                                class="text-[0.7rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
-                                Cliente
-                            </div>
-                            <div class="font-bold text-lg text-slate-800 dark:text-slate-100" id="resumen_cliente">—</div>
-                            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1" id="resumen_cliente_ruc">—</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Precio</div>
-                            <div class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400" id="resumen_precio">$0
-                            </div>
-                        </div>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Modalidad</div>
-                            <div class="text-xl font-bold text-slate-800 dark:text-slate-100" id="resumen_modalidad">Contado
-                            </div>
-                        </div>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Rentabilidad</div>
-                            <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400" id="resumen_rentabilidad">
-                                $0</div>
-                        </div>
-                    </div>
-
-                    <div id="resumen_pagos_box" class="mb-6"></div>
-
-                    <div class="flex justify-between items-center mt-8">
-                        <button type="button"
-                            class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            onclick="goToStep(3)">← Volver a editar</button>
-                        <button type="button" onclick="abrirModalConfirmacion()"
-                            class="px-8 py-3 rounded-xl text-base font-bold bg-primary text-white hover:bg-indigo-700 shadow-sm transition-colors flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                            Confirmar y Registrar Venta</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </form>
 
     {{-- ═══════ Modal Nuevo Cliente ═══════ --}}
-    <div id="modalCliente"
-        class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div id="modalCliente" role="dialog" aria-modal="true" aria-labelledby="modalClienteTitulo"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div
-            class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            class="bg-surface w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div
-                class="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/80">
-                <h3 class="m-0 text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                class="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-2">
+                <h3 id="modalClienteTitulo" class="m-0 text-lg font-bold text-foreground flex items-center gap-2">
                     Nuevo Cliente
                 </h3>
-                <button type="button" onclick="cerrarModalCliente()"
-                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                <button type="button" onclick="cerrarModalCliente()" aria-label="Cerrar"
+                    class="text-muted-foreground hover:text-foreground transition-colors">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -734,17 +661,17 @@
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group flex flex-col gap-1.5 md:col-span-2">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Razón Social
+                            <label class="form-label text-sm font-semibold text-foreground">Razón Social
                                 <span class="text-red-500">*</span></label>
                             <input type="text" name="razon_social" class="form-input" required>
                         </div>
                         <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">RUC /
+                            <label class="form-label text-sm font-semibold text-foreground">RUC /
                                 CI</label>
                             <input type="text" name="ruc" class="form-input">
                         </div>
                         <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">País <span
+                            <label class="form-label text-sm font-semibold text-foreground">País <span
                                     class="text-red-500">*</span></label>
                             <select name="pais" class="form-input" required>
                                 <option value="PY" selected>Paraguay (PY)</option>
@@ -755,21 +682,21 @@
                         </div>
                         <div class="form-group flex flex-col gap-1.5">
                             <label
-                                class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Teléfono</label>
+                                class="form-label text-sm font-semibold text-foreground">Teléfono</label>
                             <input type="text" name="telefono" class="form-input">
                         </div>
                         <div class="form-group flex flex-col gap-1.5">
-                            <label class="form-label text-sm font-semibold text-slate-700 dark:text-slate-300">Línea de
+                            <label class="form-label text-sm font-semibold text-foreground">Línea de
                                 Crédito (USD)</label>
                             <input type="number" name="linea_credito_usd" class="form-input" value="0" step="0.01" min="0">
                         </div>
                     </div>
-                    <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                    <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-border">
                         <button type="button"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-surface-3 transition-colors"
                             onclick="cerrarModalCliente()">Cancelar</button>
                         <button type="submit"
-                            class="px-5 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-indigo-700 shadow-sm transition-colors">Guardar
+                            class="px-5 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:opacity-90 shadow-sm transition-colors">Guardar
                             Cliente</button>
                     </div>
                 </form>
@@ -778,20 +705,20 @@
     </div>
 
     {{-- ═══════ Modal Confirmación de Venta (Doble Factor) ═══════ --}}
-    <div id="modalConfirmacion"
-        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    <div id="modalConfirmacion" role="dialog" aria-modal="true" aria-labelledby="modalConfirmacionTitulo"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         style="display:none;">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-700">
+        <div class="bg-surface w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-border">
             {{-- Header --}}
-            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 flex items-center gap-3">
+            <div class="px-6 py-4 border-b border-border bg-surface-2 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                     <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Confirmar Registro de Venta</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Verificá los datos antes de confirmar</p>
+                    <h3 id="modalConfirmacionTitulo" class="text-lg font-bold text-foreground">Confirmar Registro de Venta</h3>
+                    <p class="text-xs text-muted-foreground">Verificá los datos antes de confirmar</p>
                 </div>
             </div>
 
@@ -823,16 +750,16 @@
             </div>
 
             {{-- Footer --}}
-            <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center gap-3">
+            <div class="px-6 py-4 border-t border-border bg-surface-2 flex justify-between items-center gap-3">
                 <button type="button" onclick="cerrarModalConfirmacion()"
-                    class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    class="px-5 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-surface-3 transition-colors">
                     Cancelar
                 </button>
                 <button type="button" id="btnConfirmarFinal" onclick="confirmarYRegistrar()"
                     class="px-6 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                     disabled>
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                    Registrar Venta
+                    <span id="btnConfirmarTexto">Registrar Venta</span>
                 </button>
             </div>
         </div>
@@ -841,37 +768,40 @@
     @push('scripts')
         <script>
             let currentStep = 1;
+            let volvioAClientes = false;
             let selectedVehiculo = null;
             let selectedCliente = null;
             let pagoCount = 1;
             let cuotaIdx = 0;
-            let currentRates = { PYG: 1, BRL: 1 };
+            let pagoAuto = false;  // el primer pago lo precargó el sistema (contado) y sigue al saldo
+            let enviando = false;  // evita registrar la venta dos veces
 
             // ══════════ STEP NAVIGATION ══════════
             function goToStep(step) {
+                if (step === 2 && currentStep > 2) volvioAClientes = true;
                 if (step === 2 && itemsVenta.length === 0) {
                     alert('Agregá al menos un ítem al carrito primero.'); return;
                 }
                 if (step === 3 && !document.getElementById('cliente_id_input').value) {
                     alert('Seleccioná un cliente primero.'); return;
                 }
-                if (step === 4) buildResumen();
 
                 document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
                 document.getElementById('step' + step).classList.add('active');
 
                 document.querySelectorAll('.step-item').forEach(s => {
                     const n = parseInt(s.dataset.step);
-                    s.classList.remove('bg-primary', 'text-white', 'text-slate-500', 'dark:text-slate-400', 'text-primary', 'bg-primary/10', 'dark:bg-primary/20');
+                    s.classList.remove('bg-primary', 'text-white', 'text-muted-foreground', 'text-primary', 'bg-primary/10');
                     if (n === step) {
                         s.classList.add('bg-primary', 'text-white');
-                    } else if (n < step) {
-                        s.classList.add('text-primary', 'bg-primary/10', 'dark:bg-primary/20');
+                        s.setAttribute('aria-current', 'step');
                     } else {
-                        s.classList.add('text-slate-500', 'dark:text-slate-400');
+                        s.classList.add(...(n < step ? ['text-primary', 'bg-primary/10'] : ['text-muted-foreground']));
+                        s.removeAttribute('aria-current');
                     }
                 });
                 currentStep = step;
+                if (step === 3) precargarPagoContado();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
@@ -924,13 +854,7 @@
                 let precio = modalidad === 'CONTADO' ? selectedVehiculo.precioContado : selectedVehiculo.precioCuotas;
                 if (precio <= 0) precio = selectedVehiculo.precioSugerido;
                 if (precio > 0) {
-                    const selectMoneda = document.querySelector('select[name="moneda_venta"]');
-                    if (selectMoneda) selectMoneda.value = 'USD';
-                    const inputMoneda = document.querySelector('input[name="precio_venta_moneda"]');
-                    if (inputMoneda) {
-                        inputMoneda.value = precio.toFixed(2);
-                        inputMoneda.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
+                    fijarPrecioUsd(precio);
                 } else {
                     calcRent();
                 }
@@ -952,7 +876,7 @@
                 });
             });
 
-            function seleccionarCliente(el) {
+            function seleccionarCliente(el, avanzar = false) {
                 document.querySelectorAll('#clientesGrid .client-card').forEach(c => c.classList.remove('selected'));
                 el.classList.add('selected');
                 document.getElementById('cliente_id_input').value = el.dataset.id;
@@ -961,6 +885,7 @@
                     id: el.dataset.id, nombre: el.dataset.nombre, ruc: el.dataset.ruc,
                     telefono: el.dataset.telefono, pais: el.dataset.pais
                 };
+                if (avanzar && !volvioAClientes && itemsVenta.length) goToStep(3);
             }
 
             document.getElementById('buscarCliente').addEventListener('input', function () {
@@ -981,21 +906,20 @@
                 const checkContado = document.getElementById('check-contado');
                 const checkCuotas  = document.getElementById('check-cuotas');
 
-                if (mode === 'CONTADO') {
-                    btnContado.classList.add('border-primary', 'bg-indigo-50/60', 'dark:bg-indigo-900/20', 'ring-2', 'ring-primary');
-                    btnContado.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800');
-                    btnCuotas.classList.remove('border-primary', 'bg-indigo-50/60', 'dark:bg-indigo-900/20', 'ring-2', 'ring-primary');
-                    btnCuotas.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800');
-                    if (checkContado) checkContado.classList.remove('hidden');
-                    if (checkCuotas)  checkCuotas.classList.add('hidden');
-                } else {
-                    btnCuotas.classList.add('border-primary', 'bg-indigo-50/60', 'dark:bg-indigo-900/20', 'ring-2', 'ring-primary');
-                    btnCuotas.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800');
-                    btnContado.classList.remove('border-primary', 'bg-indigo-50/60', 'dark:bg-indigo-900/20', 'ring-2', 'ring-primary');
-                    btnContado.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800');
-                    if (checkCuotas)  checkCuotas.classList.remove('hidden');
-                    if (checkContado) checkContado.classList.add('hidden');
+                const activo = ['border-primary', 'bg-primary/5', 'ring-2', 'ring-primary'];
+                const inactivo = ['border-border', 'bg-surface'];
+                const [on, off] = mode === 'CONTADO' ? [btnContado, btnCuotas] : [btnCuotas, btnContado];
+                on.classList.add(...activo); on.classList.remove(...inactivo); on.setAttribute('aria-pressed', 'true');
+                off.classList.remove(...activo); off.classList.add(...inactivo); off.setAttribute('aria-pressed', 'false');
+                if (checkContado) checkContado.classList.toggle('hidden', mode !== 'CONTADO');
+                if (checkCuotas)  checkCuotas.classList.toggle('hidden', mode === 'CONTADO');
+                // En cuotas la entrega inicial es opcional: se quita el pago precargado automáticamente
+                if (mode === 'CUOTAS' && pagoAuto) {
+                    document.getElementById('pago_monto_0').value = '';
+                    pagoAuto = false;
                 }
+                // Al volver a contado sin pagos cargados, se vuelve a proponer el saldo completo
+                if (mode === 'CONTADO' && currentStep === 3) precargarPagoContado();
 
                 document.getElementById('texto_pagos').textContent = mode === 'CONTADO' ? 'Registrá los pagos recibidos al contado.' : 'Registrá las entregas iniciales (si aplica).';
                 document.getElementById('label_total_pagos').textContent = mode === 'CONTADO' ? 'Total pagos registrados' : 'Total entregas iniciales';
@@ -1013,38 +937,48 @@
             function agregarPago() {
                 const idx = pagoCount++;
                 const html = `
-                                    <div class="payment-entry" id="pago_row_${idx}">
-                                        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto;gap:.75rem;align-items:end">
-                                            <div class="form-group">
-                                                <label>Tipo de pago</label>
-                                                <select name="pagos[${idx}][tipo]" onchange="toggleCamposPago(${idx}, this.value)">
-                                                    <option value="EFECTIVO">💵 Efectivo</option>
-                                                    <option value="TRANSFERENCIA">🏦 Transferencia</option>
-                                                    <option value="VEHICULO_CANJE">🚗 Vehículo parte de pago</option>
-                                                    <option value="CHEQUE">📝 Cheque</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Monto USD</label>
-                                                <input type="number" name="pagos[${idx}][monto_usd]" step="0.01" min="0" class="pago-monto" oninput="calcularTotalPagos()">
-                                            </div>
-                                            <div class="form-group" id="ref_container_${idx}" style="display:none">
-                                                <label>Referencia / Banco</label>
-                                                <input type="text" name="pagos[${idx}][referencia]" placeholder="Nro. transferencia...">
-                                            </div>
-                                            <div class="form-group" id="canje_container_${idx}" style="display:none">
-                                                <label>Vehículo en Canje</label>
-                                                <select name="pagos[${idx}][vehiculo_canje_id]">
-                                                    <option value="">— Seleccionar —</option>
-                                                    @foreach($vehiculos_canje ?? [] as $vc)
-                                                        <option value="{{ $vc->id }}">{{ $vc->marca }} {{ $vc->modelo }} — {{ $vc->numero_chasis }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <button type="button" class="btn btn-ghost" onclick="eliminarPago(${idx})" style="color:var(--danger);padding:.4rem .6rem" title="Eliminar">🗑️</button>
-                                        </div>
-                                    </div>`;
+                    <div class="payment-entry" id="pago_row_${idx}">
+                        <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end bg-surface-2 p-4 rounded-xl border border-border mb-3">
+                            <div class="form-group flex flex-col gap-1.5">
+                                <label for="pago_tipo_${idx}" class="form-label text-xs font-bold text-muted-foreground uppercase tracking-wide">Tipo de pago</label>
+                                <select name="pagos[${idx}][tipo]" id="pago_tipo_${idx}" class="form-input" onchange="toggleCamposPago(${idx}, this.value)">
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                    <option value="VEHICULO_CANJE">Vehículo parte de pago</option>
+                                    <option value="CHEQUE">Cheque</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex flex-col gap-1.5">
+                                <label for="pago_monto_${idx}" class="form-label text-xs font-bold text-muted-foreground uppercase tracking-wide">Monto USD</label>
+                                <input type="number" name="pagos[${idx}][monto_usd]" id="pago_monto_${idx}" step="0.01" min="0" inputmode="decimal" class="form-input pago-monto" oninput="pagoEditado()">
+                            </div>
+                            <div class="form-group flex-col gap-1.5" id="ref_container_${idx}" style="display:none">
+                                <label for="pago_ref_${idx}" class="form-label text-xs font-bold text-muted-foreground uppercase tracking-wide">Referencia / Banco</label>
+                                <input type="text" name="pagos[${idx}][referencia]" id="pago_ref_${idx}" class="form-input" placeholder="Nro. transferencia...">
+                            </div>
+                            <button type="button" class="btn btn-ghost" onclick="eliminarPago(${idx})" style="color:var(--danger);padding:.4rem .6rem" title="Eliminar pago" aria-label="Eliminar pago"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg></button>
+                            <div class="md:col-span-4" id="canje_container_${idx}" style="display:none">
+                                @include('ventas.partials.canje-campos', ['idx' => '${idx}'])
+                            </div>
+                        </div>
+                    </div>`;
                 document.getElementById('pagos_container').insertAdjacentHTML('beforeend', html);
+            }
+
+            function pagoEditado() {
+                pagoAuto = false;
+                calcularTotalPagos();
+            }
+
+            // Contado: al llegar al paso 3 sin pagos cargados, se propone el saldo completo en efectivo
+            function precargarPagoContado() {
+                if (document.getElementById('modalidad_pago').value !== 'CONTADO') return;
+                if (Array.from(document.querySelectorAll('.pago-monto')).some(i => parseFloat(i.value) > 0)) return;
+                if (precioFinalUsd(num('precio_usd'), num('descuento_usd')) <= 0) return;
+                document.getElementById('pago_tipo_0').value = 'EFECTIVO';
+                toggleCamposPago(0, 'EFECTIVO');
+                pagoAuto = true;
+                calcularTotalPagos();
             }
 
             function eliminarPago(idx) {
@@ -1057,21 +991,25 @@
                 const ref = document.getElementById('ref_container_' + idx);
                 const canje = document.getElementById('canje_container_' + idx);
                 if (ref) ref.style.display = (tipo === 'TRANSFERENCIA' || tipo === 'CHEQUE') ? 'flex' : 'none';
-                if (canje) canje.style.display = tipo === 'VEHICULO_CANJE' ? 'flex' : 'none';
+                if (canje) canje.style.display = tipo === 'VEHICULO_CANJE' ? 'block' : 'none';
             }
 
             function calcularTotalPagos() {
+                const isContado = document.getElementById('modalidad_pago').value === 'CONTADO';
+                const precioBase = parseFloat(document.getElementById('precio_usd').value) || 0;
+                const descuento = parseFloat(document.getElementById('descuento_usd').value) || 0;
+                const precioFinal = precioFinalUsd(precioBase, descuento);
+                // El pago precargado acompaña al precio mientras el usuario no lo toque
+                if (pagoAuto && isContado) document.getElementById('pago_monto_0').value = precioFinal.toFixed(2);
+
                 let total = 0;
                 document.querySelectorAll('.pago-monto').forEach(input => {
                     total += parseFloat(input.value) || 0;
                 });
+                total = r2(total);
                 document.getElementById('total_pagos_display').textContent = '$ ' + formatNumber(total);
 
-                const precioBase = parseFloat(document.getElementById('precio_usd').value) || 0;
-                const descuento = parseFloat(document.getElementById('descuento_usd').value) || 0;
-                const precioFinal = Math.max(0, precioBase - descuento);
-
-                const saldo = Math.max(0, precioFinal - total);
+                const saldo = Math.max(0, r2(precioFinal - total));
 
                 document.getElementById('precio_final_display').textContent = '$ ' + formatNumber(precioFinal);
                 document.getElementById('plan_precio_base').textContent = '$ ' + formatNumber(precioBase);
@@ -1081,7 +1019,6 @@
                 const saldoEl = document.getElementById('saldo_pendiente_display');
                 saldoEl.textContent = '$ ' + formatNumber(saldo);
 
-                const isContado = document.getElementById('modalidad_pago').value === 'CONTADO';
                 if (isContado) {
                     saldoEl.style.color = saldo <= 0 ? 'var(--success)' : 'var(--danger)';
                 } else {
@@ -1113,7 +1050,7 @@
                 const bgColor = tipo === 'REFUERZO' ? 'background:rgba(245,158,11,.08);border-radius:6px;padding:4px;' : '';
 
                 const html = `
-                                    <div class="cuota-row grid grid-cols-[30px_1fr_1fr_1fr_auto] gap-2 items-center px-2 mb-2 bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700" id="cuota_${cuotaIdx}">
+                                    <div class="cuota-row grid grid-cols-[30px_1fr_1fr_1fr_auto] gap-2 items-center px-2 mb-2 bg-surface p-2 rounded-lg border border-border" id="cuota_${cuotaIdx}">
                                         <div style="${bgColor}"><strong style="font-size:.75rem;${tipo === 'REFUERZO' ? 'color:var(--warning)' : ''}">${cuotaIdx}</strong></div>
                                         <input type="date" name="cuotas_manual[${cuotaIdx}][fecha]" value="${nextDate.toISOString().split('T')[0]}" class="form-input">
                                         <select name="cuotas_manual[${cuotaIdx}][tipo]" class="form-input">
@@ -1154,7 +1091,7 @@
                 const precio = parseFloat(document.getElementById('precio_usd').value) || 0;
                 const descuento = parseFloat(document.getElementById('descuento_usd').value) || 0;
 
-                const precioFinal = Math.max(0, precio - descuento);
+                const precioFinal = precioFinalUsd(precio, descuento);
                 const rent = precioFinal - costo;
                 const span = document.getElementById('rent_span');
                 span.textContent = '$ ' + formatNumber(rent);
@@ -1162,118 +1099,130 @@
                 calcularTotalPagos();
             }
 
-            async function fetchRates() {
-                try {
-                    const fecha = document.querySelector('input[name="fecha_venta"]').value || new Date().toISOString().split('T')[0];
-                    const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${fecha}`);
-                    currentRates = await res.json();
-                    calcularTotalVentaUsd();
-                } catch (e) { console.error('Error fetching rates', e); }
+            // <calc-venta> Cálculos puros de moneda (sin DOM); se prueban con node aparte.
+            // Los montos USD se redondean a 2 decimales una sola vez; en USD no hay conversión.
+            const r2 = n => Math.round(((Number(n) || 0) + Number.EPSILON) * 100) / 100;
+            function aUsd(monto, moneda, tasa) {
+                if (moneda === 'USD') return r2(monto);
+                return tasa > 0 ? r2(monto / tasa) : 0;
+            }
+            function deUsd(usd, moneda, tasa) {
+                return moneda === 'USD' ? r2(usd) : r2(usd * tasa);
+            }
+            function precioFinalUsd(precioUsd, descuentoUsd) {
+                return Math.max(0, r2(precioUsd - descuentoUsd));
+            }
+            // </calc-venta>
+
+            // ══════════ MONEDA Y COTIZACIÓN ══════════
+            const tasaInput = document.getElementById('tasa_cambio_venta');
+            let rates = {};
+            let detalle = {};
+            // Tras un error de validación se respeta la cotización que el usuario había escrito.
+            let tasaManual = @json(filled(old('tasa_cambio_venta')) && old('moneda_venta', 'USD') !== 'USD');
+
+            const monedaVenta = () => document.querySelector('input[name="moneda_venta"]:checked')?.value || 'USD';
+            const tasaVenta = () => monedaVenta() === 'USD' ? 1 : (parseFloat(tasaInput.value) || 0);
+            const num = id => parseFloat(document.getElementById(id).value) || 0;
+            const fmtTasa = (n, d) => Number(n).toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+            // Refresca textos: cotización por moneda, fuente y equivalentes en USD
+            function renderMoneda() {
+                const m = monedaVenta();
+                const esUsd = m === 'USD';
+                document.getElementById('tasa-group').style.display = esUsd ? 'none' : '';
+                tasaInput.required = !esUsd;
+                if (esUsd) tasaInput.value = 1;
+                document.querySelectorAll('[data-moneda-actual]').forEach(el => el.textContent = m);
+                for (const k of ['PYG', 'BRL']) {
+                    const el = document.querySelector(`[data-tasa-de="${k}"]`);
+                    if (el) el.textContent = rates[k] ? `1 USD = ${fmtTasa(rates[k], k === 'PYG' ? 0 : 2)}` : 'Sin cotización';
+                }
+                const det = detalle[m];
+                document.getElementById('tasa-fuente').textContent = tasaManual ? 'Cotización modificada a mano.'
+                    : det ? `Fuente: ${det.fuente} · ${new Date(det.fecha + 'T00:00').toLocaleDateString('es-PY')}`
+                    : 'Sin cotización registrada: ingrésala a mano.';
+                const equiv = (id, usd) => document.getElementById(id).textContent =
+                    !esUsd && usd > 0 ? `≈ US$ ${formatNumber(usd)}` : '';
+                equiv('precio_equiv', num('precio_usd'));
+                equiv('descuento_equiv', num('descuento_usd'));
             }
 
-            function calcularTotalVentaUsd() {
-                const precioMoneda = parseFloat(document.querySelector('input[name="precio_venta_moneda"]').value) || 0;
-                const dctoMoneda = parseFloat(document.querySelector('input[name="descuento_moneda"]').value) || 0;
-                const moneda = document.querySelector('select[name="moneda_venta"]').value;
-
-                let precioUsd = precioMoneda;
-                let dctoUsd = dctoMoneda;
-                let tasa = 1;
-
-                if (moneda === 'PYG') {
-                    tasa = parseFloat(currentRates.PYG) || 1;
-                    precioUsd = precioMoneda / tasa;
-                    dctoUsd = dctoMoneda / tasa;
-                }
-                else if (moneda === 'BRL') {
-                    tasa = parseFloat(currentRates.BRL) || 1;
-                    precioUsd = precioMoneda / tasa;
-                    dctoUsd = dctoMoneda / tasa;
-                }
-
-                document.getElementById('precio_usd').value = precioUsd.toFixed(2);
-                document.getElementById('descuento_usd').value = dctoUsd.toFixed(2);
-                document.querySelector('input[name="tasa_cambio_venta"]').value = tasa.toFixed(2);
+            // El precio llega en USD (carrito / modalidad): se fija tal cual y se muestra en la moneda de venta
+            function fijarPrecioUsd(usd) {
+                const m = monedaVenta(), tasa = tasaVenta();
+                document.getElementById('precio_usd').value = r2(usd).toFixed(2);
+                document.getElementById('precio_moneda').value = tasa > 0 ? deUsd(usd, m, tasa).toFixed(2) : '';
+                renderMoneda();
                 calcRent();
             }
 
-            // ══════════ RESUMEN ══════════
-            function buildResumen() {
-                const mode = document.getElementById('modalidad_pago').value || 'CONTADO';
-                
-                // Items Summary
-                const itemsList = document.getElementById('resumen_items_list');
-                itemsList.innerHTML = '';
-                
-                itemsVenta.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'flex flex-col border-b border-slate-100 dark:border-slate-700/50 pb-2 last:border-0';
-                    div.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <span class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${item.descripcion}</span>
-                            <span class="text-xs font-mono text-slate-500">$ ${formatNumber(item.precio_unitario_usd * item.cantidad)}</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-0.5">
-                            <span class="text-[0.6rem] text-slate-400 uppercase tracking-widest">${item.type === 'camion' ? 'Camión' : 'Repuesto'}</span>
-                            <span class="text-[0.65rem] text-slate-500">${item.cantidad} x $ ${formatNumber(item.precio_unitario_usd)}</span>
-                        </div>
-                    `;
-                    itemsList.appendChild(div);
-                });
+            // El usuario escribió precio, descuento o cotización: se recalculan los USD ocultos
+            function sincronizarDesdeMoneda() {
+                const m = monedaVenta(), tasa = tasaVenta();
+                document.getElementById('precio_usd').value = aUsd(num('precio_moneda'), m, tasa).toFixed(2);
+                document.getElementById('descuento_usd').value = aUsd(num('descuento_moneda'), m, tasa).toFixed(2);
+                renderMoneda();
+                calcRent();
+            }
 
-                if (selectedCliente) {
-                    document.getElementById('resumen_cliente').textContent = selectedCliente.nombre;
-                    document.getElementById('resumen_cliente_ruc').textContent = 'RUC: ' + (selectedCliente.ruc || 'N/A') + ' · ' + selectedCliente.pais;
+            // Al cambiar de moneda se conserva el valor en USD y se re-expresa en la nueva moneda
+            function reexpresarDesdeUsd() {
+                const m = monedaVenta(), tasa = tasaVenta();
+                if (tasa > 0) {
+                    document.getElementById('precio_moneda').value = deUsd(num('precio_usd'), m, tasa).toFixed(2);
+                    document.getElementById('descuento_moneda').value = deUsd(num('descuento_usd'), m, tasa).toFixed(2);
                 }
-                const precioBase = parseFloat(document.getElementById('precio_usd').value) || 0;
-                const descuento = parseFloat(document.getElementById('descuento_usd').value) || 0;
-                const precioFinal = Math.max(0, precioBase - descuento);
+                renderMoneda();
+                calcRent();
+            }
 
-                document.getElementById('resumen_precio').innerHTML = '$ ' + formatNumber(precioFinal) + ' USD' +
-                    (descuento > 0 ? `<br><span style="font-size:.7rem;color:var(--danger);font-weight:normal">- $ ${formatNumber(descuento)} desc.</span>` : '');
+            function onMonedaChange() {
+                tasaManual = false;
+                const m = monedaVenta();
+                tasaInput.value = m === 'USD' ? 1 : (rates[m] ?? '');
+                reexpresarDesdeUsd();
+            }
 
-                document.getElementById('resumen_modalidad').textContent = mode === 'CONTADO' ? 'Contado' : ('Cuotas (' + document.getElementById('tipo_plan').value + ')');
-
-                const costo = parseFloat(document.getElementById('valor_libro_span')?.dataset?.costoRaw) || 0;
-                const rent = precioFinal - costo;
-                const rentEl = document.getElementById('resumen_rentabilidad');
-                rentEl.textContent = '$ ' + formatNumber(rent);
-                rentEl.className = rent >= 0 ? 'text-xl font-bold text-emerald-600 dark:text-emerald-400' : 'text-xl font-bold text-red-600 dark:text-red-400';
-
-                // Build payment summary
-                let html = '';
-                let totalPagos = 0;
-                document.querySelectorAll('.payment-entry').forEach(row => {
-                    const tipo = row.querySelector('select')?.value || 'EFECTIVO';
-                    const monto = parseFloat(row.querySelector('.pago-monto')?.value) || 0;
-                    if (monto > 0) {
-                        totalPagos += monto;
-                        const labels = { EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia', VEHICULO_CANJE: 'Vehículo canje', CHEQUE: 'Cheque' };
-                        html += `<div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 text-sm">
-                                                            <span class="text-slate-600 dark:text-slate-300">${mode === 'CONTADO' ? 'Pago' : 'Entrega'}: ${labels[tipo] || tipo}</span>
-                                                            <strong class="text-slate-800 dark:text-slate-100">$ ${formatNumber(monto)}</strong>
-                                                         </div>`;
-                    }
-                });
-
-                if (mode === 'CUOTAS') {
-                    const financiar = Math.max(0, precioFinal - totalPagos);
-                    html += `<div class="flex justify-between py-2 text-sm">
-                                                        <span class="text-slate-600 dark:text-slate-300">A financiar en cuotas</span>
-                                                        <strong class="text-indigo-600 dark:text-indigo-400">$ ${formatNumber(financiar)}</strong>
-                                                     </div>`;
+            function onTasaManual() {
+                tasaManual = true;
+                // Sin monto en moneda todavía, se parte del precio en USD
+                if (!(num('precio_moneda') > 0) && num('precio_usd') > 0) {
+                    fijarPrecioUsd(num('precio_usd'));
+                } else {
+                    sincronizarDesdeMoneda();
                 }
-                document.getElementById('resumen_pagos_box').innerHTML = html ? `
-                                            <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-                                                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                                                    Detalle de ${mode === 'CONTADO' ? 'pagos' : 'entregas y cuotas'}
-                                                </div>
-                                                ${html}
-                                            </div>` : '';
+            }
+
+            async function fetchRates() {
+                try {
+                    const fecha = document.getElementById('fecha_venta').value || new Date().toISOString().split('T')[0];
+                    const res = await fetch(`{{ route('api.cotizaciones.today') }}?fecha=${encodeURIComponent(fecha)}`,
+                        { headers: { Accept: 'application/json' } });
+                    if (!res.ok) throw new Error(res.status);
+                    const d = await res.json();
+                    // Solo se usan las monedas con tasa registrada (las demás llegan como 1 por compatibilidad).
+                    detalle = d.detalle || {};
+                    rates = {};
+                    for (const k of ['PYG', 'BRL']) if (detalle[k]) rates[k] = d[k];
+                } catch (e) {
+                    rates = {};
+                    detalle = {};
+                }
+                const m = monedaVenta();
+                if (m !== 'USD' && !tasaManual && rates[m]) {
+                    tasaInput.value = rates[m];
+                    reexpresarDesdeUsd();
+                } else {
+                    renderMoneda();
+                }
             }
 
             // ══════════ MODAL CLIENTE ══════════
-            function abrirModalCliente() { document.getElementById('modalCliente').style.display = 'flex'; }
+            function abrirModalCliente() {
+                document.getElementById('modalCliente').style.display = 'flex';
+                document.querySelector('#formModalCliente [name="razon_social"]').focus();
+            }
             function cerrarModalCliente() { document.getElementById('modalCliente').style.display = 'none'; document.getElementById('formModalCliente').reset(); }
 
             document.getElementById('formModalCliente').addEventListener('submit', async (e) => {
@@ -1290,7 +1239,7 @@
                         // Add card to grid
                         const grid = document.getElementById('clientesGrid');
                         const card = document.createElement('div');
-                        card.className = 'client-card group p-4 py-5 cursor-pointer bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-indigo-50/50 dark:[&.selected]:bg-indigo-900/10 shadow-sm';
+                        card.className = 'client-card group p-4 py-5 cursor-pointer bg-surface border border-border rounded-xl transition-all hover:border-primary hover:shadow-md [&.selected]:ring-2 [&.selected]:ring-primary [&.selected]:border-primary [&.selected]:bg-primary/5 shadow-sm';
                         card.dataset.id = data.cliente.id;
                         card.dataset.nombre = data.cliente.razon_social;
                         card.dataset.ruc = '';
@@ -1298,20 +1247,20 @@
                         card.dataset.pais = '';
                         card.onclick = function () { seleccionarCliente(this); };
                         card.innerHTML = `<div class="flex items-start gap-3 mb-2">
-                                                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-500 dark:text-slate-400 flex-shrink-0 border border-slate-200 dark:border-slate-700 group-[.selected]:bg-primary/10 group-[.selected]:text-primary group-[.selected]:border-primary/30 transition-colors">
+                                                            <div class="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground flex-shrink-0 border border-border group-[.selected]:bg-primary/10 group-[.selected]:text-primary group-[.selected]:border-primary/30 transition-colors">
                                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
                                                             </div>
                                                             <div class="flex-1 min-w-0">
-                                                                <div class="font-bold text-[1.05rem] text-slate-800 dark:text-slate-100 group-[.selected]:text-primary transition-colors truncate">${data.cliente.razon_social}</div>
-                                                                <div class="text-[0.75rem] text-slate-500 dark:text-slate-400 mt-0.5">Recién creado</div>
+                                                                <div class="font-bold text-[1.05rem] text-foreground group-[.selected]:text-primary transition-colors truncate">${escHtml(data.cliente.razon_social)}</div>
+                                                                <div class="text-[0.75rem] text-muted-foreground mt-0.5">Recién creado</div>
                                                             </div>
                                                         </div>`;
                         grid.prepend(card);
-                        seleccionarCliente(card);
                         cerrarModalCliente();
+                        seleccionarCliente(card, true);
                     } else { alert('Error al guardar.'); }
                 } catch (err) { console.error(err); alert('Error de conexión.'); }
-                finally { btn.disabled = false; btn.textContent = '💾 Guardar Cliente'; }
+                finally { btn.disabled = false; btn.textContent = 'Guardar Cliente'; }
             });
 
             // ══════════ ITEM MANAGEMENT ══════════
@@ -1325,21 +1274,22 @@
                 const searchCamiones = document.getElementById('search-camiones-container');
                 const searchRepuestos = document.getElementById('search-repuestos-container');
 
+                const tabActiva = ['bg-surface', 'shadow-sm', 'text-primary'];
                 if (tab === 'camiones') {
-                    btnCamiones.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-primary');
-                    btnCamiones.classList.remove('text-slate-500');
-                    btnRepuestos.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-primary');
-                    btnRepuestos.classList.add('text-slate-500');
+                    btnCamiones.classList.add(...tabActiva);
+                    btnCamiones.classList.remove('text-muted-foreground');
+                    btnRepuestos.classList.remove(...tabActiva);
+                    btnRepuestos.classList.add('text-muted-foreground');
                     
                     gridCamiones.classList.remove('hidden');
                     gridRepuestos.classList.add('hidden');
                     searchCamiones.classList.remove('hidden');
                     searchRepuestos.classList.add('hidden');
                 } else {
-                    btnRepuestos.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-primary');
-                    btnRepuestos.classList.remove('text-slate-500');
-                    btnCamiones.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-primary');
-                    btnCamiones.classList.add('text-slate-500');
+                    btnRepuestos.classList.add(...tabActiva);
+                    btnRepuestos.classList.remove('text-muted-foreground');
+                    btnCamiones.classList.remove(...tabActiva);
+                    btnCamiones.classList.add('text-muted-foreground');
                     
                     gridRepuestos.classList.remove('hidden');
                     gridCamiones.classList.add('hidden');
@@ -1467,28 +1417,28 @@
                     totalCosto += (item.costo_usd * item.cantidad);
                     
                     const row = document.createElement('tr');
-                    row.className = 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors';
+                    row.className = 'bg-surface hover:bg-surface-2 transition-colors';
                     row.innerHTML = `
-                        <td class="px-4 py-3 rounded-l-xl border-y border-l border-slate-100 dark:border-slate-700">
-                            <div class="font-bold text-slate-700 dark:text-slate-200">${item.descripcion}</div>
-                            <div class="text-[0.6rem] text-slate-400 uppercase tracking-widest">${item.type === 'camion' ? 'CAMIÓN' : 'REPUESTO'}</div>
+                        <td class="px-4 py-3 rounded-l-xl border-y border-l border-border">
+                            <div class="font-bold text-foreground">${escHtml(item.descripcion)}</div>
+                            <div class="text-[0.6rem] text-muted-foreground uppercase tracking-widest">${item.type === 'camion' ? 'CAMIÓN' : 'REPUESTO'}</div>
                             <input type="hidden" name="items[${index}][itemable_id]" value="${item.id}">
                             <input type="hidden" name="items[${index}][itemable_type]" value="${item.type === 'camion' ? 'App\\Models\\Vehicle' : 'App\\Models\\StockRepuesto'}">
-                            <input type="hidden" name="items[${index}][descripcion]" value="${item.descripcion}">
+                            <input type="hidden" name="items[${index}][descripcion]" value="${escHtml(item.descripcion)}">
                             <input type="hidden" name="items[${index}][precio_unitario_usd]" value="${item.precio_unitario_usd}">
                             <input type="hidden" name="items[${index}][costo_snapshot_usd]" value="${item.costo_usd}">
                         </td>
-                        <td class="px-4 py-3 border-y border-slate-100 dark:border-slate-700 text-center">
+                        <td class="px-4 py-3 border-y border-border text-center">
                             <input type="number" name="items[${index}][cantidad]" value="${item.cantidad}" step="0.01" min="0.01" 
                                 class="form-input w-20 text-center text-sm p-1" onchange="updateItemQty(${index}, this.value)">
                         </td>
-                        <td class="px-4 py-3 border-y border-slate-100 dark:border-slate-700 text-right font-mono text-xs">
+                        <td class="px-4 py-3 border-y border-border text-right font-mono text-xs">
                             US$ ${formatNumber(item.precio_unitario_usd)}
                         </td>
-                        <td class="px-4 py-3 border-y border-slate-100 dark:border-slate-700 text-right font-bold text-primary">
+                        <td class="px-4 py-3 border-y border-border text-right font-bold text-primary">
                             US$ ${formatNumber(subtotal)}
                         </td>
-                        <td class="px-4 py-3 rounded-r-xl border-y border-r border-slate-100 dark:border-slate-700 text-center">
+                        <td class="px-4 py-3 rounded-r-xl border-y border-r border-border text-center">
                             <button type="button" onclick="removeItemFromCart(${index})" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
@@ -1501,18 +1451,7 @@
                 document.getElementById('cart-count').textContent = `${itemsVenta.length} items añadidos`;
                 
                 // Update Step 3 inputs automatically
-                const precioInput = document.getElementById('precio_usd');
-                if (precioInput) {
-                    precioInput.value = total.toFixed(2);
-                    // Also update price in original currency if needed
-                    const selectMoneda = document.querySelector('select[name="moneda_venta"]');
-                    const precioMonedaInput = document.querySelector('input[name="precio_venta_moneda"]');
-                    if (selectMoneda && selectMoneda.value === 'USD') {
-                        precioMonedaInput.value = total.toFixed(2);
-                    } else {
-                        calcularPrecioMonedaDesdeUsd();
-                    }
-                }
+                fijarPrecioUsd(total);
                 
                 // Update vehicle snapshot for rent calculations
                 const spanCosto = document.getElementById('valor_libro_span');
@@ -1534,19 +1473,6 @@
                         card.classList.remove('selected');
                     }
                 });
-            }
-
-            function calcularPrecioMonedaDesdeUsd() {
-                const precioUsd = parseFloat(document.getElementById('precio_usd').value) || 0;
-                const moneda = document.querySelector('select[name="moneda_venta"]').value;
-                const precioMonedaInput = document.querySelector('input[name="precio_venta_moneda"]');
-                
-                let tasa = 1;
-                if (moneda === 'PYG') tasa = parseFloat(currentRates.PYG) || 1;
-                else if (moneda === 'BRL') tasa = parseFloat(currentRates.BRL) || 1;
-                
-                precioMonedaInput.value = (precioUsd * tasa).toFixed(2);
-                document.querySelector('input[name="tasa_cambio_venta"]').value = tasa.toFixed(2);
             }
 
             // ══════════ MODAL CONFIRMACIÓN (DOBLE FACTOR) ══════════
@@ -1590,7 +1516,10 @@
                 // 3. Precio
                 const precioUsd = parseFloat(document.getElementById('precio_usd').value) || 0;
                 const descuentoUsd = parseFloat(document.getElementById('descuento_usd').value) || 0;
-                const precioFinal = Math.max(0, precioUsd - descuentoUsd);
+                const precioFinal = precioFinalUsd(precioUsd, descuentoUsd);
+                if (monedaVenta() !== 'USD' && !(tasaVenta() > 0)) {
+                    errors.push(`Ingresá la cotización ${monedaVenta()} por 1 USD.`);
+                }
                 if (precioFinal > 0) {
                     checks.push({ ok: true, label: 'Precio de venta', detail: `US$ ${formatNumber(precioFinal)}${descuentoUsd > 0 ? ' (desc: US$ ' + formatNumber(descuentoUsd) + ')' : ''}` });
                 } else {
@@ -1674,6 +1603,17 @@
                 }
 
                 // ── Render checklist ──
+                // Vehículos recibidos como parte de pago
+                document.querySelectorAll('select[name$="[tipo]"]').forEach(sel => {
+                    if (sel.value !== 'VEHICULO_CANJE') return;
+                    const idx = sel.name.match(/pagos\[(\d+)\]/)?.[1];
+                    const v = n => (document.querySelector(`[name="pagos[${idx}][canje][${n}]"]`)?.value || '').trim();
+                    const ok = v('marca') && v('modelo') && v('anio') && v('numero_chasis');
+                    checks.push({ ok: !!ok, label: 'Vehículo recibido (entra en preparación)',
+                        detail: ok ? `${v('marca')} ${v('modelo')} ${v('anio')} — chasis ${v('numero_chasis').toUpperCase()}` : 'Faltan datos del vehículo recibido' });
+                    if (!ok) errors.push('Completá marca, modelo, año y chasis del vehículo recibido como parte de pago.');
+                });
+
                 checks.forEach(c => {
                     const icon = c.ok
                         ? '<svg class="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>'
@@ -1683,7 +1623,7 @@
                             ${icon}
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-bold uppercase tracking-wider ${c.ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}">${c.label}</div>
-                                <div class="text-sm text-slate-700 dark:text-slate-300 mt-0.5 truncate" title="${c.detail}">${c.detail}</div>
+                                <div class="text-sm text-foreground mt-0.5 truncate" title="${escHtml(c.detail)}">${escHtml(c.detail)}</div>
                             </div>
                         </div>`;
                 });
@@ -1709,28 +1649,117 @@
 
                 modal.style.display = 'flex';
                 modal.classList.remove('hidden');
+                (btnFinal.disabled ? modal.querySelector('button') : btnFinal).focus();
             }
 
             function cerrarModalConfirmacion() {
+                if (enviando) return;
                 const modal = document.getElementById('modalConfirmacion');
                 modal.style.display = 'none';
                 modal.classList.add('hidden');
             }
 
+            // Un solo envío: el botón queda deshabilitado aunque se haga doble clic
             function confirmarYRegistrar() {
-                cerrarModalConfirmacion();
+                if (enviando) return;
+                enviando = true;
+                const btn = document.getElementById('btnConfirmarFinal');
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
+                document.getElementById('btnConfirmarTexto').textContent = 'Registrando…';
                 document.getElementById('ventaForm').submit();
             }
+
+            // Escape cierra el modal abierto
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+                if (document.getElementById('modalConfirmacion').style.display === 'flex') cerrarModalConfirmacion();
+                else if (document.getElementById('modalCliente').style.display === 'flex') cerrarModalCliente();
+            });
 
             // Close modal on backdrop click
             document.getElementById('modalConfirmacion').addEventListener('click', function(e) {
                 if (e.target === this) cerrarModalConfirmacion();
             });
 
+            // Completa el primer pago vacío (o el último) con el saldo pendiente de la venta al contado
+            function cobrarSaldo() {
+                if (document.getElementById('modalidad_pago').value !== 'CONTADO') {
+                    alert('En ventas a cuotas, cargá la entrega inicial a mano.'); return;
+                }
+                const precioFinal = precioFinalUsd(num('precio_usd'), num('descuento_usd'));
+                pagoAuto = false;
+                const inputs = Array.from(document.querySelectorAll('.pago-monto'));
+                if (!inputs.length) return;
+                const destino = inputs.find(i => !(parseFloat(i.value) > 0)) || inputs[inputs.length - 1];
+                const otros = inputs.filter(i => i !== destino).reduce((t, i) => t + (parseFloat(i.value) || 0), 0);
+                destino.value = Math.max(0, r2(precioFinal - otros)).toFixed(2);
+                calcularTotalPagos();
+                destino.focus();
+            }
+
+            function escHtml(v) {
+                return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            }
+
+            // Si la validación falló (o se llegó con ?vehiculo_id= / ?cliente_id=), reconstruye
+            // carrito, cliente y pagos para no volver a cargar todo
+            function restaurarVentaAnterior(old) {
+                if (!old || (!(Array.isArray(old.items) && old.items.length) && !old.cliente_id)) return;
+                (old.items || []).forEach(it => {
+                    const esCamion = (it.itemable_type || '').includes('Vehicle');
+                    const card = document.querySelector(`${esCamion ? '.vehicle-card' : '.repuesto-card'}[data-id="${it.itemable_id}"]`);
+                    if (!card) return;
+                    addItemToVenta(esCamion ? 'camion' : 'repuesto', card);
+                    const item = itemsVenta.find(i => String(i.id) === String(it.itemable_id) && i.type === (esCamion ? 'camion' : 'repuesto'));
+                    if (item) {
+                        item.cantidad = parseFloat(it.cantidad) || 1;
+                        item.precio_unitario_usd = parseFloat(it.precio_unitario_usd) || item.precio_unitario_usd;
+                    }
+                });
+                renderCart();
+
+                const cliente = old.cliente_id && document.querySelector(`.client-card[data-id="${old.cliente_id}"]`);
+                if (cliente) seleccionarCliente(cliente);
+
+                if (old.modalidad_pago) setPaymentMode(old.modalidad_pago);
+                ['precio_venta_moneda', 'precio_venta_usd', 'descuento_moneda', 'descuento_usd'].forEach(n => {
+                    const el = document.querySelector(`[name="${n}"]`);
+                    if (el && old[n] !== undefined && old[n] !== null) el.value = old[n];
+                });
+                renderMoneda();
+
+                const pagos = Object.values(old.pagos || {});
+                pagos.forEach((p, i) => {
+                    if (i > 0) agregarPago();
+                    const idx = i === 0 ? 0 : pagoCount - 1;
+                    const set = (n, v) => { const el = document.querySelector(`[name="pagos[${idx}]${n}"]`); if (el && v != null) el.value = v; };
+                    set('[tipo]', p.tipo); set('[monto_usd]', p.monto_usd); set('[referencia]', p.referencia);
+                    Object.entries(p.canje || {}).forEach(([k, v]) => set(`[canje][${k}]`, v));
+                    toggleCamposPago(idx, p.tipo);
+                });
+                calcularTotalPagos();
+                if (itemsVenta.length) goToStep(cliente ? 3 : 2);
+            }
+
             // Init
+            document.querySelectorAll('input[name="moneda_venta"]').forEach(r => r.addEventListener('change', onMonedaChange));
+            document.getElementById('fecha_venta').addEventListener('change', () => { tasaManual = false; fetchRates(); });
+            // La rueda del mouse sobre un campo numérico enfocado cambia el monto de a 0,01: se quita el foco
+            document.getElementById('ventaForm').addEventListener('wheel', e => {
+                if (e.target.type === 'number' && e.target === document.activeElement) e.target.blur();
+            }, { passive: true });
+            renderMoneda();
             fetchRates();
-            document.querySelector('input[name="fecha_venta"]').addEventListener('change', fetchRates);
             onTipoPlanChange();
+            @php
+                $precargaVenta = $precarga ? array_filter([
+                    'items' => isset($precarga['vehiculo_id'])
+                        ? [['itemable_id' => $precarga['vehiculo_id'], 'itemable_type' => 'App\\Models\\Vehicle']] : null,
+                    'cliente_id' => $precarga['cliente_id'] ?? null,
+                ]) : null;
+            @endphp
+            restaurarVentaAnterior(@json(session()->getOldInput() ?: $precargaVenta));
         </script>
     @endpush
 @endsection

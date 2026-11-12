@@ -8,6 +8,7 @@ use App\Domain\Finance\Services\CajaService;
 use App\Domain\Sales\Events\SaleCompleted;
 use App\Domain\Sales\Repositories\SaleRepositoryInterface;
 use App\Domain\Sales\Services\InstallmentGenerator;
+use App\Domain\Vehicle\Services\TradeInVehicleRegistrar;
 use App\Domain\Sales\Validators\DuplicateVehicleSaleValidator;
 use App\Domain\Sales\Validators\VehicleStateValidator;
 use App\Domain\Vehicle\Repositories\VehicleRepositoryInterface;
@@ -28,7 +29,8 @@ class UpdateSaleUseCase
         private readonly InstallmentGenerator $installmentGenerator,
         private readonly VehicleRepositoryInterface $vehicleRepository,
         private readonly VehicleStateValidator $vehicleStateValidator,
-        private readonly DuplicateVehicleSaleValidator $duplicateSaleValidator
+        private readonly DuplicateVehicleSaleValidator $duplicateSaleValidator,
+        private readonly TradeInVehicleRegistrar $tradeInRegistrar
     ) {}
 
     public function execute(UpdateSaleDTO $dto): bool
@@ -93,18 +95,22 @@ class UpdateSaleUseCase
                     ->update(['deleted_at' => now(), 'updated_at' => now()]);
             }
 
-            // 1d. Desmarcar vehículos de canje
-            DB::table('detalles_pago')
+            // 1d. Deshacer solo las tomas que se quitaron en esta edición
+            $canjesAnteriores = DB::table('detalles_pago')
                 ->where('venta_id', $ventaId)
                 ->where('tipo_pago', 'VEHICULO_CANJE')
                 ->whereNotNull('vehiculo_canje_id')
+                ->whereNull('deleted_at')
                 ->pluck('vehiculo_canje_id')
-                ->each(fn($vehiculoId) =>
-                    DB::table('vehiculos')->where('id', $vehiculoId)->update([
-                        'estado'     => 'DISPONIBLE',
-                        'updated_at' => now(),
-                    ])
-                );
+                ->map(fn($id) => (int) $id)
+                ->all();
+            $canjesNuevos = collect($dto->pagos)
+                ->filter(fn($p) => ($p['tipo'] ?? null) === 'VEHICULO_CANJE' && !empty($p['vehiculo_canje_id']))
+                ->map(fn($p) => (int) $p['vehiculo_canje_id'])
+                ->all();
+            foreach (array_diff($canjesAnteriores, $canjesNuevos) as $vehiculoId) {
+                $this->tradeInRegistrar->release($vehiculoId, (int) $ventaId);
+            }
 
             // 1e. Soft-delete old payment details
             DB::table('detalles_pago')
@@ -209,6 +215,11 @@ class UpdateSaleUseCase
 
                 $totalMontoInicialUsd += $montoUsd;
 
+                // Toma nueva cargada en la edición: alta del vehículo recibido en el stock
+                if (($pago['tipo'] ?? null) === 'VEHICULO_CANJE' && empty($pago['vehiculo_canje_id']) && !empty($pago['canje'])) {
+                    $pago['vehiculo_canje_id'] = $this->tradeInRegistrar->registerFromPayment((int) $ventaId, (array) $pago['canje'], $montoUsd)->id;
+                }
+
                 DB::table('detalles_pago')->insert([
                     'venta_id'            => $ventaId,
                     'tipo_pago'           => $pago['tipo'] ?? 'EFECTIVO',
@@ -225,12 +236,6 @@ class UpdateSaleUseCase
                     'updated_at'          => now(),
                 ]);
 
-                if ($pago['tipo'] === 'VEHICULO_CANJE' && !empty($pago['vehiculo_canje_id'])) {
-                    DB::table('vehiculos')->where('id', $pago['vehiculo_canje_id'])->update([
-                        'estado'     => 'TOMA',
-                        'updated_at' => now(),
-                    ]);
-                }
 
                 $this->registrarEnCaja($ventaId, $pago, $modalidad, $montoUsd);
             }

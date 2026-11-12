@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Infrastructure\Http\Controllers\Web\AuthController;
+use App\Infrastructure\Http\Controllers\Web\BuscarWebController;
 use App\Infrastructure\Http\Controllers\Web\DashboardController;
 use App\Infrastructure\Http\Controllers\Web\VehicleWebController;
 use App\Infrastructure\Http\Controllers\Web\RepuestoWebController;
@@ -50,7 +51,11 @@ Route::middleware(['auth', '2fa.verify:always'])->group(function () {
 // ── Rutas autenticadas (con 2FA enforced + verified) ────────────────────
 Route::middleware(['auth', '2fa.enforce', '2fa.verify'])->group(function () {
 
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    // POST: un GET permitiría cerrar la sesión con un enlace o un precargado del navegador.
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Búsqueda general del encabezado (cada sección filtra por permiso)
+    Route::get('/buscar', [BuscarWebController::class, 'index'])->name('buscar');
 
     // Dashboard (accesible a todos los roles)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

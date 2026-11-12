@@ -58,14 +58,19 @@
         padding: .75rem 1.125rem; border-radius: 12px;
         border: 1px solid; font-size: .82rem; font-weight: 500; margin-bottom: 1rem;
     }
+    .hoy-card {
+        border-radius: 12px; border: 1px solid var(--border); background: var(--surface);
+        padding: .75rem 1rem;
+    }
+    .hoy-card-warning { border-left: 3px solid var(--warning); }
+    .hoy-card-danger  { border-left: 3px solid var(--danger); }
+    .hoy-card-muted   { border-left: 3px solid var(--border); }
 </style>
 @endpush
 
 @section('content')
 
 @php
-    $hoy = now()->toDateString();
-    $manana = now()->addDay()->toDateString();
     $ingDiff = $ingresosUsdMesAnterior > 0
         ? round((($ingresosUsdMes - $ingresosUsdMesAnterior) / $ingresosUsdMesAnterior) * 100, 1)
         : null;
@@ -75,18 +80,78 @@
     $margenPct = $ingresosUsdMes > 0 ? round(($margenUsdMes / $ingresosUsdMes) * 100, 1) : 0;
 @endphp
 
-{{-- ── Alertas críticas ───────────────────────────────────────────── --}}
-@if($cuotasHoy > 0 || $stockBajoMinimo > 0)
-<div class="flex flex-col sm:flex-row gap-2 mb-5">
-    @if($cuotasHoy > 0)
-    <div class="alert-banner flex-1" style="background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.3);color:#f59e0b;">
-        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
-        </svg>
-        <span><strong>{{ $cuotasHoy }} cuota{{ $cuotasHoy > 1 ? 's' : '' }}</strong> {{ $cuotasHoy > 1 ? 'vencen' : 'vence' }} hoy — verificar cobros del día.</span>
+{{-- ══ HOY: lo que hay que hacer en el día ═════════════════════════════ --}}
+@php
+    $user = auth()->user();
+    $acciones = array_filter([
+        $user?->can('ventas.crear') ? ['label' => 'Nueva venta', 'href' => route('ventas.create')] : null,
+        $user?->can('vehiculos.ver') && $user?->can('vehiculos.editar')
+            ? ['label' => 'Registrar gasto', 'href' => route('vehicles.index', ['estado' => 'STOCK'])] : null,
+        $user?->can('clientes.crear') ? ['label' => 'Nuevo cliente', 'href' => route('clientes.create')] : null,
+        $user?->can('vehiculos.crear') ? ['label' => 'Nuevo vehículo', 'href' => route('vehicles.create')] : null,
+    ]);
+@endphp
+<section aria-label="Hoy" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+
+    {{-- Cuotas que vencen hoy --}}
+    <div class="hoy-card {{ $cuotasHoy > 0 ? 'hoy-card-warning' : 'hoy-card-muted' }}">
+        <x-kpi-link :href="route('notificaciones.index', ['tab' => 'hoy'])" can="cuotas.ver">
+            <div class="text-xs font-medium text-muted-foreground">Vencen hoy</div>
+            <div class="flex items-baseline gap-2">
+                <span class="text-xl font-bold" style="color:{{ $cuotasHoy > 0 ? 'var(--warning)' : 'var(--text)' }}">{{ $cuotasHoy }}</span>
+                <span class="text-xs text-muted-foreground">cuota{{ $cuotasHoy != 1 ? 's' : '' }} · ${{ number_format($montoHoyUsd, 0, ',', '.') }}</span>
+            </div>
+        </x-kpi-link>
+        @can('cuotas.ver')
+        @if($cuotasHoyLista->isNotEmpty())
+        <ul class="mt-2 space-y-1">
+            @foreach($cuotasHoyLista as $c)
+            <li class="flex items-center gap-2 text-xs">
+                <span class="flex-1 truncate text-foreground">{{ \Illuminate\Support\Str::limit($c->cliente_nombre, 22) }}</span>
+                <span class="font-semibold text-foreground">${{ number_format($c->monto, 0, ',', '.') }}</span>
+                <a href="{{ route('planes_cuotas.show', $c->plan_id) }}" class="font-semibold underline hover:no-underline" style="color:var(--warning)">Cobrar</a>
+            </li>
+            @endforeach
+        </ul>
+        @endif
+        @endcan
+    </div>
+
+    {{-- Cuotas en mora --}}
+    <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="hoy-card {{ $cuotasEnMora > 0 ? 'hoy-card-danger' : 'hoy-card-muted' }}">
+        <div class="text-xs font-medium text-muted-foreground">En mora</div>
+        <div class="flex items-baseline gap-2">
+            <span class="text-xl font-bold" style="color:{{ $cuotasEnMora > 0 ? 'var(--danger)' : 'var(--text)' }}">{{ $cuotasEnMora }}</span>
+            <span class="text-xs text-muted-foreground">cuota{{ $cuotasEnMora != 1 ? 's' : '' }} · ${{ number_format($montoMoraUsd, 0, ',', '.') }} vencido</span>
+        </div>
+    </x-kpi-link>
+
+    {{-- Vehículos en preparación --}}
+    <x-kpi-link :href="route('vehicles.index', ['estado' => 'EN_PREPARACION'])" can="vehiculos.ver" class="hoy-card hoy-card-muted">
+        <div class="text-xs font-medium text-muted-foreground">En preparación</div>
+        <div class="flex items-baseline gap-2">
+            <span class="text-xl font-bold" style="color:var(--text)">{{ $enPreparacion }}</span>
+            <span class="text-xs text-muted-foreground">vehículo{{ $enPreparacion != 1 ? 's' : '' }}</span>
+        </div>
+    </x-kpi-link>
+
+    {{-- Acciones rápidas (solo las permitidas) --}}
+    @if($acciones)
+    <div class="hoy-card hoy-card-muted">
+        <div class="text-xs font-medium text-muted-foreground mb-2">Acciones rápidas</div>
+        <div class="flex flex-wrap gap-1.5">
+            @foreach($acciones as $a)
+            <a href="{{ $a['href'] }}" class="btn {{ $loop->first ? 'btn-primary' : '' }} text-xs">{{ $a['label'] }}</a>
+            @endforeach
+        </div>
     </div>
     @endif
-    @if($stockBajoMinimo > 0)
+
+</section>
+
+{{-- ── Alertas críticas ───────────────────────────────────────────── --}}
+@if($stockBajoMinimo > 0)
+<div class="flex flex-col sm:flex-row gap-2 mb-5">
     <div id="alert-stock-bajo" class="alert-banner flex-1 flex items-center gap-2" style="background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.3);color:#ef4444;">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
@@ -119,7 +184,6 @@
             if (el) el.style.display = 'none';
         }
     </script>
-    @endif
 </div>
 @endif
 
@@ -127,7 +191,7 @@
 <div class="grid grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
 
     {{-- Ingresos del mes --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('ventas.index', ['desde' => now()->startOfMonth()->toDateString(), 'hasta' => now()->toDateString()])" can="ventas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(0,212,170,.12);">
                 <svg class="w-5 h-5" style="color:var(--accent)" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -143,10 +207,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Ingresos del mes</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">${{ number_format($ingresosUsdMes, 0, ',', '.') }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $ventasMes }} venta{{ $ventasMes != 1 ? 's' : '' }} completadas</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Margen bruto --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('reportes.index', ['desde' => now()->startOfMonth()->toDateString(), 'hasta' => now()->toDateString()])" can="ventas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(108,99,255,.12);">
                 <svg class="w-5 h-5" style="color:var(--primary)" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -160,10 +224,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Margen bruto del mes</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">${{ number_format($margenUsdMes, 0, ',', '.') }}</div>
         <div class="text-xs" style="color:var(--text-muted)">sobre ${{ number_format($ingresosUsdMes, 0, ',', '.') }} ingresos</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Ventas del mes --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('ventas.index', ['desde' => now()->startOfMonth()->toDateString(), 'hasta' => now()->toDateString()])" can="ventas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(59,130,246,.12);">
                 <svg class="w-5 h-5" style="color:#3b82f6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -179,10 +243,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Operaciones del mes</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $ventasMes }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $ventasMesAnterior }} el mes anterior</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Vehículos en stock --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('vehicles.index', ['estado' => 'STOCK'])" can="vehiculos.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(139,83,255,.12);">
                 <svg class="w-5 h-5" style="color:#8b53ff" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -194,12 +258,12 @@
             </span>
         </div>
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Vehículos en stock</div>
-        <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $totalVehiculos }}</div>
+        <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">{{ $enStock }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $enPreparacion }} en preparación</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Cuotas en mora --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('notificaciones.index', ['tab' => 'mora'])" can="cuotas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(239,68,68,.12);">
                 <svg class="w-5 h-5" style="color:#ef4444" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -215,10 +279,10 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Cuotas en mora</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5 {{ $cuotasEnMora > 0 ? 'text-red-500' : '' }}" style="{{ $cuotasEnMora == 0 ? 'color:var(--text)' : '' }}">{{ $cuotasEnMora }}</div>
         <div class="text-xs" style="color:var(--text-muted)">${{ number_format($montoMoraUsd, 0, ',', '.') }} USD pendiente</div>
-    </div>
+    </x-kpi-link>
 
     {{-- Cobros próximos 7d --}}
-    <div class="kpi-card">
+    <x-kpi-link :href="route('notificaciones.index', ['tab' => 'proximas'])" can="cuotas.ver" class="kpi-card">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="kpi-icon" style="background:rgba(245,158,11,.12);">
                 <svg class="w-5 h-5" style="color:#f59e0b" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -230,7 +294,7 @@
         <div class="text-xs font-medium mb-1" style="color:var(--text-muted)">Cobros próximos</div>
         <div class="text-2xl font-bold tracking-tight mb-0.5" style="color:var(--text)">${{ number_format($cobrosProximos7dTotal, 0, ',', '.') }}</div>
         <div class="text-xs" style="color:var(--text-muted)">{{ $cuotasProximas->count() }} cuota{{ $cuotasProximas->count() != 1 ? 's' : '' }} por vencer</div>
-    </div>
+    </x-kpi-link>
 
 </div>
 
@@ -449,7 +513,7 @@
                         <form method="POST"
                               action="{{ route('repuestos.toggleActive', $r->id) }}"
                               class="inline"
-                              onsubmit="return confirm('¿Descontinuar {{ addslashes($r->codigo) }}? Ya no aparecerá en alertas de stock ni en ventas. Es reversible.')">
+                              data-danger-title="¿Descontinuar {{ $r->codigo }}?" data-danger-confirm="Ya no aparecerá en alertas de stock ni en ventas. Es reversible." data-danger-action-label="Descontinuar">
                             @csrf
                             <input type="hidden" name="discontinuar" value="1">
                             <button class="px-2 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider hover:bg-amber-500/20 text-amber-500 transition-all"
@@ -470,9 +534,10 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-(function () {
+// Chart.js va con defer: los scripts diferidos corren antes de DOMContentLoaded.
+document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
     const isDark    = document.documentElement.classList.contains('dark');
@@ -649,6 +714,6 @@
     document.getElementById('themeToggle')?.addEventListener('click', function () {
         setTimeout(function () { location.reload(); }, 350);
     });
-})();
+});
 </script>
 @endpush

@@ -110,7 +110,7 @@
                 </thead>
                 <tbody id="itemsBody">
                     @foreach($venta->items as $idx => $item)
-                    <tr class="item-row border-b border-white/5">
+                    <tr class="item-row border-b border-border">
                         <td><input type="text" name="items[{{ $idx }}][descripcion]" value="{{ $item->descripcion }}" class="form-input text-xs" required></td>
                         <td>
                             <select name="items[{{ $idx }}][itemable_type]" class="form-input text-xs">
@@ -294,7 +294,7 @@
     function addItemRow() {
         const tbody = document.getElementById('itemsBody');
         const idx = tbody.querySelectorAll('.item-row').length;
-        const html = `<tr class="item-row border-b border-white/5">
+        const html = `<tr class="item-row border-b border-border">
             <td><input type="text" name="items[${idx}][descripcion]" class="form-input text-xs" required></td>
             <td><select name="items[${idx}][itemable_type]" class="form-input text-xs">
                 <option value="App\\Models\\Vehicle">Vehículo</option>
@@ -344,14 +344,8 @@
                 <label class="form-label text-xs">Referencia</label>
                 <input type="text" name="pagos[${idx}][referencia]" class="form-input" placeholder="Nro. referencia...">
             </div>
-            <div class="form-group hidden" id="canje_container_${idx}">
-                <label class="form-label text-xs">Vehículo Canje</label>
-                <select name="pagos[${idx}][vehiculo_canje_id]" class="form-input">
-                    <option value="">— Seleccionar —</option>
-                    @foreach($vehiculos_canje ?? [] as $vc)
-                        <option value="{{ $vc->id }}">{{ $vc->marca }} {{ $vc->modelo }} — {{ $vc->numero_chasis }}</option>
-                    @endforeach
-                </select>
+            <div class="hidden" id="canje_container_${idx}" style="grid-column:1/-1">
+                @include('ventas.partials.canje-campos', ['idx' => '${idx}'])
             </div>
             <button type="button" onclick="document.getElementById('pago_row_${idx}').remove(); calcularTotalPagos();" class="text-red-500 text-xs">✕ Eliminar</button>
         </div>`;
