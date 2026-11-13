@@ -9,9 +9,20 @@ use Illuminate\Support\Facades\DB;
 
 class UpdateVehicleRequest extends FormRequest
 {
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // Los camiones se compran siempre en dólares (PYG/BRL quedan para ventas y gastos).
+        $this->merge([
+            'moneda_costo'        => 'USD',
+            'tasa_cambio_compra'  => 1,
+            'costo_origen_moneda' => $this->input('costo_origen_usd'),
+        ]);
     }
 
     public function rules(): array
@@ -28,9 +39,11 @@ class UpdateVehicleRequest extends FormRequest
             'tipo_vehiculo'              => 'required|in:CAMION_RIGIDO,CAMION_TRACTO,SEMI_REMOLQUE,FURGON,VOLQUETE,CISTERNA,OTRO',
             'kilometraje'                => 'nullable|integer|min:0',
             'estado'                     => 'required|in:' . $estados,
-            'moneda_costo'               => 'required|in:USD,PYG,BRL',
+            'moneda_costo'               => 'required|in:USD',
             'costo_origen_usd'           => 'required|numeric|min:0',
             'costo_origen_moneda'        => 'required|numeric|min:0',
+            'tasa_cambio_compra'         => 'nullable|numeric',
+            'numero_motor'               => 'nullable|string|max:20',
             'proveedor_id'               => 'nullable|integer|exists:proveedores,id',
             'precio_venta_sugerido_usd'  => 'nullable|numeric|min:0',
             'precio_contado_usd'         => 'nullable|numeric|min:0',
@@ -54,5 +67,10 @@ class UpdateVehicleRequest extends FormRequest
             'publicar_en_web'            => 'nullable|boolean',
             'mostrar_precio'             => 'nullable|boolean',
         ];
+    }
+
+    public function messages(): array
+    {
+        return ['costo_origen_usd.required' => 'Ingresá el costo de compra en dólares.'];
     }
 }
