@@ -127,7 +127,9 @@ class VehicleWebController extends Controller
         // VENDIDO lo fija la venta: no se elige desde este formulario.
         $estadosEditables = array_diff_key($estados, array_flip(['STOCK', 'VENDIDO']));
 
-        return view('vehicles.edit', compact('vehiculo', 'proveedores', 'imagenes', 'estados', 'estadosEditables'));
+        $marcas = DB::table('vehiculos')->whereNull('deleted_at')->distinct()->orderBy('marca')->pluck('marca');
+
+        return view('vehicles.edit', compact('vehiculo', 'proveedores', 'imagenes', 'estados', 'estadosEditables', 'marcas'));
     }
 
     public function update(UpdateVehicleRequest $request, $id)

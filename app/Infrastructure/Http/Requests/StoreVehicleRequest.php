@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Requests;
 
-use App\Infrastructure\Currency\LaMonedaRateSync;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVehicleRequest extends FormRequest
@@ -14,29 +13,17 @@ class StoreVehicleRequest extends FormRequest
         return true;
     }
 
-    /**
-     * El costo se carga una sola vez en su moneda: el USD lo calcula el servidor con la
-     * cotización (USD → tasa 1). Sin cotización válida queda vacío y la validación lo marca.
-     */
     protected function prepareForValidation(): void
     {
-        $merge = [];
         if (is_string($this->input('numero_chasis'))) {
-            $merge['numero_chasis'] = strtoupper(trim($this->input('numero_chasis')));
+            $this->merge(['numero_chasis' => strtoupper(trim($this->input('numero_chasis')))]);
         }
-
-        $costo = $this->input('costo_origen_moneda');
-        if (is_numeric($costo)) {
-            $tasa = $this->input('tasa_cambio_compra');
-            if ($this->input('moneda_costo', 'USD') === 'USD') {
-                $merge['tasa_cambio_compra'] = 1;
-                $merge['costo_origen_usd'] = round((float) $costo, 2);
-            } else {
-                $merge['costo_origen_usd'] = is_numeric($tasa) && (float) $tasa > 0 ? round((float) $costo / (float) $tasa, 2) : null;
-            }
-        }
-
-        $this->merge($merge);
+        // Los camiones se compran siempre en dólares (PYG/BRL quedan para ventas y gastos).
+        $this->merge([
+            'moneda_costo'        => 'USD',
+            'tasa_cambio_compra'  => 1,
+            'costo_origen_moneda' => $this->input('costo_origen_usd'),
+        ]);
     }
 
     public function rules(): array
@@ -50,17 +37,11 @@ class StoreVehicleRequest extends FormRequest
             'tipo_vehiculo'       => 'required|in:CAMION_RIGIDO,CAMION_TRACTO,SEMI_REMOLQUE,FURGON,VOLQUETE,CISTERNA,OTRO',
             'kilometraje'         => 'nullable|integer|min:0',
             'estado'              => 'required|in:EN_TRANSITO,EN_ADUANA,EN_PREPARACION,DISPONIBLE,RESERVADO,VENDIDO,TOMA,BAJA',
-            'moneda_costo'        => 'required|in:USD,PYG,BRL',
+            'moneda_costo'        => 'required|in:USD',
             'costo_origen_usd'    => 'required|numeric|min:0|max:99999999',
             'costo_origen_moneda' => 'required|numeric|min:0|max:999999999999',
             'proveedor_id'        => 'nullable|integer|exists:proveedores,id',
-            'tasa_cambio_compra'  => ['required_unless:moneda_costo,USD', 'nullable', 'numeric', 'gt:0', function ($attr, $valor, $fail) {
-                // Evita tipeos como 7.3 en vez de 7300 (el costo en USD se dispararía).
-                [$min, $max] = LaMonedaRateSync::RANGOS[$this->input('moneda_costo')] ?? [0, INF];
-                if ((float) $valor < $min || (float) $valor > $max) {
-                    $fail("La cotización debe estar entre {$min} y {$max} {$this->input('moneda_costo')} por USD.");
-                }
-            }],
+            'tasa_cambio_compra'  => 'nullable|numeric',
             'numero_motor'        => 'nullable|string|max:20',
             'precio_contado_usd'  => 'nullable|numeric|min:0|max:99999999',
             'precio_cuotas_usd'   => 'nullable|numeric|min:0|max:99999999',
@@ -93,11 +74,9 @@ class StoreVehicleRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'costo_origen_usd.required' => 'Ingresá el costo de compra en dólares.',
             'numero_chasis.unique'    => 'Ya existe un vehículo con ese número de chasis.',
             'numero_chasis.max'       => 'El número de chasis no puede superar 17 caracteres.',
-            'costo_origen_usd.min'    => 'El costo en USD debe ser mayor a cero.',
-            'costo_origen_usd.required' => 'Ingresá el costo del vehículo (y la cotización si no es en USD).',
-            'tasa_cambio_compra.required_unless' => 'Falta la cotización del día para la moneda elegida.',
             'tipo_vehiculo.in'        => 'El tipo de vehículo seleccionado no es válido.',
             'estado.in'               => 'El estado seleccionado no es válido.',
             'imagenes.*.image'        => 'Cada archivo debe ser una imagen (JPG, PNG, GIF).',

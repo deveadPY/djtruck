@@ -56,7 +56,7 @@ test('editar un vehículo disponible ofrece estados legibles sin VENDIDO', funct
 
     $this->get(route('vehicles.edit', $id))
         ->assertOk()
-        ->assertSee('<select name="estado"', false)
+        ->assertSee('<select id="estado" name="estado"', false)
         ->assertSee('En preparación')
         ->assertDontSee('value="VENDIDO"', false);
 });
